@@ -35,7 +35,7 @@ pub struct TickerItem {
 pub enum TickerAction {
     #[default]
     None,
-    /// Support or contribution: the project repository.
+    /// Project link: the issue tracker (beta versions).
     Support { url: String },
     /// Update available: the releases page of the channel. Only constructed with the
     /// `update-check` feature; the variant itself is always part of the UI contract.

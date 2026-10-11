@@ -452,17 +452,16 @@ fn run_egui_pass(
                         }
                     }
                 }
-                // Support/contribute item: only when the distribution channel profile allows
-                // it and the project's public identity is set. While it is `None`, no GitHub
-                // surface is shown.
-                {
+                // Beta versions only (a pre-release version number, "2.1.0-beta.1"): a link to
+                // the issue tracker, when the channel profile allows a project link.
+                if env!("CARGO_PKG_VERSION").contains('-') {
                     use crate::platform::distribution::{Distribution, PUBLIC_PROJECT};
                     let profile = Distribution::current().profile();
-                    if let Some(url) = profile.contribute_url(PUBLIC_PROJECT.as_ref()) {
+                    if let Some(repo) = profile.contribute_url(PUBLIC_PROJECT.as_ref()) {
                         items.push(TickerItem {
-                            top: "GITHUB".to_string(), // already upper case: a brand keeps its plain I in Turkish
-                            bottom: t.github_cta.to_string(),
-                            action: TickerAction::Support { url },
+                            top: t.ticker_beta.to_string(),
+                            bottom: t.beta_report_bug.to_string(),
+                            action: TickerAction::Support { url: format!("{repo}/issues") },
                         });
                     }
                 }

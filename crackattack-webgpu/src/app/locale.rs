@@ -276,8 +276,10 @@ pub struct Locale {
 
     // Menu footer — [egui-small] bottom of main menu, info ticker
 
-    /// Menu footer: call-to-action to star on GitHub.
-    pub github_cta: &'static str,
+    /// Ticker, beta versions only: label above the bug report link.
+    pub ticker_beta: &'static str,
+    /// Ticker, beta versions only: link to the issue tracker.
+    pub beta_report_bug: &'static str,
     /// Ticker: "best solo score" label (followed by the value).
     pub ticker_best_solo: &'static str,
     /// Ticker: "best combo" label (followed by "x{n}").
@@ -563,7 +565,8 @@ pub const EN: Locale = Locale {
     // Footer and ticker
     forfeit: "Forfeit",
     forfeit_confirm: "Forfeit the match?",
-    github_cta: "★ Star us on GitHub!",
+    ticker_beta: "Beta version",
+    beta_report_bug: "Report a bug!",
     ticker_update: "Update",
     update_available_fmt: "v{} available!",
     ignore_this_version: "Ignore this version",
@@ -739,7 +742,8 @@ pub const FR: Locale = Locale {
     // Footer and ticker
     forfeit: "Abandonner",
     forfeit_confirm: "Abandonner la partie ?",
-    github_cta: "\u{2605} Donnez-nous une étoile sur GitHub !",
+    ticker_beta: "Version bêta",
+    beta_report_bug: "Signalez-nous les bugs !",
     ticker_update: "Mise à jour",
     update_available_fmt: "v{} disponible !",
     ignore_this_version: "Ignorer cette version",
@@ -915,7 +919,8 @@ pub const DE: Locale = Locale {
     // Footer and ticker
     forfeit: "Aufgeben",
     forfeit_confirm: "Das Match aufgeben?",
-    github_cta: "\u{2605} Gib uns einen Stern auf GitHub!",
+    ticker_beta: "Beta-Version",
+    beta_report_bug: "Melde uns Fehler!",
     ticker_update: "Update",
     update_available_fmt: "v{} verfügbar!",
     ignore_this_version: "Diese Version ignorieren",
@@ -1091,7 +1096,8 @@ pub const ES: Locale = Locale {
     // Footer and ticker
     forfeit: "Rendirse",
     forfeit_confirm: "¿Rendirse en la partida?",
-    github_cta: "\u{2605} ¡Danos una estrella en GitHub!",
+    ticker_beta: "Versión beta",
+    beta_report_bug: "¡Infórmanos de los errores!",
     ticker_update: "Actualización",
     update_available_fmt: "¡v{} disponible!",
     ignore_this_version: "Ignorar esta versión",
@@ -1268,7 +1274,8 @@ pub const RU: Locale = Locale {
     // Footer and ticker
     forfeit: "Сдаться",
     forfeit_confirm: "Сдаться в этом матче?",
-    github_cta: "\u{2605} Поставьте нам звезду на GitHub!",
+    ticker_beta: "Бета-версия",
+    beta_report_bug: "Сообщите нам об ошибках!",
     ticker_update: "Обновление",
     update_available_fmt: "Доступна v{}!",
     ignore_this_version: "Пропустить эту версию",
@@ -1446,7 +1453,8 @@ pub const ZH: Locale = Locale {
     // Footer and ticker
     forfeit: "认输",
     forfeit_confirm: "确定认输吗？",
-    github_cta: "\u{2605} 在 GitHub 上给我们点星！",
+    ticker_beta: "测试版",
+    beta_report_bug: "向我们报告错误！",
     ticker_update: "更新",
     update_available_fmt: "v{} 已发布！",
     ignore_this_version: "忽略此版本",
@@ -1623,7 +1631,8 @@ pub const JA: Locale = Locale {
     // Footer and ticker
     forfeit: "降参",
     forfeit_confirm: "降参しますか？",
-    github_cta: "\u{2605} GitHub でスターをお願いします！",
+    ticker_beta: "ベータ版",
+    beta_report_bug: "不具合を報告してください！",
     ticker_update: "アップデート",
     update_available_fmt: "v{} が公開されました！",
     ignore_this_version: "このバージョンを無視",
@@ -1800,7 +1809,8 @@ pub const KO: Locale = Locale {
     // Footer and ticker
     forfeit: "기권",
     forfeit_confirm: "기권할까요?",
-    github_cta: "\u{2605} GitHub에서 별을 눌러 주세요!",
+    ticker_beta: "베타 버전",
+    beta_report_bug: "버그를 알려 주세요!",
     ticker_update: "업데이트",
     update_available_fmt: "v{} 출시!",
     ignore_this_version: "이 버전 무시",
@@ -1967,7 +1977,8 @@ pub const PL: Locale = Locale {
     stat_col_record: "Rekord",
     forfeit: "Poddaj się",
     forfeit_confirm: "Poddać mecz?",
-    github_cta: "\u{2605} Daj nam gwiazdkę na GitHubie!",
+    ticker_beta: "Wersja beta",
+    beta_report_bug: "Zgłoś nam błędy!",
     ticker_update: "Aktualizacja",
     update_available_fmt: "Dostępna v{}!",
     ignore_this_version: "Ignoruj tę wersję",
@@ -2135,7 +2146,8 @@ pub const TR: Locale = Locale {
     stat_col_record: "Rekor",
     forfeit: "Pes et",
     forfeit_confirm: "Maçtan çekilmek istiyor musun?",
-    github_cta: "\u{2605} GitHub'da bize yıldız ver!",
+    ticker_beta: "Beta sürümü",
+    beta_report_bug: "Hataları bize bildir!",
     ticker_update: "Güncelleme",
     update_available_fmt: "v{} çıktı!",
     ignore_this_version: "Bu sürümü yok say",
@@ -2302,7 +2314,8 @@ pub const IT: Locale = Locale {
     stat_col_record: "Record",
     forfeit: "Abbandona",
     forfeit_confirm: "Abbandonare la partita?",
-    github_cta: "\u{2605} Lasciaci una stella su GitHub!",
+    ticker_beta: "Versione beta",
+    beta_report_bug: "Segnalaci i bug!",
     ticker_update: "Aggiornamento",
     update_available_fmt: "v{} disponibile!",
     ignore_this_version: "Ignora questa versione",
@@ -2570,7 +2583,8 @@ impl Locale {
             self.stat_col_record,
             self.forfeit,
             self.forfeit_confirm,
-            self.github_cta,
+            self.ticker_beta,
+            self.beta_report_bug,
             self.ticker_update,
             self.update_available_fmt,
             self.ignore_this_version,
