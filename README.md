@@ -1,16 +1,38 @@
-# Crack Attack! — Back From The Stack
+<p align="center">
+  <img src="media/logo.png" alt="Crack Attack!" width="300">
+</p>
+
+<h1 align="center">Crack Attack! — Back From The Stack</h1>
+
+<p align="center">
+  <b>Swap blocks, chain clears, bury your opponent under garbage.</b><br>
+  The classic puzzle game, rewritten in Rust, with music that follows the pressure on your stack.
+</p>
+
+<p align="center">
+  <a href="../../releases/latest"><img alt="Download" src="https://img.shields.io/github/v/release/thiosaur/crackattack?label=download&color=2ea44f"></a>
+  <img alt="Linux, Windows, macOS" src="https://img.shields.io/badge/platforms-Linux%20%7C%20Windows%20%7C%20macOS-blue">
+  <a href="LICENSE"><img alt="License: GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-orange"></a>
+</p>
+
+<p align="center">
+  <img src="media/menu.png" alt="Main menu" width="32%">
+  <img src="media/solo.png" alt="Solo game" width="32%">
+  <img src="media/vs-computer.png" alt="Versus the computer, garbage incoming" width="32%">
+</p>
 
 A fast puzzle game: swap blocks, line up three or more of the same color, chain clears
 together and bury your opponent under garbage. This is a Rust rewrite of
 [Crack Attack!](https://www.nongnu.org/crack-attack/) (Daniel R. Nelson, 2000–2006), with a
 WebGPU renderer and SDL3. During a game, the music adapts to the pressure on your stack.
 
-- Solo, versus the computer (three difficulty levels) and versus another player on your
-  local network (automatic discovery or manual address).
-- Keyboard and gamepad, fully navigable menus, rebindable controls.
-- English, French, German, Spanish, Italian, Polish, Russian, Turkish, Simplified Chinese,
-  Japanese and Korean (all but English and French are new in this beta: corrections are
-  welcome).
+- **Three ways to play**: solo, versus the computer (three difficulty levels) and versus
+  another player on your local network (automatic discovery or manual address), with a
+  network ranking.
+- **Keyboard and gamepad**: fully navigable menus, rebindable controls.
+- **Eleven languages**: English, French, German, Spanish, Italian, Polish, Russian, Turkish,
+  Simplified Chinese, Japanese and Korean (all but English and French are new in this beta:
+  corrections are welcome).
 
 ## Download
 
