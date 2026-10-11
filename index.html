@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crack Attack! — swap, chain, crush</title>
+<meta name="description" content="Crack Attack! is a free puzzle duel: swap blocks, line up three, chain your clears and bury your opponent under garbage. Learn the rules with live animations.">
+<link rel="icon" href="assets/ui/logo.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="nav-wrap">
+  <nav class="nav" aria-label="Main">
+    <a class="brand" href="#top"><img src="assets/ui/logo.png" alt="" width="40" height="34"><span>Crack Attack!</span></a>
+    <div class="links">
+      <a href="#learn">How to play</a>
+      <a href="#modes">Modes</a>
+      <a href="#controls">Controls</a>
+      <a href="#tips">Tips</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#reviews">Reviews</a>
+    </div>
+    <a class="btn primary nav-dl" href="#get">Download</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============================ HERO ============================ -->
+<section id="top" class="hero">
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <img class="hero-logo" src="assets/ui/logo.png" alt="Crack Attack!" width="420" height="357">
+    <p class="tagline">Swap. Clear. <span class="grad">Chain.</span> Crush.</p>
+    <p class="lead">A fast puzzle duel. Line up blocks, set off chains, and bury your opponent under a landslide of garbage — before your own stack reaches the top.</p>
+    <div class="cta">
+      <a class="btn primary big" href="#get">Download · free</a>
+      <a class="btn" href="#learn">Learn to play</a>
+      <a class="btn" href="#learn" data-tab="attacks">How attacks work</a>
+    </div>
+    <ul class="facts">
+      <li><strong>Free</strong> and open source</li>
+      <li><strong>Solo</strong>, vs computer, or vs a friend</li>
+      <li>Easy to learn, <strong>hard to master</strong></li>
+    </ul>
+  </div>
+  <a class="scroll-hint" href="#learn" aria-label="Scroll to the lessons"><span></span></a>
+</section>
+
+<!-- ============================ LEARN ============================ -->
+<section id="learn" class="section">
+  <div class="wrap">
+    <h2 class="reveal">How to play</h2>
+    <p class="section-lead reveal">Seven short lessons. Pick one, or use the arrows. Each demo plays in a loop with several examples; pause it with the button.</p>
+
+    <div class="tabs" role="tablist" aria-label="Lessons">
+      <button class="tab" role="tab" id="t-swap" data-tab="swap" aria-controls="tab-swap"><b>1</b><span>The cursor</span></button>
+      <button class="tab" role="tab" id="t-lines" data-tab="lines" aria-controls="tab-lines"><b>2</b><span>Lines</span></button>
+      <button class="tab" role="tab" id="t-chain" data-tab="chain" aria-controls="tab-chain"><b>3</b><span>Chains</span></button>
+      <button class="tab" role="tab" id="t-garbage" data-tab="garbage" aria-controls="tab-garbage"><b>4</b><span>Garbage</span></button>
+      <button class="tab" role="tab" id="t-danger" data-tab="danger" aria-controls="tab-danger"><b>5</b><span>The top</span></button>
+      <button class="tab" role="tab" id="t-gray" data-tab="gray" aria-controls="tab-gray"><b>6</b><span>Gray blocks</span></button>
+      <button class="tab" role="tab" id="t-attacks" data-tab="attacks" aria-controls="tab-attacks"><b>7</b><span>Attack sizes</span></button>
+    </div>
+    <div class="stage">
+    <div class="tabpanel" id="tab-swap" role="tabpanel" aria-labelledby="t-swap" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">1</span>
+        <h3>The board and the cursor</h3>
+        <p>You play on a board six blocks wide. Your <strong>cursor</strong> always covers <strong>two neighbouring blocks</strong>. Move it around, and swap the two blocks it covers.</p>
+        <p>You can also swap a block with an empty space: it slides over, and then falls if there is nothing under it.</p>
+      </div>
+      <div class="demo-card" data-lesson="swap" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Looping lesson: the cursor swaps two neighbouring blocks, then slides a block into an empty space"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Pause</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-lines" role="tabpanel" aria-labelledby="t-lines" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">2</span>
+        <h3>Line up three — or more</h3>
+        <p>Put <strong>three or more blocks of the same color</strong> in a row — across or down — and they clear.</p>
+        <ul class="gems">
+          <li><i class="gem purple"></i><i class="gem green"></i><i class="gem yellow"></i><i class="gem orange"></i><i class="gem blue"></i> five colors to match</li>
+          <li>The stack keeps <strong>rising from below</strong>, so clearing blocks is how you stay alive.</li>
+        </ul>
+        <p><strong>Clear four, five or more at once</strong> — a long line, or lines that cross — and you send <strong>garbage</strong> to your opponent. The bigger the clear, the bigger the garbage. <a href="#learn" data-tab="attacks">See the sizes.</a></p>
+      </div>
+      <div class="demo-card" data-lesson="lines" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Looping lesson: lines of three across and down, then clears of four and five that send garbage"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Pause</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-chain" role="tabpanel" aria-labelledby="t-chain" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">3</span>
+        <h3>Chains: let gravity work for you</h3>
+        <p>When blocks vanish, everything above falls. If the falling blocks line up on their own, you get another clear — and a <strong>chain</strong>. A second clear makes it <strong>x2</strong>, a third <strong>x3</strong>, and so on.</p>
+        <ul>
+          <li>In Solo, <strong>all the points</strong> of a chain are multiplied by its multiplier.</li>
+          <li>In a duel, a finished chain sends one big block of garbage to your opponent: the longer the chain, the taller it is.</li>
+        </ul>
+        <aside class="note"><strong>A word on words.</strong> In this game a <em>chain</em> is a series of clears that follow each other by themselves, and a <em>combo</em> is clearing several blocks at once. Older guides call a chain a “combo”.</aside>
+      </div>
+      <div class="demo-card" data-lesson="chain" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Looping lesson: one swap sets off a chain of two, then of three clears"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Pause</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-garbage" role="tabpanel" aria-labelledby="t-garbage" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">4</span>
+        <h3>Garbage: when you are attacked</h3>
+        <p>Garbage is a <strong>big slab</strong> that drops onto your stack. You cannot clear it directly — but if you clear any block <strong>touching it</strong>, it <strong>shatters</strong> into ordinary blocks.</p>
+        <p>Garbage that touches other garbage shatters together with it. That is often your way back into the game, because the fresh blocks can fall into new lines.</p>
+      </div>
+      <div class="demo-card" data-lesson="garbage" style="--ratio: 7.2 / 7.2">
+        <canvas role="img" aria-label="Looping lesson: slabs of garbage of different sizes land on a stack and shatter when a nearby block is cleared"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Pause</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-danger" role="tabpanel" aria-labelledby="t-danger" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">5</span>
+        <h3>Do not reach the top</h3>
+        <p>The stack rises faster and faster. The <strong>lights on both sides</strong> show how high it is. When it reaches the top it stops, and you have <strong>seven seconds</strong> to bring it down — or you lose.</p>
+        <ul>
+          <li>Clearing blocks <strong>pauses the rise</strong>, and the countdown does not run while blocks are vanishing.</li>
+          <li>Short of blocks? <strong>Hold Enter</strong> to raise the stack faster.</li>
+        </ul>
+      </div>
+      <div class="demo-card" data-lesson="danger" style="--ratio: 7.2 / 10.2">
+        <canvas role="img" aria-label="Looping lesson: the stack rises to the top, a seven second countdown starts, then it is saved once and lost once"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Pause</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-gray" role="tabpanel" aria-labelledby="t-gray" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">6</span>
+        <h3>The rare gray block</h3>
+        <p>Now and then a <strong>gray block</strong> shows up. It clears like the others, in lines of three or more, but it is special: clearing it sends <strong>full-width gray garbage</strong>.</p>
+        <p>Gray garbage does not break along with ordinary garbage. It only shatters when a clear touches it <strong>directly</strong>.</p>
+      </div>
+      <div class="demo-card" data-lesson="gray" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Looping lesson: three gray blocks send gray garbage, and gray garbage survives when ordinary garbage shatters"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Pause</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-attacks" role="tabpanel" aria-labelledby="t-attacks" hidden>
+      <h3 class="panel-title">How much do you send?</h3>
+      <p class="section-lead">In a duel, what you clear lands on your opponent as garbage. Try the sliders — the sizes are the game's own.</p>
+    <div id="calc" class="calc">
+      <div class="calc-col">
+        <h3>Clearing blocks at once</h3>
+        <label for="calc-n">Blocks cleared together: <output id="calc-n-out">4</output></label>
+        <input id="calc-n" type="range" min="3" max="16" value="4">
+        <div class="calc-strip" id="calc-pieces" aria-live="polite"></div>
+        <p id="calc-piece-text" class="calc-text"></p>
+        <p class="fine">Each piece is one row high. A line of 4 sends 3 blocks of garbage; from 7 blocks up, the garbage is split in pieces.</p>
+      </div>
+      <div class="calc-col">
+        <h3>Finishing a chain</h3>
+        <label for="calc-c">Chain length: <output id="calc-c-out">x2</output></label>
+        <input id="calc-c" type="range" min="1" max="13" value="2">
+        <div class="calc-strip tall" id="calc-chain" aria-live="polite"></div>
+        <p id="calc-chain-text" class="calc-text"></p>
+        <p class="fine">A chain of x<em>n</em> sends one full-width block, <em>n − 1</em> rows high (11 at most). Chains are the strongest attack in the game.</p>
+      </div>
+    </div>
+    </div>
+    </div>
+    <div class="tab-nav">
+      <button class="btn" data-step="-1">← Previous</button>
+      <button class="btn primary" data-step="1">Next →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ MODES ============================ -->
+<section id="modes" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">Ways to play</h2>
+    <div class="cards">
+      <article class="card reveal">
+        <i class="gem purple big"></i>
+        <h3>Solo</h3>
+        <p>Rack up the highest score before the stack wins. Bigger clears and longer chains are worth more — but your own big attacks fall back on you, so it is a trade-off. Your best score is saved.</p>
+      </article>
+      <article class="card reveal">
+        <i class="gem orange big"></i>
+        <h3>Versus the computer</h3>
+        <p>A duel against the computer, with three difficulty levels: <strong>easy</strong>, <strong>medium</strong> and <strong>hard</strong>. The perfect place to practice chains before facing a person.</p>
+      </article>
+      <article class="card reveal">
+        <i class="gem blue big"></i>
+        <h3>Versus a friend</h3>
+        <p>Challenge someone on your <strong>local network</strong>, or connect directly by entering their address. Last stack standing wins the round.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CONTROLS ============================ -->
+<section id="controls" class="section">
+  <div class="wrap narrow">
+    <h2 class="reveal">Controls</h2>
+    <p class="section-lead reveal">Keyboard or gamepad. You can change the keys in the options.</p>
+    <table class="controls reveal">
+      <thead><tr><th>Action</th><th>Keyboard</th><th>Gamepad</th></tr></thead>
+      <tbody>
+        <tr><td>Move the cursor</td><td><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></td><td>D-pad or left stick</td></tr>
+        <tr><td>Swap two blocks</td><td><kbd>Space</kbd></td><td><kbd>A</kbd> / <kbd>✕</kbd></td></tr>
+        <tr><td>Raise the stack</td><td><kbd>Enter</kbd></td><td><kbd>X</kbd> / <kbd>□</kbd></td></tr>
+        <tr><td>Pause</td><td><kbd>P</kbd> or <kbd>Esc</kbd></td><td><kbd>Start</kbd></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================ TIPS ============================ -->
+<section id="tips" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">Playing smarter</h2>
+    <div class="cards tips">
+      <article class="card reveal"><i class="gem green"></i><h3>Clear to breathe</h3><p>The stack stops rising while blocks vanish. When you are in trouble, any clear buys you time.</p></article>
+      <article class="card reveal"><i class="gem yellow"></i><h3>Think in chains</h3><p>Set up blocks so that one clear drops others into a new line. A chain of x4 sends three full rows.</p></article>
+      <article class="card reveal"><i class="gem orange"></i><h3>Shatter on purpose</h3><p>Garbage turns into blocks when it breaks. Clear next to it and let the fresh blocks fall into place.</p></article>
+      <article class="card reveal"><i class="gem purple"></i><h3>Keep it low</h3><p>A low, flat stack leaves you time to think. Do not wait for the last seconds.</p></article>
+      <article class="card reveal"><i class="gem blue"></i><h3>Raise when you are out of moves</h3><p>No lines in sight? Hold Enter to bring up new blocks instead of waiting.</p></article>
+      <article class="card reveal"><i class="gem gray"></i><h3>Mind the gray</h3><p>Gray garbage ignores the shatter that wipes out ordinary garbage. Plan to touch it directly.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ GALLERY ============================ -->
+<section id="gallery" class="section">
+  <div class="wrap">
+    <h2 class="reveal">In the game</h2>
+    <div class="gallery">
+      <figure class="reveal"><img src="assets/shots/solo-chain-sign.jpg" alt="A stack of colored blocks with a big number popping above a clear" loading="lazy"><figcaption>Blocks clear and a sign shows the size of the clear.</figcaption></figure>
+      <figure class="reveal"><img src="assets/shots/danger-stack.jpg" alt="A tall stack almost at the top, with the level lights on both sides lit" loading="lazy"><figcaption>Danger! The lights on the sides warn you that the stack is high.</figcaption></figure>
+      <figure class="reveal"><img src="assets/shots/vs-garbage-shatter.jpg" alt="Garbage breaking into red gems above a stack in a duel" loading="lazy"><figcaption>A duel: garbage shatters into red gems.</figcaption></figure>
+      <figure class="reveal"><img src="assets/shots/vs-garbage-awaking.jpg" alt="Blocks freed by shattered garbage waking up in color" loading="lazy"><figcaption>Shattered garbage becomes blocks that wake up in color.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ REVIEWS ============================ -->
+<section id="reviews" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">What people say</h2>
+    <p class="section-lead reveal">Magazines and websites have been recommending Crack Attack! for almost twenty years.</p>
+    <div class="quotes">
+      <blockquote class="quote big reveal">
+        <p>The graphics and gameplay are simple, but it’s so criminally addictive that you won’t care.</p>
+        <footer><cite>Atomic</cite> magazine, issue 61, 2006 · <a href="https://archive.org/details/atomic-061/page/68">read</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p>Two-player Crack Attack games are about as much fun as you can have with your Linux box.</p>
+        <footer><cite>Linux Starter Pack</cite> (<cite>Linux Format</cite>), 2008 · <a href="https://archive.org/details/manualzilla-id-5971019/page/60">read</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p>If I can mention only one classic puzzle game, it has to be Crack-Attack.</p>
+        <footer><cite>Atomic</cite> magazine, issue 85, 2008 · <a href="https://archive.org/details/atomic-085">read</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p>An excellent, fast paced puzzle game… the game play is really addictive and polished.</p>
+        <footer><cite>Acid Play</cite>, rated 8.5/10 · <a href="https://web.archive.org/web/20081221153303/http://www.acid-play.com/download/crack-attack/">read</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p>Learning time is minimal, of course, but the fun is guaranteed.<span class="tr" title="Translated from the Italian: «Il tempo di apprendimento necessario è ovviamente minimo, ma il divertimento è assicurato»">translated</span></p>
+        <footer><cite>PC Professionale</cite> (Italy), 2010 · <a href="https://archive.org/details/pcprofessionale233/page/103">read</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p>Crack-Attack, a free Tetris clone, and Neverball stand out for their cool sound and nice 3D graphics.<span class="tr" title="Translated from the German: «Crack-Attack, ein freier Tetris-Klon, und das Geschicklichkeitsspiel Neverball zeichnen sich durch coolen Sound und schicke 3D-Grafik aus»">translated</span></p>
+        <footer><cite>c’t</cite> (Germany), 2008 · <a href="https://archive.org/details/ct0825_202310/ct0806">read</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p>Linux Format had two unofficial-official games of choice… Unreal Tournament and the less resource-hungry Crack Attack.</p>
+        <footer><cite>Linux Format</cite>, final issue, 2025 · <a href="https://archive.org/details/linux-format-july-2025-final-issue/page/8">read</a></footer>
+      </blockquote>
+    </div>
+    <p class="fine center reveal">Quotations are short extracts, with their sources. The two translated ones are our own translations.</p>
+  </div>
+</section>
+
+<!-- ============================ GET ============================ -->
+<section id="get" class="section dl">
+  <div class="wrap narrow center">
+    <h2 class="reveal">Download Crack Attack!</h2>
+    <p class="section-lead reveal">Free and open source (GPL-3.0). <span id="dl-version">Latest version</span> — solo, versus the computer, and versus a friend on your network.</p>
+    <div class="dl-grid reveal">
+      <a class="dl-card" data-os="macos" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>macOS</strong><span>Apple Silicon · .zip</span></a>
+      <a class="dl-card" data-os="windows" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>Windows</strong><span>64-bit · .zip</span></a>
+      <a class="dl-card" data-os="linux" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>Linux</strong><span>x86_64 · .tar.gz</span></a>
+    </div>
+    <p class="fine reveal">Early releases may have rough edges. <a href="https://github.com/thiosaur/crackattack/releases/latest">Release notes</a> · <a href="https://github.com/thiosaur/crackattack">Source code</a></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p><strong>Crack Attack!</strong> was created by Daniel Nelson and released as free software under the GNU General Public License. It is inspired by the Super Nintendo classic <em>Tetris Attack</em>.</p>
+    <p class="fine">Read the original pages: <a href="https://aluminumangel.org/attack/">aluminumangel.org/attack</a> · <a href="https://www.nongnu.org/crack-attack/game_play.html">nongnu.org/crack-attack</a>. The animations on this page are a simplified model of the game, built for explanation.</p>
+  </div>
+</footer>
+
+<noscript><p class="noscript">The animated lessons need JavaScript. The rules are still written next to each one.</p></noscript>
+<script src="dist/site.js"></script>
+</body>
+</html>
