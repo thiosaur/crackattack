@@ -23,7 +23,7 @@
 
 A fast puzzle game: swap blocks, line up three or more of the same color, chain clears
 together and bury your opponent under garbage. This is a Rust rewrite of
-[Crack Attack!](https://www.nongnu.org/crack-attack/) (Daniel R. Nelson, 2000–2006), with a
+[Crack Attack!](https://github.com/gnu-lorien/crack-attack) (Daniel R. Nelson, 2000–2006), with a
 WebGPU renderer and SDL3. During a game, the music adapts to the pressure on your stack.
 
 - **Three ways to play**: solo, versus the computer (three difficulty levels) and versus
@@ -135,9 +135,11 @@ terminal (`cargo run -p crackattack-terminal`).
 
 ## Credits
 
-- The original **Crack Attack!** (2000–2006): created by **Daniel R. Nelson**; developed and
-  maintained by **R. Andrew Sayman**, with **Kevin Webb**. The full list
-  of copyright holders is in [AUTHORS](AUTHORS).
+- The original **Crack Attack!** (2000–2006): created by **Daniel R. Nelson**
+  ([@AluminumAngel](https://github.com/AluminumAngel)); developed and maintained by
+  **R. Andrew Sayman** ([@gnu-lorien](https://github.com/gnu-lorien)), with **Kevin Webb**.
+  Its C++ source code is at [gnu-lorien/crack-attack](https://github.com/gnu-lorien/crack-attack).
+  The full list of copyright holders is in [AUTHORS](AUTHORS).
 - **This edition** — Back From The Stack: Rust / WebGPU rewrite (2.x) by Thiosaur.
 - Images, sound effects, music and fonts: origin and license of every file in
   [crackattack-webgpu/assets/CREDITS.md](crackattack-webgpu/assets/CREDITS.md). The music is
