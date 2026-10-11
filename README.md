@@ -133,6 +133,11 @@ data. `cargo test --workspace` runs the test suite. To build without the update 
 The workspace also contains `crackattack-terminal`, a text renderer that plays in a
 terminal (`cargo run -p crackattack-terminal`).
 
+## Feedback
+
+Found a bug? Open an [issue](../../issues). Feedback, questions, ideas or memories of the
+original game are welcome in [Discussions](../../discussions).
+
 ## Credits
 
 - The original **Crack Attack!** (2000–2006): created by **Daniel R. Nelson**
