@@ -1,0 +1,12 @@
+# Visual reference: vs-computer match in autoplay (garbage, chains, sparkles).
+# The AI plays both sides; the script only captures at absolute frames (deterministic
+# thanks to the fixed-step clock that --script enables).
+# Run with: cargo run -p crackattack-webgpu -- --preset vs-computer hard \
+#             --set session:game.seed=42 --set session:autoplay=true \
+#             --script qa/scripts/shader-vs-ia.mini   (or qa/run-baseline.sh)
+@395  assert flow=playing
+@400  capture f400    # start of the match, first exchanges
+@1000 capture f1000   # chains and sparkles likely
+@1800 capture f1800   # garbage likely placed (shells, flavors)
+@2600 capture f2600   # advanced match (inter-round screen at seed 42)
+@2660 quit

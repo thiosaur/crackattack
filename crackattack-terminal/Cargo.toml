@@ -1,0 +1,16 @@
+[package]
+name = "crackattack-terminal"
+description = "Crack Attack! Terminal renderer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "crackattack-terminal"
+path = "src/main.rs"
+
+[dependencies]
+crackattack-core = { path = "../crackattack-core" }
+crossterm = "0.28"

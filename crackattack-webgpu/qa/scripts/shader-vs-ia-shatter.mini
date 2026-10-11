@@ -1,0 +1,11 @@
+# Visual reference: guaranteed garbage dissolution (shatter + awaking).
+# Frames pinned by probing the deterministic run (seed 42, fixed step): at 1430 the shell
+# breaks apart (rotating shards, varied DyingShrink path); at 1500 the transformation into
+# blocks is under way (awaking flash, washed-out rows). If the simulation changes, probe again.
+# Run with: cargo run -p crackattack-webgpu -- --preset vs-computer hard \
+#             --set session:game.seed=42 --set session:autoplay=true \
+#             --script qa/scripts/shader-vs-ia-shatter.mini   (or qa/run-baseline.sh)
+@1425 assert flow=playing
+@1430 capture shatter   # shatter: garbage shards dissolving
+@1500 capture awaking   # awaking: transformed pieces, pastel flash
+@1560 quit

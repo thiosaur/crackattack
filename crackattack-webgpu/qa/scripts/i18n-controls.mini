@@ -1,0 +1,12 @@
+# Visual i18n check of the Controls tab (options menu).
+# Usage (2 languages x 2 tabs, one folder each):
+#   cargo run -q -p crackattack-webgpu -- --seed 42 \
+#     --open menu:options/keyboard  --set config:i18n.language=en \
+#     --script qa/scripts/i18n-controls.mini --set session:qa.capture_dir=qa/i18n-check/en-kbd
+#   (same for fr, and for menu:options/gamepad)
+# The EN and FR captures must DIFFER (proof that the tab follows the language);
+# checking the CONTENT is still done by eye.
+wait 90
+capture controls
+wait 10
+quit

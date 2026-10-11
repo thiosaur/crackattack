@@ -1,0 +1,80 @@
+[package]
+name = "crackattack-webgpu"
+description = "Crack Attack! Back From The Stack — puzzle game (Rust/WebGPU port)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "crackattack"
+path = "src/main.rs"
+required-features = ["native"]
+
+[features]
+default = ["native", "update-check"]
+native = ["dep:pollster", "dep:env_logger", "dep:egui", "dep:egui-wgpu", "dep:dirs", "dep:rodio", "dep:lewton", "dep:sdl3", "dep:serde", "dep:serde_json", "dep:crackattack-net", "dep:open", "dep:getrandom", "dep:sys-locale", "dep:fd-lock"]
+# Developer QA panel (egui): freezes the simulation and drops garbage. Native only,
+# off by default. Enable with `cargo run --features dev`; toggle with the backquote key.
+dev = ["native"]
+# Update check. Gates ONLY the remote part (HTTP client, release lookup, version
+# comparison). The distribution profile, the contribution link and "managed by" stay compiled.
+# A distro build removes it with --no-default-features --features native.
+update-check = ["dep:ureq", "dep:semver"]
+sys-locale = ["dep:sys-locale"]
+fd-lock = ["dep:fd-lock"]
+
+[dependencies]
+crackattack-core = { path = "../crackattack-core" }
+crackattack-net = { path = "../crackattack-net", optional = true }
+
+# WebGPU
+wgpu = "24"
+
+# Math and data
+bytemuck = { version = "1.21", features = ["derive"] }
+
+# Assets
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+# Logging
+log = "0.4"
+
+# egui overlay for configuration UI
+egui = { version = "0.31", optional = true }
+egui-wgpu = { version = "0.31", optional = true }
+
+# Native-only dependencies
+pollster = { version = "0.4", optional = true }
+env_logger = { version = "0.11", optional = true }
+dirs = { version = "6", optional = true }
+rodio = { version = "0.20", optional = true }
+# Adaptive music: Vorbis decoding with page-level seeking (the same lewton that rodio uses).
+lewton = { version = "0.10", optional = true }
+# Gamepad: SDL3. The version is declared once in [workspace.dependencies] (workspace root).
+# `raw-window-handle` is required by `Sdl3Platform::create_surface` (raw handles for wgpu).
+sdl3 = { workspace = true, optional = true, features = ["raw-window-handle"] }
+# OS randomness (CSPRNG) for the persistent player identity (`player_uuid`).
+getrandom = { version = "0.2", optional = true }
+# Local ladder (pure Glicko-1 core and the log types). Pure crate (serde only), so not optional.
+crackattack-rating = { path = "../crackattack-rating" }
+serde = { version = "1", features = ["derive"], optional = true }
+serde_json = { version = "1", optional = true }
+open = { version = "5", optional = true }
+# Update check (feature `update-check`): minimal HTTPS client (rustls/ring; no aws-lc, so
+# no cmake and better portability) and SemVer comparison. Not part of a distro build.
+ureq = { version = "2.12", default-features = false, features = ["tls"], optional = true }
+semver = { version = "1", optional = true }
+# Cross-platform system locale detection (works on Windows, unlike LANG/LC_*).
+sys-locale = { version = "0.3", optional = true }
+# Inter-process lock on the config directory. Uses the OS ADVISORY locks
+# (flock/LockFileEx), which are released when the process dies, so none is left orphaned.
+fd-lock = { version = "4", optional = true }
+
+[dev-dependencies]
+# WGSL validation in tests: parses and validates the shader sources without a GPU.
+# Same version as the naga embedded in wgpu 24 (see Cargo.lock).
+naga = { version = "24", features = ["wgsl-in"] }
+# Glyph coverage test of the embedded fonts (same version as the one egui uses).
+ab_glyph = "0.2"

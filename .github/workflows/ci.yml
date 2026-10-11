@@ -1,0 +1,30 @@
+# Continuous check: build and tests on every push/PR to main.
+# Linux only (Windows/macOS minutes count 2x/10x on private repositories);
+# release.yml builds all three platforms on every version tag.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: System dependencies (SDL3 built from source, ALSA)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential pkg-config libasound2-dev \
+            libx11-dev libxext-dev libwayland-dev libxkbcommon-dev libegl1-mesa-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check --workspace --all-targets --locked
+      - run: cargo test --workspace --locked
+      - name: Build without the update check (distribution packages)
+        run: cargo check -p crackattack-webgpu --no-default-features --features native --locked

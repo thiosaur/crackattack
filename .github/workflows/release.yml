@@ -1,0 +1,213 @@
+# Release pipeline, triggered by a version tag (v2.1.0).
+#
+# 1. The tag must equal "v" + the workspace version in Cargo.toml, and the whole test suite
+#    must pass on the tagged commit (including the reference files of released versions).
+# 2. Linux, Windows and macOS packages are built with CRACKATTACK_DISTRIBUTION=direct
+#    (the stamp that enables the daily update check) and checked: `--version` must report
+#    "(direct)" and the game data must be in the package.
+# 3. A DRAFT release is created with the three packages. Drafts are invisible to players
+#    and to the "latest release" API: publishing the draft by hand, after trying the
+#    packages, is the last step and the one that makes the version visible.
+#
+# A platform that fails blocks the whole release (no partial release).
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check-tag:
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        name: Tag matches Cargo.toml version
+        run: |
+          version=$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\(.*\)"/\1/p' Cargo.toml)
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match Cargo.toml version $version"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: check-tag
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: System dependencies (SDL3 built from source, ALSA)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential pkg-config libasound2-dev \
+            libx11-dev libxext-dev libwayland-dev libxkbcommon-dev libegl1-mesa-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: release-test
+      - run: cargo test --workspace --locked
+
+  build:
+    needs: [check-tag, test]
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          # Oldest supported runner image: the Linux binary then runs on older glibc too.
+          - os: ubuntu-22.04
+            platform: linux-x86_64
+            exe: crackattack
+          - os: windows-latest
+            platform: windows-x86_64
+            exe: crackattack.exe
+          - os: macos-latest
+            platform: macos-arm64
+            exe: crackattack
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    env:
+      VERSION: ${{ needs.check-tag.outputs.version }}
+      CRACKATTACK_DISTRIBUTION: direct
+      # Oldest macOS announced in Info.plist (LSMinimumSystemVersion); ignored on other systems.
+      MACOSX_DEPLOYMENT_TARGET: '11.0'
+    steps:
+      - uses: actions/checkout@v4
+      - name: System dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential pkg-config libasound2-dev \
+            libx11-dev libxext-dev libwayland-dev libxkbcommon-dev libegl1-mesa-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: release-${{ matrix.platform }}
+
+      - name: Build
+        run: cargo build --release --locked -p crackattack-webgpu
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about
+
+      - name: Third-party notices
+        # about.toml covers the three package targets; --fail stops on any unresolved license.
+        run: cargo about generate --locked --fail -m crackattack-webgpu/Cargo.toml about.hbs -o THIRD-PARTY-LICENSES.html
+
+      - name: Check the stamp
+        shell: bash
+        run: |
+          out=$(target/release/${{ matrix.exe }} --version)
+          echo "$out"
+          [ "$out" = "crackattack $VERSION (direct)" ] || { echo "::error::unexpected --version: $out"; exit 1; }
+
+      - name: Package
+        shell: bash
+        run: |
+          name="crackattack-$VERSION-${{ matrix.platform }}"
+          mkdir -p dist
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            app="dist/$name/Crack Attack.app"
+            mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
+            cp target/release/crackattack "$app/Contents/MacOS/"
+            cp -R crackattack-webgpu/assets "$app/Contents/Resources/assets"
+            cat > "$app/Contents/Info.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>CFBundleName</key><string>Crack Attack</string>
+            <key>CFBundleDisplayName</key><string>Crack Attack!</string>
+            <key>CFBundleIdentifier</key><string>io.github.thiosaur.crackattack</string>
+            <key>CFBundleExecutable</key><string>crackattack</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>CFBundleShortVersionString</key><string>$VERSION</string>
+            <key>CFBundleVersion</key><string>$VERSION</string>
+            <key>LSMinimumSystemVersion</key><string>11.0</string>
+            <key>NSHighResolutionCapable</key><true/>
+            <key>NSLocalNetworkUsageDescription</key><string>Crack Attack! finds other players on your local network for network games.</string>
+            <key>NSBonjourServices</key><array><string>_crackattack._udp</string></array>
+          </dict></plist>
+          EOF
+            cp LICENSE AUTHORS README.md THIRD-PARTY-LICENSES.html "dist/$name/"
+            # Ad-hoc signature (no Apple account): required for arm64, not a notarisation.
+            codesign --force --deep --sign - "$app"
+            # The game finds its data from the executable's location.
+            test -f "$app/Contents/Resources/assets/textures/ui/logo.png"
+            (cd dist && ditto -c -k --keepParent "$name" "$name.zip")
+          else
+            mkdir -p "dist/$name"
+            cp "target/release/${{ matrix.exe }}" "dist/$name/"
+            cp -R crackattack-webgpu/assets "dist/$name/assets"
+            cp LICENSE AUTHORS README.md THIRD-PARTY-LICENSES.html "dist/$name/"
+            test -f "dist/$name/assets/textures/ui/logo.png"
+            if [ "$RUNNER_OS" = "Windows" ]; then
+              (cd dist && 7z a -tzip "$name.zip" "$name" > /dev/null)
+            else
+              tar -C dist -czf "dist/$name.tar.gz" "$name"
+            fi
+          fi
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}
+          path: |
+            dist/*.zip
+            dist/*.tar.gz
+          retention-days: 7
+
+  draft:
+    needs: [check-tag, build]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.check-tag.outputs.version }}
+        run: |
+          cat > notes.md <<'EOF'
+          ## Downloads
+
+          | System | Package |
+          |---|---|
+          | Linux (x86_64) | `crackattack-VERSION-linux-x86_64.tar.gz` |
+          | Windows (x86_64) | `crackattack-VERSION-windows-x86_64.zip` |
+          | macOS (Apple Silicon) | `crackattack-VERSION-macos-arm64.zip` |
+
+          Unpack anywhere and run. Your settings and scores are kept in your user folder.
+
+          **macOS:** the application is not signed by Apple. The first time, right-click
+          *Crack Attack.app*, choose **Open**, then confirm.
+
+          ## Changes
+
+          EOF
+          sed -i "s/VERSION/$VERSION/g" notes.md
+          # The notes of this version come from the release-notes folder, written before tagging.
+          if [ -f "release-notes/$VERSION.md" ]; then
+            cat "release-notes/$VERSION.md" >> notes.md
+          else
+            echo "(to be written before publishing)" >> notes.md
+          fi
+          # Betas are published as normal releases, not GitHub pre-releases: the update check
+          # reads the "latest release" API, which ignores pre-releases. A beta (2.1.0-beta.1)
+          # still sorts before the matching stable version.
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --repo "$GITHUB_REPOSITORY" --draft --verify-tag \
+            --title "Crack Attack! $VERSION" --notes-file notes.md

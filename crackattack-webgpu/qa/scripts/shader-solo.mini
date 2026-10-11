@@ -1,0 +1,25 @@
+# Visual reference: solo game (blocks, level lights, sparkles).
+# Run with: cargo run -p crackattack-webgpu -- --preset solo --set session:game.seed=42 \
+#             --script qa/scripts/shader-solo.mini   (or qa/run-baseline.sh)
+wait until flow=playing
+assert flow=playing
+wait 5
+capture rideau   # transition curtain still visible
+wait 115         # curtain gone, board in place
+capture static   # static blocks + level lights
+tap right
+wait 10
+tap space        # swap
+wait 6
+capture swap     # swap mid-animation
+wait 120
+tap down
+wait 10
+tap space
+wait 6
+capture angle2   # second game angle
+wait 200
+assert flow=playing
+capture creep    # state after creep and landings (squash possible)
+wait 40
+quit

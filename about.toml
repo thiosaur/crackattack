@@ -1,0 +1,41 @@
+# Third-party dependency notices (cargo-about), added to each package by release.yml.
+# Accepted licences are all compatible with the GPL version 3.
+accepted = [
+    "MIT", "Apache-2.0", "Apache-2.0 WITH LLVM-exception", "BSD-2-Clause", "BSD-3-Clause",
+    "ISC", "Zlib", "0BSD", "Unlicense", "CC0-1.0", "MPL-2.0", "Unicode-3.0",
+    "CDLA-Permissive-2.0", "OFL-1.1", "Ubuntu-font-1.0", "BSL-1.0",
+]
+targets = ["x86_64-unknown-linux-gnu", "x86_64-pc-windows-msvc", "aarch64-apple-darwin"]
+ignore-dev-dependencies = true
+# Build dependencies stay included: sdl3-src (SDL3, Zlib) is one, and its C code is
+# linked statically into the binary.
+ignore-build-dependencies = false
+# The project's own crates are GPL-3.0-or-later (LICENSE, AUTHORS): no third-party notice.
+private = { ignore = true }
+
+# SDL3 is built from its C sources (sdl3-src). Without clarification, every C file header
+# becomes a notice. Only the licence texts themselves are kept: SDL (Zlib), the sdl3-src
+# package (Zlib), hidapi (BSD, GPLv3 or its original licence, at our choice: we pick BSD)
+# and yuv2rgb (BSD-3-Clause).
+[sdl3-src.clarify]
+license = "Zlib AND BSD-3-Clause"
+
+[[sdl3-src.clarify.files]]
+path = "LICENSE.md"
+license = "Zlib"
+checksum = "cb97587ece429a5969d82486867425e4ea36a343d7ff29371117f10ba960020e"
+
+[[sdl3-src.clarify.files]]
+path = "SDL/LICENSE.txt"
+license = "Zlib"
+checksum = "1c040b8271b37e5076359f8fd54240e371114112924d2df81ef87c7d6a1dfdfd"
+
+[[sdl3-src.clarify.files]]
+path = "SDL/src/hidapi/LICENSE-bsd.txt"
+license = "BSD-3-Clause"
+checksum = "30eb1bef29b46f8ba7ab8b416035dbd93cb034a45481dd97815b944284582cd2"
+
+[[sdl3-src.clarify.files]]
+path = "SDL/src/video/yuv2rgb/LICENSE"
+license = "BSD-3-Clause"
+checksum = "f7d74004cc75778cae46c5f0139f244d67c07ef64cf51937e8272352197dcb18"

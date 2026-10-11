@@ -1,0 +1,10 @@
+# Regression guard for black rounds.
+# A stale post_round_advanced flag used to start every second round BEHIND A CLOSED CURTAIN
+# (rounds 3, 5... entirely black). This capture freezes round 3 in mid-game: if the bug
+# comes back the image is ~100% black, so the hash changes.
+# Run with: cargo run -p crackattack-webgpu -- --preset vs-computer hard \
+#             --set session:game.seed=42 --set session:autoplay=true \
+#             --script qa/scripts/shader-vs-ia-round3.mini   (or qa/run-baseline.sh)
+@5590 assert flow=playing
+@5600 capture round3-visible   # round 3 in progress (0-2 at seed 42); it used to be black
+@5660 quit

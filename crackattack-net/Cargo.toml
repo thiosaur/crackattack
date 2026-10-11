@@ -1,0 +1,16 @@
+[package]
+name = "crackattack-net"
+description = "Crack Attack! network multiplayer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+crackattack-core = { path = "../crackattack-core" }
+log = "0.4"
+bytemuck = { version = "1.21", features = ["derive"] }
+socket2 = { version = "0.5", features = ["all"] }
+# LAN discovery via mDNS / DNS-SD (pure Rust, dual-stack v4/v6, multiple interfaces).
+mdns-sd = "0.20"

@@ -1,0 +1,15 @@
+[package]
+name = "auto_qa"
+description = "Headless multi-seed Crack Attack autoplay runner with invariant checks"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "auto_qa"
+path = "src/main.rs"
+
+[dependencies]
+crackattack-core = { path = "../../crackattack-core" }

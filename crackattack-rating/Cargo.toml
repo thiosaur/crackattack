@@ -1,0 +1,19 @@
+# Local ladder (Glicko-1, can move to Glicko-2). Pure core: no I/O, no clock
+# (timestamps are passed in as parameters).
+[package]
+name = "crackattack-rating"
+description = "Crack Attack! local rating system - pure Glicko-1 core, no I/O"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "crackattack_rating"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+serde_json = "1"

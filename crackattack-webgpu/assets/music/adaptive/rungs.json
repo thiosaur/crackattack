@@ -1,0 +1,228 @@
+{
+ "version": 1,
+ "sample_rate": 44100,
+ "stress": {
+  "window_seconds": 30,
+  "panic_seconds": 24,
+  "speed_exponent": 0.5,
+  "calm_row": 5,
+  "top_row": 12
+ },
+ "arrangements": {
+  "normal": {
+   "min_seconds_before_transition": 30
+  },
+  "mid": {
+   "min_seconds_before_transition": 30
+  },
+  "stress": {
+   "min_seconds_before_transition": 30
+  }
+ },
+ "rungs": [
+  {
+   "id": "normal_121",
+   "arrangement": "normal",
+   "bpm": 121.125,
+   "core": "normal_121_core.ogg",
+   "rhythm": "normal_121_rhythm.ogg",
+   "first_downbeat": 0.23787,
+   "bar_seconds": 1.981421,
+   "loop_bars": 67,
+   "min_seconds": 15,
+   "up_at": 0.18,
+   "down_at": null,
+   "unlock_seconds": 0
+  },
+  {
+   "id": "normal_130",
+   "arrangement": "normal",
+   "bpm": 130.0,
+   "core": "normal_130_core.ogg",
+   "rhythm": "normal_130_rhythm.ogg",
+   "first_downbeat": 0.22163,
+   "bar_seconds": 1.846154,
+   "loop_bars": 67,
+   "min_seconds": 15,
+   "up_at": 0.33,
+   "down_at": 0.12,
+   "unlock_seconds": 60
+  },
+  {
+   "id": "mid_130",
+   "arrangement": "mid",
+   "bpm": 130.0,
+   "core": "mid_130_core.ogg",
+   "rhythm": "mid_130_rhythm.ogg",
+   "first_downbeat": 0.47978,
+   "bar_seconds": 1.846154,
+   "loop_bars": 100,
+   "min_seconds": 15,
+   "up_at": 0.47,
+   "down_at": 0.25,
+   "unlock_seconds": 120
+  },
+  {
+   "id": "mid_138",
+   "arrangement": "mid",
+   "bpm": 138.0,
+   "core": "mid_138_core.ogg",
+   "rhythm": "mid_138_rhythm.ogg",
+   "first_downbeat": 0.45196,
+   "bar_seconds": 1.73913,
+   "loop_bars": 100,
+   "min_seconds": 15,
+   "up_at": 0.6,
+   "down_at": 0.4,
+   "unlock_seconds": 180
+  },
+  {
+   "id": "stress_138",
+   "arrangement": "stress",
+   "bpm": 138.0,
+   "core": "stress_138_core.ogg",
+   "rhythm": "stress_138_rhythm.ogg",
+   "first_downbeat": 0.69378,
+   "bar_seconds": 1.73913,
+   "loop_bars": 43,
+   "min_seconds": 15,
+   "up_at": 0.78,
+   "down_at": 0.5,
+   "unlock_seconds": 240
+  },
+  {
+   "id": "stress_150",
+   "arrangement": "stress",
+   "bpm": 150.04,
+   "core": "stress_150_core.ogg",
+   "rhythm": "stress_150_rhythm.ogg",
+   "first_downbeat": 0.6381,
+   "bar_seconds": 1.59957,
+   "loop_bars": 43,
+   "min_seconds": 15,
+   "up_at": null,
+   "down_at": 0.7,
+   "unlock_seconds": 360
+  }
+ ],
+ "transitions": {
+  "normal>mid": {
+   "points": [
+    {
+     "exit_bar": 11,
+     "entry_bar": 11,
+     "source": "ear"
+    },
+    {
+     "exit_bar": 24,
+     "entry_bar": 24,
+     "source": "auto"
+    },
+    {
+     "exit_bar": 44,
+     "entry_bar": 46,
+     "source": "auto"
+    },
+    {
+     "exit_bar": 59,
+     "entry_bar": 11,
+     "source": "auto"
+    }
+   ],
+   "crossfade_beats": 1,
+   "rhythm_out_bars": 0,
+   "rhythm_in_bars": 2
+  },
+  "mid>normal": {
+   "points": [
+    {
+     "exit_bar": 8,
+     "entry_bar": 8,
+     "source": "ear"
+    },
+    {
+     "exit_bar": 24,
+     "entry_bar": 24,
+     "source": "auto"
+    },
+    {
+     "exit_bar": 39,
+     "entry_bar": 14,
+     "source": "auto"
+    },
+    {
+     "exit_bar": 54,
+     "entry_bar": 21,
+     "source": "auto"
+    },
+    {
+     "exit_bar": 86,
+     "entry_bar": 28,
+     "source": "auto"
+    }
+   ],
+   "crossfade_beats": 1,
+   "rhythm_out_bars": 2,
+   "rhythm_in_bars": 0
+  },
+  "mid>stress": {
+   "points": [
+    {
+     "exit_bar": 12,
+     "entry_bar": 12,
+     "source": "auto"
+    },
+    {
+     "exit_bar": 28,
+     "entry_bar": 27,
+     "source": "auto"
+    },
+    {
+     "exit_bar": 53,
+     "entry_bar": 39,
+     "source": "auto"
+    },
+    {
+     "exit_bar": 70,
+     "entry_bar": 3,
+     "source": "auto"
+    },
+    {
+     "exit_bar": 85,
+     "entry_bar": 26,
+     "source": "ear"
+    }
+   ],
+   "crossfade_beats": 1,
+   "rhythm_out_bars": 0,
+   "rhythm_in_bars": 4
+  },
+  "stress>mid": {
+   "points": [
+    {
+     "exit_bar": 7,
+     "entry_bar": 53,
+     "source": "auto"
+    },
+    {
+     "exit_bar": 17,
+     "entry_bar": 18,
+     "source": "ear"
+    },
+    {
+     "exit_bar": 26,
+     "entry_bar": 85,
+     "source": "auto"
+    },
+    {
+     "exit_bar": 39,
+     "entry_bar": 53,
+     "source": "auto"
+    }
+   ],
+   "crossfade_beats": 1,
+   "rhythm_out_bars": 2,
+   "rhythm_in_bars": 0
+  }
+ }
+}

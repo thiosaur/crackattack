@@ -1,0 +1,30 @@
+Crack Attack! — Back From The Stack (Rust / WebGPU rewrite, 2.x)
+Copyright (C) 2026 Thiosaur
+
+This program is a rewrite in Rust of Crack Attack! 1.1.14, and therefore a derivative
+work of it. The game logic, constants and many names come from the original C++ code,
+which was translated and modified starting in January 2026. Crack Attack! 1.1.14 is
+licensed under the GNU General Public License, version 2 or (at your option) any later
+version; this derivative work is distributed under version 3 or (at your option) any
+later version (see LICENSE).
+
+
+Crack Attack! 1.1.14 (2000–2006)
+--------------------------------
+Copyright (C) 2000-2005 by the following (from the original COPYRIGHT file):
+
+  Daniel R. Nelson     original creator
+  R. Andrew Sayman     maintainer
+  Kevin Webb           playtester and developer
+  Stephan Beyer        contributor ("really low graphics" mode)
+  Dennis Lubert        contributor (CPU use of the idle loop)
+  Wolfgang Klier       contributor (blocks hanging in mid-air)
+
+The credits shown in the game name the main authors; this file keeps the full list.
+
+
+Assets of this edition
+----------------------
+The origin and license of every image, sound, music track and font are listed in
+crackattack-webgpu/assets/CREDITS.md. Third-party software notices are in
+THIRD-PARTY-LICENSES.html, shipped with the binaries.

@@ -1,0 +1,186 @@
+{
+  "format_version": 1,
+  "player_name": "ZOE",
+  "scores": [
+    {
+      "name": "ZOE",
+      "score": 9999
+    },
+    {
+      "name": "ZOE",
+      "score": 4321
+    },
+    {
+      "name": "AluminumAngel",
+      "score": 600
+    },
+    {
+      "name": "***********",
+      "score": 580
+    },
+    {
+      "name": "Fish Person",
+      "score": 560
+    },
+    {
+      "name": "SidekickSeven",
+      "score": 540
+    },
+    {
+      "name": "5Moon Mellon",
+      "score": 520
+    },
+    {
+      "name": "Mr. Twinkles",
+      "score": 500
+    },
+    {
+      "name": "Cup",
+      "score": 480
+    },
+    {
+      "name": "Shadow",
+      "score": 460
+    },
+    {
+      "name": "enoyaw",
+      "score": 440
+    },
+    {
+      "name": "[",
+      "score": 420
+    },
+    {
+      "name": "Book",
+      "score": 400
+    },
+    {
+      "name": "Plum",
+      "score": 380
+    },
+    {
+      "name": "Stankpants",
+      "score": 360
+    },
+    {
+      "name": "Food",
+      "score": 340
+    },
+    {
+      "name": "Mrs. Hidges",
+      "score": 320
+    },
+    {
+      "name": "Banana",
+      "score": 300
+    },
+    {
+      "name": "1337 h/|x0R",
+      "score": 280
+    },
+    {
+      "name": "Ladle Head",
+      "score": 260
+    },
+    {
+      "name": "Apple",
+      "score": 240
+    },
+    {
+      "name": "ScrollLock",
+      "score": 220
+    },
+    {
+      "name": "]",
+      "score": 200
+    },
+    {
+      "name": "Tater-Tot",
+      "score": 180
+    },
+    {
+      "name": "Orange",
+      "score": 160
+    },
+    {
+      "name": "Sen-TR++",
+      "score": 140
+    },
+    {
+      "name": "Happy Puppy",
+      "score": 120
+    },
+    {
+      "name": "Mr. Muddle",
+      "score": 100
+    },
+    {
+      "name": "Tony the Tortoise",
+      "score": 80
+    },
+    {
+      "name": "Rap Master B",
+      "score": 60
+    }
+  ],
+  "records": [
+    {
+      "key": "BestScore",
+      "value": 9999,
+      "name": "ZOE",
+      "date": "2026-10-11"
+    },
+    {
+      "key": "BestChain",
+      "value": 7,
+      "name": "ZOE",
+      "date": "2026-10-11"
+    }
+  ],
+  "sfx_enabled": true,
+  "music_enabled": true,
+  "sfx_volume": 0.7,
+  "music_volume": 0.4,
+  "language": "fr",
+  "fullscreen": false,
+  "key_bindings": {
+    "up": [
+      "ArrowUp",
+      "PadDPadUp",
+      "PadLeftStickUp"
+    ],
+    "down": [
+      "ArrowDown",
+      "PadDPadDown",
+      "PadLeftStickDown"
+    ],
+    "left": [
+      "ArrowLeft",
+      "PadDPadLeft",
+      "PadLeftStickLeft"
+    ],
+    "right": [
+      "ArrowRight",
+      "PadDPadRight",
+      "PadLeftStickRight"
+    ],
+    "swap": [
+      "KeyX",
+      "PadSouth"
+    ],
+    "raise": [
+      "Enter",
+      "PadWest"
+    ],
+    "pause": [
+      "KeyP"
+    ],
+    "dir_mode": "Both"
+  },
+  "player_uuid": "00112233445566778899aabbccddeeff",
+  "update_checks_enabled": true,
+  "last_update_check": 1791700000,
+  "ignored_update_version": "2.0.0-beta.2",
+  "last_update_success": 0,
+  "available_update_version": ""
+}

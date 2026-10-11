@@ -1,0 +1,32 @@
+[workspace]
+resolver = "2"
+members = [
+    "crackattack-core",
+    "crackattack-net",
+    "crackattack-rating",
+    "crackattack-terminal",
+    "crackattack-webgpu",
+    "tools/auto_qa",
+]
+
+[workspace.package]
+version = "2.0.0-beta.1"
+edition = "2021"
+# GPL v3 or later. The original Crack Attack! 1.1.14 is GPL v2 or later, which allows a
+# derivative work to move to version 3.
+license = "GPL-3.0-or-later"
+# Nothing is published to crates.io. cargo-about also uses this to skip our own crates.
+publish = false
+# Minimum supported Rust version. The lockfile requires 1.85 (`image 0.25.9`),
+# checked with `cargo +1.85 check --workspace`.
+rust-version = "1.85"
+
+[workspace.dependencies]
+bitflags = "2.4"
+regex = "1"
+# Gamepad support through SDL3. One version for the whole workspace.
+# SDL3 is linked statically from source (build-from-source-static), so no separate
+# SDL runtime library is needed. Building still requires CMake and a C compiler, and
+# the system audio/video libraries are still needed.
+# Cargo.lock pins the exact version; "0.18" allows compatible fixes.
+sdl3 = { version = "0.18", default-features = false, features = ["build-from-source-static"] }

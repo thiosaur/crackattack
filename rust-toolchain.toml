@@ -1,0 +1,5 @@
+# Compiler used to build and release the game, so two releases come from the same toolchain.
+# Raise it deliberately (and run the full test suite). The minimum supported version stays
+# `rust-version` in Cargo.toml.
+[toolchain]
+channel = "1.94.1"

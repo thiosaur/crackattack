@@ -1,0 +1,10 @@
+# Visual reference: blocks caught MID-ANIMATION.
+# Frames pinned by probing: at 1515/1525, rotating dissolving shards (the varied
+# DyingShrink path of the block shader) coexist with awakening rows (flash + AwakingPop pop).
+# Run with: cargo run -p crackattack-webgpu -- --preset vs-computer hard \
+#             --set session:game.seed=42 --set session:autoplay=true \
+#             --script qa/scripts/shader-vs-ia-anim.mini   (or qa/run-baseline.sh)
+@1510 assert flow=playing
+@1515 capture dying-awaking-a   # DyingShrink shards + pale AwakingPop rows
+@1525 capture dying-awaking-b   # same scene, different animation phase
+@1585 quit

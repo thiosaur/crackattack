@@ -1,0 +1,14 @@
+# Visual reference: guaranteed panic tint (flashing light through lighting.diffuse).
+# Raises the stack (Enter) up to the danger zone, then captures two phases of the pulse.
+# Run with: cargo run -p crackattack-webgpu -- --preset solo --set session:game.seed=42 \
+#             --script qa/scripts/shader-solo-panic.mini   (or qa/run-baseline.sh)
+wait until flow=playing
+wait 120
+hold enter 460   # raise held: the stack nears the top -> panic_intensity > 0
+wait 470
+assert flow=playing
+capture pulse1   # first sample of the pulse (~1.6 s period)
+wait 25
+capture pulse2   # second sample (the red must visibly differ from the first)
+wait 40
+quit
