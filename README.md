@@ -46,8 +46,9 @@ anywhere and run it). Both contain the game and all its data.
   and driver that support DirectX 12 or Vulkan. Windows SmartScreen may warn the first time,
   as the program is not signed: click **More info**, then **Run anyway**.
 - **macOS** — `crackattack-<version>-macos-arm64.dmg`: open it and drag *Crack Attack* into
-  *Applications* (or unpack the `.zip`). Apple Silicon, macOS 11 or later. The application is
-  not signed by Apple, so macOS blocks it the first time:
+  *Applications* (or unpack the `.zip`), or install it with [Homebrew](https://brew.sh):
+  `brew install --cask thiosaur/tap/crackattack`. Apple Silicon, macOS 11 or later. The
+  application is not signed by Apple, so macOS blocks it the first time:
   - macOS 15 or later: open *Crack Attack.app* once, then go to *System Settings → Privacy &
     Security* and click **Open Anyway**;
   - macOS 14 or earlier: right-click (or Control-click) *Crack Attack.app*, choose **Open**, then
