@@ -28,7 +28,7 @@ jobs:
     outputs:
       version: ${{ steps.v.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: v
         name: Tag matches Cargo.toml version
         run: |
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: System dependencies (SDL3 built from source, ALSA)
         run: |
           sudo apt-get update
@@ -83,7 +83,7 @@ jobs:
       # Oldest macOS announced in Info.plist (LSMinimumSystemVersion); ignored on other systems.
       MACOSX_DEPLOYMENT_TARGET: '11.0'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: System dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
@@ -177,7 +177,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
         with:
           path: dist
