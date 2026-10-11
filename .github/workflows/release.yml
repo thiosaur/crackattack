@@ -10,11 +10,16 @@
 #    packages, is the last step and the one that makes the version visible.
 #
 # A platform that fails blocks the whole release (no partial release).
+#
+# Run by hand (Actions → Release → Run workflow), the same pipeline builds every package of the
+# Cargo.toml version and keeps them as workflow artifacts, without any release: a way to try a
+# packaging change before tagging.
 name: Release
 
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -33,7 +38,7 @@ jobs:
         name: Tag matches Cargo.toml version
         run: |
           version=$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\(.*\)"/\1/p' Cargo.toml)
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "v$version" != "$GITHUB_REF_NAME" ]; then
             echo "::error::tag $GITHUB_REF_NAME does not match Cargo.toml version $version"
             exit 1
           fi
@@ -162,6 +167,13 @@ jobs:
             test -f "$app/Contents/Resources/assets/textures/ui/logo.png"
             test -s "$app/Contents/Resources/AppIcon.icns"
             (cd dist && ditto -c -k --keepParent "$name" "$name.zip")
+            # Disk image: the app next to a link to Applications, to drag it there.
+            stage="$RUNNER_TEMP/dmg"
+            mkdir -p "$stage"
+            ditto "$app" "$stage/Crack Attack.app"
+            ln -s /Applications "$stage/Applications"
+            cp LICENSE README.md "$stage/"
+            hdiutil create -volname "Crack Attack" -srcfolder "$stage" -ov -format UDZO "dist/$name.dmg"
           else
             mkdir -p "dist/$name"
             cp "target/release/${{ matrix.exe }}" "dist/$name/"
@@ -172,9 +184,33 @@ jobs:
               (cd dist && 7z a -tzip "$name.zip" "$name" > /dev/null)
             else
               tar -C dist -czf "dist/$name.tar.gz" "$name"
+              # AppImage: one executable file. The game reads its data next to its binary.
+              appdir="$RUNNER_TEMP/CrackAttack.AppDir"
+              mkdir -p "$appdir/usr/lib/crackattack"
+              cp target/release/crackattack "$appdir/usr/lib/crackattack/"
+              cp -R crackattack-webgpu/assets "$appdir/usr/lib/crackattack/assets"
+              cp packaging/linux/crackattack.desktop "$appdir/"
+              cp crackattack-webgpu/assets/textures/ui/app_icon.png "$appdir/crackattack.png"
+              printf '%s\n' '#!/bin/sh' 'exec "$(dirname "$(readlink -f "$0")")/usr/lib/crackattack/crackattack" "$@"' > "$appdir/AppRun"
+              chmod +x "$appdir/AppRun"
+              curl -fsSL -o "$RUNNER_TEMP/appimagetool" \
+                https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage
+              echo "ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0  $RUNNER_TEMP/appimagetool" | sha256sum -c -
+              chmod +x "$RUNNER_TEMP/appimagetool"
+              ARCH=x86_64 APPIMAGE_EXTRACT_AND_RUN=1 "$RUNNER_TEMP/appimagetool" "$appdir" "dist/$name.AppImage"
             fi
           fi
           ls -l dist
+
+      - name: Installer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $name = "crackattack-$env:VERSION-${{ matrix.platform }}"
+          magick crackattack-webgpu/assets/textures/ui/app_icon.png -define icon:auto-resize=256,128,64,48,32,16 "dist/$name/AppIcon.ico"
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /Q "/DAppVersion=$env:VERSION" "/DSourceDir=$PWD\dist\$name" "/DOutputDir=$PWD\dist" "/DOutputBase=$name-setup" packaging\windows\crackattack.iss
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          Get-ChildItem dist
 
       - uses: actions/upload-artifact@v6
         with:
@@ -182,10 +218,14 @@ jobs:
           path: |
             dist/*.zip
             dist/*.tar.gz
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*-setup.exe
           retention-days: 7
 
   draft:
     needs: [check-tag, build]
+    if: github.event_name == 'push'
     runs-on: ubuntu-22.04
     permissions:
       contents: write
@@ -203,21 +243,23 @@ jobs:
           cat > notes.md <<'EOF'
           ## Downloads
 
-          | System | Package |
-          |---|---|
-          | Linux (x86_64) | `crackattack-VERSION-linux-x86_64.tar.gz` |
-          | Windows (x86_64) | `crackattack-VERSION-windows-x86_64.zip` |
-          | macOS (Apple Silicon) | `crackattack-VERSION-macos-arm64.zip` |
+          | System | Installer | Archive |
+          |---|---|---|
+          | Windows (x86_64) | `crackattack-VERSION-windows-x86_64-setup.exe` | `crackattack-VERSION-windows-x86_64.zip` |
+          | macOS (Apple Silicon) | `crackattack-VERSION-macos-arm64.dmg` | `crackattack-VERSION-macos-arm64.zip` |
+          | Linux (x86_64) | `crackattack-VERSION-linux-x86_64.AppImage` | `crackattack-VERSION-linux-x86_64.tar.gz` |
 
-          Unpack anywhere and run. Your settings and scores are kept in your user folder.
+          The Windows installer needs no administrator rights; the macOS disk image holds the
+          app, to drag into Applications; the AppImage runs as is (make it executable first).
+          Archives: unpack anywhere and run. Your settings and scores are kept in your user folder.
 
           **macOS:** the application is not signed by Apple, so macOS blocks it the first time:
           - macOS 15 or later: open *Crack Attack.app* once, then go to *System Settings →
             Privacy & Security* and click **Open Anyway**;
           - macOS 14 or earlier: right-click (or Control-click) *Crack Attack.app*, choose
             **Open**, then confirm;
-          - or, from a terminal, in the unpacked folder:
-            `xattr -dr com.apple.quarantine "Crack Attack.app"`
+          - or, from a terminal (adjust the path if the app is elsewhere):
+            `xattr -dr com.apple.quarantine "/Applications/Crack Attack.app"`
 
           ## Changes
 

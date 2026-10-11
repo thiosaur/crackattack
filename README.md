@@ -36,24 +36,30 @@ WebGPU renderer and SDL3. During a game, the music adapts to the pressure on you
 
 ## Download
 
-Ready-to-run packages for Linux, Windows and macOS are on the
-[Releases](../../releases) page. Each package contains the game and its data
-(textures, sounds, music); unpack it anywhere and run it.
+Ready-to-run packages for Windows, macOS and Linux are on the
+[Releases](../../releases) page, each as an installer and as a plain archive (unpack it
+anywhere and run it). Both contain the game and all its data.
 
-- **Linux** — `crackattack-<version>-linux-x86_64.tar.gz`, then run `./crackattack`. Uses the
-  usual desktop libraries (ALSA, X11 or Wayland) already present on most distributions.
-- **Windows** — `crackattack-<version>-windows-x86_64.zip`, then run `crackattack.exe`. Requires a
-  graphics card and driver that support DirectX 12 or Vulkan.
-- **macOS** — `crackattack-<version>-macos-arm64.zip` (Apple Silicon, macOS 11 or later). The
-  application is not signed by Apple, so macOS blocks it the first time:
+- **Windows** — `crackattack-<version>-windows-x86_64-setup.exe` installs the game for your user
+  (no administrator rights), with a Start menu entry and an uninstaller; or unpack
+  `crackattack-<version>-windows-x86_64.zip` and run `crackattack.exe`. Requires a graphics card
+  and driver that support DirectX 12 or Vulkan. Windows SmartScreen may warn the first time,
+  as the program is not signed: click **More info**, then **Run anyway**.
+- **macOS** — `crackattack-<version>-macos-arm64.dmg`: open it and drag *Crack Attack* into
+  *Applications* (or unpack the `.zip`). Apple Silicon, macOS 11 or later. The application is
+  not signed by Apple, so macOS blocks it the first time:
   - macOS 15 or later: open *Crack Attack.app* once, then go to *System Settings → Privacy &
     Security* and click **Open Anyway**;
   - macOS 14 or earlier: right-click (or Control-click) *Crack Attack.app*, choose **Open**, then
     confirm;
-  - or, from a terminal, in the unpacked folder:
-    `xattr -dr com.apple.quarantine "Crack Attack.app"`
+  - or, from a terminal (adjust the path if the app is elsewhere):
+    `xattr -dr com.apple.quarantine "/Applications/Crack Attack.app"`
 
   Afterwards it opens normally.
+- **Linux** — `crackattack-<version>-linux-x86_64.AppImage`: make it executable
+  (`chmod +x`, or in the file properties) and run it; or unpack
+  `crackattack-<version>-linux-x86_64.tar.gz` and run `./crackattack`. Uses the usual desktop
+  libraries (ALSA, X11 or Wayland) already present on most distributions.
 
 To update, just download the new package: your settings, scores and network ranking live in
 your user folder, not in the package (see [Your data](#your-data)).

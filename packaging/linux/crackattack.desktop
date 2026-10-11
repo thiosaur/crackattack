@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Crack Attack!
+Comment=Fast puzzle game: swap blocks, chain clears, bury your opponent under garbage
+Exec=crackattack
+Icon=crackattack
+Categories=Game;BlocksGame;
+Terminal=false
