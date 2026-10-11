@@ -90,7 +90,7 @@ compiler** (SDL3 is built from source and linked statically).
   (`brew install cmake`).
 - **Windows** — Visual Studio Build Tools (MSVC) and CMake.
 - **Linux (Debian/Ubuntu)** —
-  `sudo apt install cmake build-essential pkg-config libasound2-dev libx11-dev libxext-dev libwayland-dev libxkbcommon-dev libegl1-mesa-dev`
+  `sudo apt install cmake build-essential pkg-config libasound2-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libwayland-dev wayland-protocols libdecor-0-dev libegl1-mesa-dev libgles2-mesa-dev libdrm-dev libgbm-dev libdbus-1-dev libudev-dev`
 
 ```sh
 cargo run --release -p crackattack-webgpu
