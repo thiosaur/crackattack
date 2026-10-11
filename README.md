@@ -27,7 +27,9 @@ Ready-to-run packages for Linux, Windows and macOS are on the
   - macOS 15 or later: open *Crack Attack.app* once, then go to *System Settings → Privacy &
     Security* and click **Open Anyway**;
   - macOS 14 or earlier: right-click (or Control-click) *Crack Attack.app*, choose **Open**, then
-    confirm.
+    confirm;
+  - or, from a terminal, in the unpacked folder:
+    `xattr -dr com.apple.quarantine "Crack Attack.app"`
 
   Afterwards it opens normally.
 
