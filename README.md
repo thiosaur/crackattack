@@ -6,7 +6,8 @@
 
 <p align="center">
   <b>Swap blocks, chain clears, bury your opponent under garbage.</b><br>
-  The classic puzzle game, rewritten in Rust, with music that follows the pressure on your stack.
+  The classic puzzle game, rewritten in Rust, with music that follows the pressure on your stack.<br>
+  In the tradition of Nintendo's <i>Panel de Pon</i>, <i>Tetris Attack</i> and <i>Pokémon Puzzle League</i>.
 </p>
 
 <p align="center">
