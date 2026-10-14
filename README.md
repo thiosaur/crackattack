@@ -11,6 +11,10 @@
 </p>
 
 <p align="center">
+  <a href="https://thiosaur.github.io/crackattack/"><img alt="Visit the website: learn to play, see the modes, download" src="https://img.shields.io/badge/%E2%96%B6%20VISIT%20THE%20WEBSITE-learn%20to%20play%20%C2%B7%20see%20it%20in%20action-e8590c?style=for-the-badge"></a>
+</p>
+
+<p align="center">
   <a href="../../releases/latest"><img alt="Download" src="https://img.shields.io/github/v/release/thiosaur/crackattack?label=download&color=2ea44f"></a>
   <img alt="Linux, Windows, macOS" src="https://img.shields.io/badge/platforms-Linux%20%7C%20Windows%20%7C%20macOS-blue">
   <a href="LICENSE"><img alt="License: GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-orange"></a>
