@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crack Attack! — бесплатная головоломка в духе Tetris Attack</title>
+<meta name="description" content="Crack Attack! — бесплатная головоломка-дуэль по мотивам Tetris Attack и Panel de Pon: меняй блоки местами, собирай тройки, строй цепочки и засыпай соперника мусором. Windows, macOS, Linux.">
+<meta name="theme-color" content="#05030b">
+<link rel="canonical" href="https://thiosaur.github.io/crackattack/ru/">
+<link rel="alternate" hreflang="en" href="https://thiosaur.github.io/crackattack/">
+<link rel="alternate" hreflang="fr" href="https://thiosaur.github.io/crackattack/fr/">
+<link rel="alternate" hreflang="de" href="https://thiosaur.github.io/crackattack/de/">
+<link rel="alternate" hreflang="es" href="https://thiosaur.github.io/crackattack/es/">
+<link rel="alternate" hreflang="ru" href="https://thiosaur.github.io/crackattack/ru/">
+<link rel="alternate" hreflang="zh-Hans" href="https://thiosaur.github.io/crackattack/zh/">
+<link rel="alternate" hreflang="ja" href="https://thiosaur.github.io/crackattack/ja/">
+<link rel="alternate" hreflang="ko" href="https://thiosaur.github.io/crackattack/ko/">
+<link rel="alternate" hreflang="pl" href="https://thiosaur.github.io/crackattack/pl/">
+<link rel="alternate" hreflang="tr" href="https://thiosaur.github.io/crackattack/tr/">
+<link rel="alternate" hreflang="it" href="https://thiosaur.github.io/crackattack/it/">
+<link rel="alternate" hreflang="x-default" href="https://thiosaur.github.io/crackattack/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Crack Attack!">
+<meta property="og:title" content="Crack Attack! — бесплатная головоломка в духе Tetris Attack">
+<meta property="og:description" content="Бесплатная дуэль-головоломка по мотивам Tetris Attack и Panel de Pon. Меняй, собирай цепочки, засыпай соперника мусором.">
+<meta property="og:url" content="https://thiosaur.github.io/crackattack/ru/">
+<meta property="og:image" content="https://thiosaur.github.io/crackattack/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="it_IT">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Crack Attack! — бесплатная головоломка в духе Tetris Attack">
+<meta name="twitter:description" content="Бесплатная дуэль-головоломка по мотивам Tetris Attack и Panel de Pon. Меняй, собирай цепочки, засыпай соперника мусором.">
+<meta name="twitter:image" content="https://thiosaur.github.io/crackattack/assets/og.png">
+<link rel="icon" href="../assets/ui/logo.png">
+<link rel="stylesheet" href="../css/style.css?v=e89368be">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":["VideoGame","SoftwareApplication"],"name":"Crack Attack!","url":"https://thiosaur.github.io/crackattack/ru/","inLanguage":"ru","description":"Crack Attack! — бесплатная головоломка-дуэль по мотивам Tetris Attack и Panel de Pon: меняй блоки местами, собирай тройки, строй цепочки и засыпай соперника мусором. Windows, macOS, Linux.","image":"https://thiosaur.github.io/crackattack/assets/og.png","applicationCategory":"GameApplication","genre":"Puzzle","operatingSystem":"Windows, macOS, Linux","license":"https://www.gnu.org/licenses/gpl-3.0.html","author":{"@type":"Person","name":"Daniel Nelson"},"isBasedOn":{"@type":"VideoGame","name":"Tetris Attack"},"codeRepository":"https://github.com/thiosaur/crackattack","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+</head>
+<body>
+<a class="skip" href="#learn">Перейти к содержимому</a>
+
+<header class="nav-wrap">
+  <nav class="nav" aria-label="Главное меню">
+    <a class="brand" href="#top"><img src="../assets/ui/logo.png" alt="" width="40" height="34"><span>Crack Attack!</span></a>
+    <div class="links">
+      <a href="#learn">Как играть</a>
+      <a href="#modes">Режимы</a>
+      <a href="#controls">Управление</a>
+      <a href="#tips">Советы</a>
+      <a href="#gallery">Галерея</a>
+      <a href="#reviews">Отзывы</a>
+    </div>
+    <a class="btn primary nav-dl" href="#get">Скачать</a>
+    <details class="lang-menu">
+      <summary aria-label="Язык"><span aria-hidden="true">🌐</span><b>RU</b></summary>
+      <ul>
+        <li><a href="../" hreflang="en" lang="en">English</a></li>
+        <li><a href="../fr/" hreflang="fr" lang="fr">Français</a></li>
+        <li><a href="../de/" hreflang="de" lang="de">Deutsch</a></li>
+        <li><a href="../es/" hreflang="es" lang="es">Español</a></li>
+        <li><a href="../ru/" hreflang="ru" lang="ru" aria-current="true">Русский</a></li>
+        <li><a href="../zh/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a></li>
+        <li><a href="../ja/" hreflang="ja" lang="ja">日本語</a></li>
+        <li><a href="../ko/" hreflang="ko" lang="ko">한국어</a></li>
+        <li><a href="../pl/" hreflang="pl" lang="pl">Polski</a></li>
+        <li><a href="../tr/" hreflang="tr" lang="tr">Türkçe</a></li>
+        <li><a href="../it/" hreflang="it" lang="it">Italiano</a></li>
+      </ul>
+    </details>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- ============================ HERO ============================ -->
+<section id="top" class="hero">
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <img class="hero-logo" src="../assets/ui/logo.png" alt="Crack Attack!" width="420" height="357">
+    <h1 class="tagline">Меняй. Убирай. <span class="grad">Цепочки.</span> Круши.</h1>
+    <p class="lead">Быстрая дуэль-головоломка. Собирай блоки в ряды, запускай цепочки и засыпай соперника лавиной мусора — пока твоя собственная стопка не дошла до верха.</p>
+    <div class="cta">
+      <a class="btn primary big" href="#get">Скачать · бесплатно</a>
+      <a class="btn" href="#learn">Научиться играть</a>
+      <a class="btn" href="#learn" data-tab="attacks">Как работают атаки</a>
+    </div>
+    <ul class="facts">
+      <li><strong>Бесплатно</strong>, с открытым исходным кодом</li>
+      <li><strong>Соло</strong>, против компьютера или против друга</li>
+      <li>Легко освоить, <strong>трудно довести до мастерства</strong></li>
+      <li>Для <strong>Windows, macOS и Linux</strong></li>
+    </ul>
+  </div>
+  <a class="scroll-hint" href="#origin" aria-label="Прокрути к урокам"><span></span></a>
+</section>
+
+<!-- ============================ ORIGIN ============================ -->
+<section id="origin" class="origin">
+  <div class="wrap narrow center">
+    <h2 class="reveal">По мотивам Tetris Attack и Panel de Pon</h2>
+    <p class="reveal">Crack Attack! создана под влиянием <em>Tetris Attack</em> — головоломки Nintendo для Super Nintendo, которая была западным изданием японской <em>Panel de Pon</em>. Основная идея та же: меняй блоки местами в стопке, которая не перестаёт расти, строй цепочки и отправляй мусор сопернику. Daniel Nelson создал Crack Attack! как свободное программное обеспечение; эта версия — полностью переписанная на Rust.</p>
+  </div>
+</section>
+
+<!-- ============================ LEARN ============================ -->
+<section id="learn" class="section">
+  <div class="wrap">
+    <h2 class="reveal">Как играть</h2>
+    <p class="section-lead reveal">Семь коротких уроков. Выбери любой или листай стрелками. Каждая демонстрация идёт по кругу с несколькими примерами; остановить её можно кнопкой.</p>
+
+    <div class="tabs" role="tablist" aria-label="Уроки">
+      <button class="tab" role="tab" id="t-swap" data-tab="swap" aria-controls="tab-swap"><b>1</b><span>Курсор</span></button>
+      <button class="tab" role="tab" id="t-lines" data-tab="lines" aria-controls="tab-lines"><b>2</b><span>Ряды</span></button>
+      <button class="tab" role="tab" id="t-chain" data-tab="chain" aria-controls="tab-chain"><b>3</b><span>Цепочки</span></button>
+      <button class="tab" role="tab" id="t-garbage" data-tab="garbage" aria-controls="tab-garbage"><b>4</b><span>Мусор</span></button>
+      <button class="tab" role="tab" id="t-danger" data-tab="danger" aria-controls="tab-danger"><b>5</b><span>Верх поля</span></button>
+      <button class="tab" role="tab" id="t-gray" data-tab="gray" aria-controls="tab-gray"><b>6</b><span>Серые блоки</span></button>
+      <button class="tab" role="tab" id="t-attacks" data-tab="attacks" aria-controls="tab-attacks"><b>7</b><span>Размеры атак</span></button>
+    </div>
+    <div class="stage">
+    <div class="tabpanel" id="tab-swap" role="tabpanel" aria-labelledby="t-swap" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">1</span>
+        <h3>Поле и курсор</h3>
+        <p>Игровое поле в шесть блоков шириной. <strong>Курсор</strong> всегда накрывает <strong>два соседних блока</strong>. Перемещай его по полю и меняй местами два блока под ним.</p>
+        <p>Блок можно поменять и с пустым местом: он сдвинется туда, а затем упадёт, если под ним ничего нет.</p>
+      </div>
+      <div class="demo-card" data-lesson="swap" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Зацикленный урок: курсор меняет два соседних блока, затем сдвигает блок в пустое место"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Пауза</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-lines" role="tabpanel" aria-labelledby="t-lines" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">2</span>
+        <h3>Собери три — или больше</h3>
+        <p>Выстрой <strong>три или больше блоков одного цвета</strong> в ряд — по горизонтали или по вертикали — и они исчезнут.</p>
+        <ul class="gems">
+          <li><i class="gem purple"></i><i class="gem green"></i><i class="gem yellow"></i><i class="gem orange"></i><i class="gem blue"></i> пять цветов для совпадений</li>
+          <li>Стопка постоянно <strong>поднимается снизу</strong>, поэтому убирать блоки — значит оставаться в игре.</li>
+        </ul>
+        <p><strong>Убери сразу четыре, пять или больше</strong> — длинным рядом или пересекающимися рядами — и ты отправишь сопернику <strong>мусор</strong>. Чем больше убрано, тем больше мусора. <a href="#learn" data-tab="attacks">Смотри размеры.</a></p>
+      </div>
+      <div class="demo-card" data-lesson="lines" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Зацикленный урок: ряды из трёх блоков по горизонтали и вертикали, затем четыре и пять блоков, отправляющие мусор"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Пауза</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-chain" role="tabpanel" aria-labelledby="t-chain" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">3</span>
+        <h3>Цепочки: пусть тебе помогает гравитация</h3>
+        <p>Когда блоки исчезают, всё, что над ними, падает. Если падающие блоки сами выстраиваются в ряд, происходит ещё одно исчезновение — и получается <strong>цепочка</strong>. Второе исчезновение даёт <strong>x2</strong>, третье — <strong>x3</strong>, и так далее.</p>
+        <ul>
+          <li>В режиме «Соло» <strong>все очки</strong> цепочки умножаются на её множитель.</li>
+          <li>В дуэли законченная цепочка отправляет сопернику один большой блок мусора: чем длиннее цепочка, тем он выше.</li>
+        </ul>
+        <aside class="note"><strong>Пара слов о терминах.</strong> В этой игре <em>цепочка</em> — это серия исчезновений, которые следуют друг за другом сами, а <em>комбо</em> — это когда за один раз убирают сразу несколько блоков. В старых руководствах цепочку называют «комбо».</aside>
+      </div>
+      <div class="demo-card" data-lesson="chain" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Зацикленный урок: одна перестановка запускает цепочку из двух, затем из трёх исчезновений"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Пауза</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-garbage" role="tabpanel" aria-labelledby="t-garbage" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">4</span>
+        <h3>Мусор: когда атакуют тебя</h3>
+        <p>Мусор — это <strong>большая плита</strong>, которая падает на твою стопку. Убрать её напрямую нельзя, но если убрать любой блок, <strong>касающийся её</strong>, она <strong>рассыплется</strong> на обычные блоки.</p>
+        <p>Мусор, касающийся другого мусора, рассыпается вместе с ним. Это часто помогает вернуться в игру: новые блоки могут упасть и составить новые ряды.</p>
+      </div>
+      <div class="demo-card" data-lesson="garbage" style="--ratio: 7.2 / 7.2">
+        <canvas role="img" aria-label="Зацикленный урок: плиты мусора разных размеров падают на стопку и рассыпаются, когда убирают соседний блок"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Пауза</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-danger" role="tabpanel" aria-labelledby="t-danger" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">5</span>
+        <h3>Не дойди до верха</h3>
+        <p>Стопка поднимается всё быстрее. <strong>Огни по бокам</strong> показывают, насколько она высока. Когда стопка доходит до верха, она останавливается, и у тебя есть <strong>семь секунд</strong>, чтобы её опустить, — иначе ты проиграешь.</p>
+        <ul>
+          <li>Пока убираешь блоки, <strong>подъём приостанавливается</strong>, и обратный отсчёт не идёт, пока блоки исчезают.</li>
+          <li>Нет подходящих ходов? <strong>Удерживай Enter</strong>, чтобы поднять стопку быстрее.</li>
+        </ul>
+      </div>
+      <div class="demo-card" data-lesson="danger" style="--ratio: 7.2 / 10.2">
+        <canvas role="img" aria-label="Зацикленный урок: стопка поднимается до верха, начинается отсчёт семи секунд, один раз её удаётся спасти и один раз нет"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Пауза</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-gray" role="tabpanel" aria-labelledby="t-gray" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">6</span>
+        <h3>Редкий серый блок</h3>
+        <p>Время от времени появляется <strong>серый блок</strong>. Он исчезает как остальные, в рядах из трёх и более, но особенный: его уборка отправляет <strong>серый мусор на всю ширину</strong>.</p>
+        <p>Серый мусор не рассыпается вместе с обычным. Он разбивается, только если убираемый ряд касается его <strong>напрямую</strong>.</p>
+      </div>
+      <div class="demo-card" data-lesson="gray" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Зацикленный урок: три серых блока отправляют серый мусор, а серый мусор остаётся, когда обычный рассыпается"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Пауза</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-attacks" role="tabpanel" aria-labelledby="t-attacks" hidden>
+      <h3 class="panel-title">Сколько ты отправляешь?</h3>
+      <p class="section-lead">В дуэли всё, что ты убираешь, падает на соперника в виде мусора. Попробуй ползунки — размеры взяты из самой игры.</p>
+    <div id="calc" class="calc">
+      <div class="calc-col">
+        <h3>Блоков убрано сразу</h3>
+        <label for="calc-n">Блоков убрано вместе: <output id="calc-n-out">4</output></label>
+        <input id="calc-n" type="range" min="3" max="16" value="4">
+        <div class="calc-strip" id="calc-pieces" aria-live="polite"></div>
+        <p id="calc-piece-text" class="calc-text"></p>
+        <p class="fine">Каждая плита высотой в один ряд. Ряд из 4 блоков отправляет 3 блока мусора; начиная с 7 блоков мусор делится на части.</p>
+      </div>
+      <div class="calc-col">
+        <h3>Завершение цепочки</h3>
+        <label for="calc-c">Длина цепочки: <output id="calc-c-out">x2</output></label>
+        <input id="calc-c" type="range" min="1" max="13" value="2">
+        <div class="calc-strip tall" id="calc-chain" aria-live="polite"></div>
+        <p id="calc-chain-text" class="calc-text"></p>
+        <p class="fine">Цепочка x<em>n</em> отправляет один блок на всю ширину высотой <em>n − 1</em> рядов (не больше 11). Цепочки — самая сильная атака в игре.</p>
+      </div>
+    </div>
+    </div>
+    </div>
+    <div class="tab-nav">
+      <button class="btn" data-step="-1">← Назад</button>
+      <button class="btn primary" data-step="1">Далее →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ MODES ============================ -->
+<section id="modes" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">Режимы игры</h2>
+    <div class="cards">
+      <article class="card reveal">
+        <i class="gem purple big"></i>
+        <h3>Соло</h3>
+        <p>Набери как можно больше очков, пока стопка не победила. Крупные уборки и длинные цепочки стоят дороже, но твои собственные мощные атаки возвращаются к тебе, так что нужно искать баланс. Лучший результат сохраняется.</p>
+      </article>
+      <article class="card reveal">
+        <i class="gem orange big"></i>
+        <h3>Против компьютера</h3>
+        <p>Дуэль с компьютером на трёх уровнях сложности: <strong>лёгкий</strong>, <strong>средний</strong> и <strong>сложный</strong>. Лучшее место, чтобы потренировать цепочки перед встречей с человеком.</p>
+      </article>
+      <article class="card reveal">
+        <i class="gem blue big"></i>
+        <h3>Против друга</h3>
+        <p>Брось вызов кому-нибудь в <strong>локальной сети</strong> или подключись напрямую, введя его адрес. Раунд выигрывает тот, чья стопка устоит последней.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CONTROLS ============================ -->
+<section id="controls" class="section">
+  <div class="wrap narrow">
+    <h2 class="reveal">Управление</h2>
+    <p class="section-lead reveal">Клавиатура или геймпад. Клавиши можно изменить в настройках.</p>
+    <table class="controls reveal">
+      <thead><tr><th>Действие</th><th>Клавиатура</th><th>Геймпад</th></tr></thead>
+      <tbody>
+        <tr><td>Переместить курсор</td><td><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></td><td>Крестовина или левый стик</td></tr>
+        <tr><td>Поменять два блока</td><td><kbd>Пробел</kbd></td><td><kbd>A</kbd> / <kbd>✕</kbd></td></tr>
+        <tr><td>Поднять стопку</td><td><kbd>Enter</kbd></td><td><kbd>X</kbd> / <kbd>□</kbd></td></tr>
+        <tr><td>Пауза</td><td><kbd>P</kbd> или <kbd>Esc</kbd></td><td><kbd>Start</kbd></td></tr>
+      </tbody>
+    </table>
+    <p class="fine center reveal">Crack Attack! — компьютерная игра: в неё играют с клавиатурой или геймпадом.</p>
+  </div>
+</section>
+
+<!-- ============================ TIPS ============================ -->
+<section id="tips" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">Играй умнее</h2>
+    <div class="cards tips">
+      <article class="card reveal"><i class="gem green"></i><h3>Убирай, чтобы выдохнуть</h3><p>Пока блоки исчезают, стопка не поднимается. Когда трудно, любая уборка даёт тебе время.</p></article>
+      <article class="card reveal"><i class="gem yellow"></i><h3>Думай цепочками</h3><p>Расставляй блоки так, чтобы одна уборка роняла другие блоки в новый ряд. Цепочка x4 отправляет три полных ряда.</p></article>
+      <article class="card reveal"><i class="gem orange"></i><h3>Рассыпай мусор намеренно</h3><p>Когда мусор разбивается, он превращается в блоки. Убирай рядом с ним и дай новым блокам упасть на нужные места.</p></article>
+      <article class="card reveal"><i class="gem purple"></i><h3>Держи стопку низко</h3><p>Низкая ровная стопка оставляет время подумать. Не жди последних секунд.</p></article>
+      <article class="card reveal"><i class="gem blue"></i><h3>Поднимай, когда нет ходов</h3><p>Нет рядов на горизонте? Удерживай Enter, чтобы поднять новые блоки, вместо того чтобы ждать.</p></article>
+      <article class="card reveal"><i class="gem gray"></i><h3>Следи за серым</h3><p>Серый мусор не поддаётся рассыпанию, которое уничтожает обычный. Планируй задеть его напрямую.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ GALLERY ============================ -->
+<section id="gallery" class="section">
+  <div class="wrap">
+    <h2 class="reveal">В игре</h2>
+    <div class="gallery">
+      <figure class="reveal"><img src="../assets/shots/solo-chain-sign.jpg" alt="Стопка цветных блоков и крупное число, всплывающее над уборкой" width="820" height="820" loading="lazy"><figcaption>Блоки исчезают, а табличка показывает размер уборки.</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/danger-stack.jpg" alt="Высокая стопка почти у верха, огни уровня по бокам горят" width="820" height="820" loading="lazy"><figcaption>Опасность! Огни по бокам предупреждают, что стопка высока.</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/vs-garbage-shatter.jpg" alt="Мусор рассыпается на красные самоцветы над стопкой в дуэли" width="820" height="820" loading="lazy"><figcaption>Дуэль: мусор рассыпается на красные самоцветы.</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/vs-garbage-awaking.jpg" alt="Блоки, освобождённые из рассыпавшегося мусора, обретают цвет" width="820" height="820" loading="lazy"><figcaption>Рассыпавшийся мусор превращается в блоки, которые обретают цвет.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ REVIEWS ============================ -->
+<section id="reviews" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">Что говорят люди</h2>
+    <p class="section-lead reveal">Журналы и сайты рекомендуют Crack Attack! почти двадцать лет.</p>
+    <div class="quotes">
+      <blockquote class="quote big reveal">
+        <p lang="en">The graphics and gameplay are simple, but it’s so criminally addictive that you won’t care.</p>
+        <footer>журнал <cite>Atomic</cite>, выпуск 61, 2006 · <a href="https://archive.org/details/atomic-061/page/68" hreflang="en">читать</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Two-player Crack Attack games are about as much fun as you can have with your Linux box.</p>
+        <footer><cite>Linux Starter Pack</cite> (<cite>Linux Format</cite>), 2008 · <a href="https://archive.org/details/manualzilla-id-5971019/page/60" hreflang="en">читать</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">If I can mention only one classic puzzle game, it has to be Crack-Attack.</p>
+        <footer>журнал <cite>Atomic</cite>, выпуск 85, 2008 · <a href="https://archive.org/details/atomic-085" hreflang="en">читать</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">An excellent, fast paced puzzle game… the game play is really addictive and polished.</p>
+        <footer><cite>Acid Play</cite>, оценка 8,5/10 · <a href="https://web.archive.org/web/20081221153303/http://www.acid-play.com/download/crack-attack/" hreflang="en">читать</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Learning time is minimal, of course, but the fun is guaranteed.</p>
+        <details class="orig"><summary>Перевод на английский</summary><p lang="it">Il tempo di apprendimento necessario è ovviamente minimo, ma il divertimento è assicurato</p><small>Оригинал (итальянский)</small></details>
+        <footer><cite>PC Professionale</cite> (Италия), 2010 · <a href="https://archive.org/details/pcprofessionale233/page/103" hreflang="it">читать</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Crack-Attack, a free Tetris clone, and Neverball stand out for their cool sound and nice 3D graphics.</p>
+        <details class="orig"><summary>Перевод на английский</summary><p lang="de">Crack-Attack, ein freier Tetris-Klon, und das Geschicklichkeitsspiel Neverball zeichnen sich durch coolen Sound und schicke 3D-Grafik aus</p><small>Оригинал (немецкий)</small></details>
+        <footer><cite>c’t</cite> (Германия), 2008 · <a href="https://archive.org/details/ct0825_202310/ct0806" hreflang="de">читать</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Linux Format had two unofficial-official games of choice… Unreal Tournament and the less resource-hungry Crack Attack.</p>
+        <footer><cite>Linux Format</cite>, последний выпуск, 2025 · <a href="https://archive.org/details/linux-format-july-2025-final-issue/page/8" hreflang="en">читать</a></footer>
+      </blockquote>
+    </div>
+    <p class="fine center reveal">Цитаты — короткие отрывки с указанием источников, на языке оригинала. Если мы сами перевели цитату на русский, исходный текст доступен одним касанием.</p>
+  </div>
+</section>
+
+<!-- ============================ GET ============================ -->
+<section id="get" class="section dl">
+  <div class="wrap narrow center">
+    <h2 class="reveal">Скачать Crack Attack!</h2>
+    <p class="section-lead reveal">Бесплатно, с открытым исходным кодом (GPL-3.0). <span id="dl-version">Последняя версия</span> — соло, против компьютера и против друга по сети.</p>
+    <div class="dl-grid reveal">
+      <a class="dl-card" data-os="macos" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>macOS</strong><span>Apple Silicon · .zip</span></a>
+      <a class="dl-card" data-os="windows" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>Windows</strong><span>64-бит · .zip</span></a>
+      <a class="dl-card" data-os="linux" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>Linux</strong><span>x86_64 · .tar.gz</span></a>
+    </div>
+    <p class="desktop-note reveal">Crack Attack! — <strong>компьютерная игра</strong>: скачай её на компьютер с Windows, macOS или Linux. Версии для телефона или планшета нет.</p>
+    <p class="fine reveal">В ранних версиях возможны шероховатости. <a href="https://github.com/thiosaur/crackattack/releases/latest">Заметки о выпуске</a> · <a href="https://github.com/thiosaur/crackattack">Исходный код</a></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p><strong>Crack Attack!</strong> создал Daniel Nelson, и она распространяется как свободное программное обеспечение по лицензии GNU General Public License. Игра продолжает традицию серии <em>Panel de Pon</em> от Nintendo, известной на Западе как <em>Tetris Attack</em> на Super Nintendo и <em>Pokémon Puzzle League</em> на Nintendo 64.</p>
+    <p class="fine">Прочитать оригинальные страницы: <a href="https://aluminumangel.org/attack/">aluminumangel.org/attack</a> · <a href="https://www.nongnu.org/crack-attack/game_play.html">nongnu.org/crack-attack</a>. Анимации на этой странице — упрощённая модель игры, созданная для объяснения.</p>
+    <p class="fine">Tetris Attack, Panel de Pon и Pokémon Puzzle League являются товарными знаками их владельцев; этот сайт с ними не связан.</p>
+    <nav class="lang-footer" aria-label="Языки">
+      <a href="../" hreflang="en" lang="en">English</a>
+      <a href="../fr/" hreflang="fr" lang="fr">Français</a>
+      <a href="../de/" hreflang="de" lang="de">Deutsch</a>
+      <a href="../es/" hreflang="es" lang="es">Español</a>
+      <a href="../ru/" hreflang="ru" lang="ru" aria-current="true">Русский</a>
+      <a href="../zh/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a>
+      <a href="../ja/" hreflang="ja" lang="ja">日本語</a>
+      <a href="../ko/" hreflang="ko" lang="ko">한국어</a>
+      <a href="../pl/" hreflang="pl" lang="pl">Polski</a>
+      <a href="../tr/" hreflang="tr" lang="tr">Türkçe</a>
+      <a href="../it/" hreflang="it" lang="it">Italiano</a>
+    </nav>
+  </div>
+</footer>
+
+<noscript><p class="noscript">Для анимированных уроков нужен JavaScript. Правила по-прежнему написаны рядом с каждым из них.</p></noscript>
+<script type="application/json" id="i18n">{"js.pause":"Пауза","js.play":"Запуск","js.reduced":"Анимации остановлены. Нажми «Запуск», чтобы посмотреть этот урок.","js.sent":"Отправляется сопернику:","js.slab":"ширина {w}, высота {h}","js.version":"Версия {v}","js.beta":"(бета)","js.swap.c1":"Курсор накрывает два блока рядом.","js.swap.c2":"Поменяй их: блоки обмениваются местами.","js.swap.c3":"Двигайся куда угодно и меняй снова.","js.swap.c4":"Блок можно поменять и с пустым местом...","js.swap.c5":"...он сдвинется туда и упадёт, если под ним пусто.","js.lines.big":"Блоков сразу: {n}! Чем больше уборка, тем больше мусора ты отправишь.","js.lines.i1":"Выстрой три блока одного цвета в ряд...","js.lines.o1":"...и они вспыхнут и исчезнут.","js.lines.i2":"...или три в столбец.","js.lines.o2":"Ряды из трёх и более исчезают — по горизонтали и по вертикали.","js.lines.i3":"Убери больше трёх сразу — и отправишь мусор. Здесь четыре в столбце.","js.lines.i4":"Пересекающиеся ряды считаются вместе: эта перестановка убирает пять блоков.","js.chain.i1":"Одна перестановка запускает всё.","js.chain.i2":"Возможны и более длинные цепочки: смотри ту же перестановку...","js.chain.i3":"А вот ещё одна длинная.","js.chain.w1":"Три исчезли. Блоки сверху падают в пустоту...","js.chain.w2":"...и выстраиваются сами: второе исчезновение, бесплатно!","js.chain.w3":"...и снова: третье!","js.chain.end":"Цепочка x{m}: отправляет плиту мусора на всю ширину (высота: {rows}) и умножает твои очки.","js.garbage.i1":"Когда соперник атакует, плита мусора падает на твою стопку.","js.garbage.i2":"Мусор бывает разных размеров. Этот — шириной в три блока.","js.garbage.i3":"Большая цепочка отправляет более высокую плиту. Она разбивается так же.","js.garbage.c1":"Убрать её напрямую нельзя. Убери блоки, которые её касаются...","js.garbage.c2":"...и она рассыплется на обычные блоки!","js.danger.1":"Твоя стопка постоянно поднимается снизу. Огни по бокам показывают её высоту.","js.danger.2":"Наверху она останавливается, и у тебя семь секунд!","js.danger.3":"Опусти высокий столбец: сдвинь его верхний блок в сторону.","js.danger.4":"Спасён! Уборка блоков ещё и останавливает подъём и отсчёт.","js.danger.5":"Если ничего не делать, стопка дойдёт до верха...","js.danger.6":"...и когда семь секунд истекут, ты проиграешь.","js.danger.7":"Удерживай Enter, чтобы поднять стопку быстрее, когда ходы закончились.","js.gray.1":"Серые блоки редки. Они исчезают как остальные, в рядах из трёх и более.","js.gray.2":"Три серых блока отправляют целый ряд серого мусора.","js.gray.3":"Серый мусор (сверху) лежит на обычном мусоре.","js.gray.4":"Обычный мусор рассыпается. Серая плита остаётся: она разбивается, только если убираемый ряд касается её напрямую.","js.calc.min":"Три блока — минимум: мусора нет.","js.calc.one":"Один кусок мусора, ширина: {w}.","js.calc.many":"Кусков мусора: {n}, ширина: {list}.","js.calc.nochain":"Одно исчезновение — это не цепочка: ничего лишнего не отправляется.","js.calc.chain":"Один блок мусора на всю ширину, высота: {h}.","js.calc.chainmax":"Один блок мусора на всю ширину, высота: {h} (максимум)."}</script>
+<script src="../dist/site.js?v=8e9bc88f"></script>
+</body>
+</html>

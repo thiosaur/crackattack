@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crack Attack! — 免费的 Tetris Attack / Panel de Pon 式益智游戏</title>
+<meta name="description" content="Crack Attack! 是一款受 Tetris Attack 和 Panel de Pon 启发的免费益智对战游戏：交换方块，三个连成一线即可消除，打出连锁，用垃圾方块压垮对手。通过实时动画学会规则，支持 Windows、macOS、Linux。">
+<meta name="theme-color" content="#05030b">
+<link rel="canonical" href="https://thiosaur.github.io/crackattack/zh/">
+<link rel="alternate" hreflang="en" href="https://thiosaur.github.io/crackattack/">
+<link rel="alternate" hreflang="fr" href="https://thiosaur.github.io/crackattack/fr/">
+<link rel="alternate" hreflang="de" href="https://thiosaur.github.io/crackattack/de/">
+<link rel="alternate" hreflang="es" href="https://thiosaur.github.io/crackattack/es/">
+<link rel="alternate" hreflang="ru" href="https://thiosaur.github.io/crackattack/ru/">
+<link rel="alternate" hreflang="zh-Hans" href="https://thiosaur.github.io/crackattack/zh/">
+<link rel="alternate" hreflang="ja" href="https://thiosaur.github.io/crackattack/ja/">
+<link rel="alternate" hreflang="ko" href="https://thiosaur.github.io/crackattack/ko/">
+<link rel="alternate" hreflang="pl" href="https://thiosaur.github.io/crackattack/pl/">
+<link rel="alternate" hreflang="tr" href="https://thiosaur.github.io/crackattack/tr/">
+<link rel="alternate" hreflang="it" href="https://thiosaur.github.io/crackattack/it/">
+<link rel="alternate" hreflang="x-default" href="https://thiosaur.github.io/crackattack/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Crack Attack!">
+<meta property="og:title" content="Crack Attack! — 免费的 Tetris Attack / Panel de Pon 式益智游戏">
+<meta property="og:description" content="受 Tetris Attack 和 Panel de Pon 启发的免费益智对战游戏。交换、连锁，用垃圾方块压垮对手。支持 Windows、macOS、Linux。">
+<meta property="og:url" content="https://thiosaur.github.io/crackattack/zh/">
+<meta property="og:image" content="https://thiosaur.github.io/crackattack/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="it_IT">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Crack Attack! — 免费的 Tetris Attack / Panel de Pon 式益智游戏">
+<meta name="twitter:description" content="受 Tetris Attack 和 Panel de Pon 启发的免费益智对战游戏。交换、连锁，用垃圾方块压垮对手。支持 Windows、macOS、Linux。">
+<meta name="twitter:image" content="https://thiosaur.github.io/crackattack/assets/og.png">
+<link rel="icon" href="../assets/ui/logo.png">
+<link rel="stylesheet" href="../css/style.css?v=e89368be">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":["VideoGame","SoftwareApplication"],"name":"Crack Attack!","url":"https://thiosaur.github.io/crackattack/zh/","inLanguage":"zh-Hans","description":"Crack Attack! 是一款受 Tetris Attack 和 Panel de Pon 启发的免费益智对战游戏：交换方块，三个连成一线即可消除，打出连锁，用垃圾方块压垮对手。通过实时动画学会规则，支持 Windows、macOS、Linux。","image":"https://thiosaur.github.io/crackattack/assets/og.png","applicationCategory":"GameApplication","genre":"Puzzle","operatingSystem":"Windows, macOS, Linux","license":"https://www.gnu.org/licenses/gpl-3.0.html","author":{"@type":"Person","name":"Daniel Nelson"},"isBasedOn":{"@type":"VideoGame","name":"Tetris Attack"},"codeRepository":"https://github.com/thiosaur/crackattack","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+</head>
+<body>
+<a class="skip" href="#learn">跳到正文</a>
+
+<header class="nav-wrap">
+  <nav class="nav" aria-label="主导航">
+    <a class="brand" href="#top"><img src="../assets/ui/logo.png" alt="" width="40" height="34"><span>Crack Attack!</span></a>
+    <div class="links">
+      <a href="#learn">玩法</a>
+      <a href="#modes">模式</a>
+      <a href="#controls">操作</a>
+      <a href="#tips">技巧</a>
+      <a href="#gallery">画廊</a>
+      <a href="#reviews">评价</a>
+    </div>
+    <a class="btn primary nav-dl" href="#get">下载</a>
+    <details class="lang-menu">
+      <summary aria-label="语言"><span aria-hidden="true">🌐</span><b>ZH</b></summary>
+      <ul>
+        <li><a href="../" hreflang="en" lang="en">English</a></li>
+        <li><a href="../fr/" hreflang="fr" lang="fr">Français</a></li>
+        <li><a href="../de/" hreflang="de" lang="de">Deutsch</a></li>
+        <li><a href="../es/" hreflang="es" lang="es">Español</a></li>
+        <li><a href="../ru/" hreflang="ru" lang="ru">Русский</a></li>
+        <li><a href="../zh/" hreflang="zh-Hans" lang="zh-Hans" aria-current="true">简体中文</a></li>
+        <li><a href="../ja/" hreflang="ja" lang="ja">日本語</a></li>
+        <li><a href="../ko/" hreflang="ko" lang="ko">한국어</a></li>
+        <li><a href="../pl/" hreflang="pl" lang="pl">Polski</a></li>
+        <li><a href="../tr/" hreflang="tr" lang="tr">Türkçe</a></li>
+        <li><a href="../it/" hreflang="it" lang="it">Italiano</a></li>
+      </ul>
+    </details>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- ============================ HERO ============================ -->
+<section id="top" class="hero">
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <img class="hero-logo" src="../assets/ui/logo.png" alt="Crack Attack!" width="420" height="357">
+    <h1 class="tagline">交换。消除。<span class="grad">连锁。</span>碾压。</h1>
+    <p class="lead">节奏明快的益智对战。排列方块，引发连锁，用排山倒海的垃圾方块压垮对手——赶在你自己的方块堆顶到天花板之前。</p>
+    <div class="cta">
+      <a class="btn primary big" href="#get">下载 · 免费</a>
+      <a class="btn" href="#learn">学习玩法</a>
+      <a class="btn" href="#learn" data-tab="attacks">攻击是怎么算的</a>
+    </div>
+    <ul class="facts">
+      <li><strong>免费</strong>且开源</li>
+      <li><strong>单人</strong>、对战电脑，或与朋友对战</li>
+      <li>容易上手，<strong>难以精通</strong></li>
+      <li>支持 <strong>Windows、macOS 和 Linux</strong></li>
+    </ul>
+  </div>
+  <a class="scroll-hint" href="#origin" aria-label="向下滚动查看教程"><span></span></a>
+</section>
+
+<!-- ============================ ORIGIN ============================ -->
+<section id="origin" class="origin">
+  <div class="wrap narrow center">
+    <h2 class="reveal">灵感来自 Tetris Attack 和 Panel de Pon</h2>
+    <p class="reveal">Crack Attack! 最初的灵感来自 Nintendo 在 Super Nintendo 上发行的益智游戏 <em>Tetris Attack</em>，它其实是日本 <em>Panel de Pon</em> 的西方版本。核心玩法如出一辙：在不断上升的方块堆中交换方块，打出连锁，并向对手发送垃圾方块。Daniel Nelson 将 Crack Attack! 作为自由软件创作出来；当前版本是用 Rust 完全重写的。</p>
+  </div>
+</section>
+
+<!-- ============================ LEARN ============================ -->
+<section id="learn" class="section">
+  <div class="wrap">
+    <h2 class="reveal">玩法</h2>
+    <p class="section-lead reveal">七节简短的教程。可以直接选择，也可以用箭头切换。每个演示都会循环播放多个示例，可用按钮暂停。</p>
+
+    <div class="tabs" role="tablist" aria-label="教程">
+      <button class="tab" role="tab" id="t-swap" data-tab="swap" aria-controls="tab-swap"><b>1</b><span>光标</span></button>
+      <button class="tab" role="tab" id="t-lines" data-tab="lines" aria-controls="tab-lines"><b>2</b><span>连线</span></button>
+      <button class="tab" role="tab" id="t-chain" data-tab="chain" aria-controls="tab-chain"><b>3</b><span>连锁</span></button>
+      <button class="tab" role="tab" id="t-garbage" data-tab="garbage" aria-controls="tab-garbage"><b>4</b><span>垃圾</span></button>
+      <button class="tab" role="tab" id="t-danger" data-tab="danger" aria-controls="tab-danger"><b>5</b><span>顶部</span></button>
+      <button class="tab" role="tab" id="t-gray" data-tab="gray" aria-controls="tab-gray"><b>6</b><span>灰色方块</span></button>
+      <button class="tab" role="tab" id="t-attacks" data-tab="attacks" aria-controls="tab-attacks"><b>7</b><span>攻击大小</span></button>
+    </div>
+    <div class="stage">
+    <div class="tabpanel" id="tab-swap" role="tabpanel" aria-labelledby="t-swap" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">1</span>
+        <h3>棋盘与光标</h3>
+        <p>棋盘宽六格。你的<strong>光标</strong>始终覆盖<strong>相邻的两个方块</strong>。移动光标，并交换它所覆盖的两个方块。</p>
+        <p>你也可以把方块与空位交换：方块会滑过去，如果下面没有支撑，就会掉落。</p>
+      </div>
+      <div class="demo-card" data-lesson="swap" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="循环教程：光标交换两个相邻方块，然后把一个方块滑入空位"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 暂停</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-lines" role="tabpanel" aria-labelledby="t-lines" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">2</span>
+        <h3>连成三个——或更多</h3>
+        <p>把<strong>三个或更多同色方块</strong>排成一行或一列，它们就会消除。</p>
+        <ul class="gems">
+          <li><i class="gem purple"></i><i class="gem green"></i><i class="gem yellow"></i><i class="gem orange"></i><i class="gem blue"></i> 要匹配五种颜色</li>
+          <li>方块堆会<strong>不断从下方升起</strong>，所以只有不断消除方块，你才能活下去。</li>
+        </ul>
+        <p><strong>一次消除四个、五个或更多</strong>——一条长线，或几条交叉的线——你就会向对手发送<strong>垃圾</strong>。一次消除得越多，垃圾就越大。 <a href="#learn" data-tab="attacks">查看具体大小。</a></p>
+      </div>
+      <div class="demo-card" data-lesson="lines" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="循环教程：横向和纵向的三连消除，然后是发送垃圾的四连和五连消除"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 暂停</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-chain" role="tabpanel" aria-labelledby="t-chain" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">3</span>
+        <h3>连锁：让重力为你效力</h3>
+        <p>方块消失后，上方的一切都会下落。如果下落的方块自己又连成了线，你就会再消除一次——这就是<strong>连锁</strong>。第二次消除是 <strong>x2</strong>，第三次是 <strong>x3</strong>，依此类推。</p>
+        <ul>
+          <li>在单人模式中，连锁的<strong>全部得分</strong>都会乘以它的倍数。</li>
+          <li>在对战中，连锁结束时会向对手发送一整块垃圾：连锁越长，这块垃圾就越高。</li>
+        </ul>
+        <aside class="note"><strong>说明一下用词。</strong>在本游戏中，<em>连锁</em>是指一系列自动接连发生的消除，而<em>组合</em>是指一次消除多个方块。一些较早的攻略把连锁称为“组合”。</aside>
+      </div>
+      <div class="demo-card" data-lesson="chain" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="循环教程：一次交换引发两连锁，然后是三连锁"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 暂停</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-garbage" role="tabpanel" aria-labelledby="t-garbage" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">4</span>
+        <h3>垃圾：当你被攻击时</h3>
+        <p>垃圾是一块<strong>大板</strong>，会落到你的方块堆上。你无法直接消除它——但只要你消除任何一个<strong>与它相邻</strong>的方块，它就会<strong>碎裂</strong>成普通方块。</p>
+        <p>与其他垃圾相邻的垃圾会一起碎裂。这往往是你重返战局的机会，因为新出现的方块可能落成新的连线。</p>
+      </div>
+      <div class="demo-card" data-lesson="garbage" style="--ratio: 7.2 / 7.2">
+        <canvas role="img" aria-label="循环教程：不同大小的垃圾板落到方块堆上，附近的方块被消除时碎裂"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 暂停</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-danger" role="tabpanel" aria-labelledby="t-danger" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">5</span>
+        <h3>别让方块堆顶到顶部</h3>
+        <p>方块堆升得越来越快。<strong>两侧的灯</strong>显示它有多高。升到顶部时它会停住，你有<strong>七秒钟</strong>把它降下来——否则就输了。</p>
+        <ul>
+          <li>消除方块会<strong>暂停上升</strong>，方块消失期间倒计时也不会走。</li>
+          <li>方块不够用了？<strong>按住回车</strong>可以让方块堆升得更快。</li>
+        </ul>
+      </div>
+      <div class="demo-card" data-lesson="danger" style="--ratio: 7.2 / 10.2">
+        <canvas role="img" aria-label="循环教程：方块堆升到顶部，七秒倒计时开始，一次化险为夷，一次落败"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 暂停</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-gray" role="tabpanel" aria-labelledby="t-gray" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">6</span>
+        <h3>罕见的灰色方块</h3>
+        <p>偶尔会出现<strong>灰色方块</strong>。它和其他方块一样，三个或更多连成一线就会消除，但它很特别：消除它会发送<strong>整行宽度的灰色垃圾</strong>。</p>
+        <p>灰色垃圾不会随普通垃圾一起碎裂。只有消除<strong>直接</strong>碰到它时，它才会碎裂。</p>
+      </div>
+      <div class="demo-card" data-lesson="gray" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="循环教程：三个灰色方块发送灰色垃圾，普通垃圾碎裂时灰色垃圾保持完好"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 暂停</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-attacks" role="tabpanel" aria-labelledby="t-attacks" hidden>
+      <h3 class="panel-title">你会发送多少？</h3>
+      <p class="section-lead">在对战中，你消除的方块会化为垃圾落到对手那里。拖动滑块试试——这里的大小就是游戏中的实际大小。</p>
+    <div id="calc" class="calc">
+      <div class="calc-col">
+        <h3>一次消除多个方块</h3>
+        <label for="calc-n">一起消除的方块数： <output id="calc-n-out">4</output></label>
+        <input id="calc-n" type="range" min="3" max="16" value="4">
+        <div class="calc-strip" id="calc-pieces" aria-live="polite"></div>
+        <p id="calc-piece-text" class="calc-text"></p>
+        <p class="fine">每块垃圾高一行。四连会发送 3 个垃圾方块；从 7 个方块起，垃圾会被拆成多块。</p>
+      </div>
+      <div class="calc-col">
+        <h3>完成一次连锁</h3>
+        <label for="calc-c">连锁长度： <output id="calc-c-out">x2</output></label>
+        <input id="calc-c" type="range" min="1" max="13" value="2">
+        <div class="calc-strip tall" id="calc-chain" aria-live="polite"></div>
+        <p id="calc-chain-text" class="calc-text"></p>
+        <p class="fine">x<em>n</em> 的连锁会发送一整行宽、<em>n − 1</em> 行高的垃圾（最高 11 行）。连锁是游戏中最强的攻击。</p>
+      </div>
+    </div>
+    </div>
+    </div>
+    <div class="tab-nav">
+      <button class="btn" data-step="-1">← 上一节</button>
+      <button class="btn primary" data-step="1">下一节 →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ MODES ============================ -->
+<section id="modes" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">玩法模式</h2>
+    <div class="cards">
+      <article class="card reveal">
+        <i class="gem purple big"></i>
+        <h3>单人</h3>
+        <p>在方块堆压垮你之前，拿下尽可能高的分数。一次消除得越多、连锁越长，得分越高——但你自己的大攻击也会落回你身上，所以需要权衡。你的最高分会被保存。</p>
+      </article>
+      <article class="card reveal">
+        <i class="gem orange big"></i>
+        <h3>对战电脑</h3>
+        <p>与电脑对战，有三种难度：<strong>简单</strong>、<strong>中等</strong>和<strong>困难</strong>。在面对真人之前，这里是练习连锁的绝佳场所。</p>
+      </article>
+      <article class="card reveal">
+        <i class="gem blue big"></i>
+        <h3>与朋友对战</h3>
+        <p>在<strong>局域网</strong>中挑战他人，或者输入对方的地址直接连接。最后一个没被压垮的人赢下这一局。</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CONTROLS ============================ -->
+<section id="controls" class="section">
+  <div class="wrap narrow">
+    <h2 class="reveal">操作</h2>
+    <p class="section-lead reveal">键盘或手柄均可。你可以在选项中更改按键。</p>
+    <table class="controls reveal">
+      <thead><tr><th>操作</th><th>键盘</th><th>手柄</th></tr></thead>
+      <tbody>
+        <tr><td>移动光标</td><td><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></td><td>十字键或左摇杆</td></tr>
+        <tr><td>交换两个方块</td><td><kbd>空格</kbd></td><td><kbd>A</kbd> / <kbd>✕</kbd></td></tr>
+        <tr><td>让方块堆上升</td><td><kbd>回车</kbd></td><td><kbd>X</kbd> / <kbd>□</kbd></td></tr>
+        <tr><td>暂停</td><td><kbd>P</kbd> 或 <kbd>Esc</kbd></td><td><kbd>Start</kbd></td></tr>
+      </tbody>
+    </table>
+    <p class="fine center reveal">Crack Attack! 是一款电脑游戏：用键盘或手柄来玩。</p>
+  </div>
+</section>
+
+<!-- ============================ TIPS ============================ -->
+<section id="tips" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">更聪明地玩</h2>
+    <div class="cards tips">
+      <article class="card reveal"><i class="gem green"></i><h3>消除才能喘口气</h3><p>方块消失时，方块堆会停止上升。陷入困境时，任何一次消除都能为你争取时间。</p></article>
+      <article class="card reveal"><i class="gem yellow"></i><h3>用连锁思考</h3><p>提前布置方块，让一次消除把其他方块落成新的连线。x4 的连锁会发送三整行。</p></article>
+      <article class="card reveal"><i class="gem orange"></i><h3>有意识地击碎</h3><p>垃圾碎裂后会变成方块。在它旁边消除，让新出现的方块落到合适的位置。</p></article>
+      <article class="card reveal"><i class="gem purple"></i><h3>保持低位</h3><p>低而平的方块堆能让你有时间思考。别等到最后几秒才动手。</p></article>
+      <article class="card reveal"><i class="gem blue"></i><h3>没步可走时就上升</h3><p>看不到能连的线？按住回车把新方块升上来，别干等着。</p></article>
+      <article class="card reveal"><i class="gem gray"></i><h3>留意灰色</h3><p>灰色垃圾不受那种能清掉普通垃圾的碎裂影响。要计划好直接碰到它。</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ GALLERY ============================ -->
+<section id="gallery" class="section">
+  <div class="wrap">
+    <h2 class="reveal">游戏画面</h2>
+    <div class="gallery">
+      <figure class="reveal"><img src="../assets/shots/solo-chain-sign.jpg" alt="一堆彩色方块，消除处上方弹出一个大数字" width="820" height="820" loading="lazy"><figcaption>方块被消除，并显示出本次消除的大小。</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/danger-stack.jpg" alt="一个几乎顶到顶部的高方块堆，两侧的等级灯亮起" width="820" height="820" loading="lazy"><figcaption>危险！两侧的灯在提醒你方块堆很高了。</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/vs-garbage-shatter.jpg" alt="对战中，垃圾在方块堆上方碎裂成红色宝石" width="820" height="820" loading="lazy"><figcaption>一场对战：垃圾碎裂成红色宝石。</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/vs-garbage-awaking.jpg" alt="被击碎的垃圾释放出的方块恢复了色彩" width="820" height="820" loading="lazy"><figcaption>碎裂的垃圾变成方块，并恢复色彩。</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ REVIEWS ============================ -->
+<section id="reviews" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">大家怎么说</h2>
+    <p class="section-lead reveal">杂志和网站推荐 Crack Attack! 已经近二十年了。</p>
+    <div class="quotes">
+      <blockquote class="quote big reveal">
+        <p lang="en">The graphics and gameplay are simple, but it’s so criminally addictive that you won’t care.</p>
+        <footer><cite>Atomic</cite> 杂志，第 61 期，2006 年 · <a href="https://archive.org/details/atomic-061/page/68" hreflang="en">阅读</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Two-player Crack Attack games are about as much fun as you can have with your Linux box.</p>
+        <footer><cite>Linux Starter Pack</cite>（<cite>Linux Format</cite>），2008 年 · <a href="https://archive.org/details/manualzilla-id-5971019/page/60" hreflang="en">阅读</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">If I can mention only one classic puzzle game, it has to be Crack-Attack.</p>
+        <footer><cite>Atomic</cite> 杂志，第 85 期，2008 年 · <a href="https://archive.org/details/atomic-085" hreflang="en">阅读</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">An excellent, fast paced puzzle game… the game play is really addictive and polished.</p>
+        <footer><cite>Acid Play</cite>，评分 8.5/10 · <a href="https://web.archive.org/web/20081221153303/http://www.acid-play.com/download/crack-attack/" hreflang="en">阅读</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Learning time is minimal, of course, but the fun is guaranteed.</p>
+        <details class="orig"><summary>英文译文</summary><p lang="it">Il tempo di apprendimento necessario è ovviamente minimo, ma il divertimento è assicurato</p><small>原文（意大利语）</small></details>
+        <footer><cite>PC Professionale</cite>（意大利），2010 年 · <a href="https://archive.org/details/pcprofessionale233/page/103" hreflang="it">阅读</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Crack-Attack, a free Tetris clone, and Neverball stand out for their cool sound and nice 3D graphics.</p>
+        <details class="orig"><summary>英文译文</summary><p lang="de">Crack-Attack, ein freier Tetris-Klon, und das Geschicklichkeitsspiel Neverball zeichnen sich durch coolen Sound und schicke 3D-Grafik aus</p><small>原文（德语）</small></details>
+        <footer><cite>c’t</cite>（德国），2008 年 · <a href="https://archive.org/details/ct0825_202310/ct0806" hreflang="de">阅读</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Linux Format had two unofficial-official games of choice… Unreal Tournament and the less resource-hungry Crack Attack.</p>
+        <footer><cite>Linux Format</cite>，终刊号，2025 年 · <a href="https://archive.org/details/linux-format-july-2025-final-issue/page/8" hreflang="en">阅读</a></footer>
+      </blockquote>
+    </div>
+    <p class="fine center reveal">引文为简短摘录并注明出处，使用原文语言。凡由我们自行译成中文的，原文只需轻点一下即可查看。</p>
+  </div>
+</section>
+
+<!-- ============================ GET ============================ -->
+<section id="get" class="section dl">
+  <div class="wrap narrow center">
+    <h2 class="reveal">下载 Crack Attack!</h2>
+    <p class="section-lead reveal">免费开源（GPL-3.0）。<span id="dl-version">最新版本</span> — 单人、对战电脑，以及在你的网络上与朋友对战。</p>
+    <div class="dl-grid reveal">
+      <a class="dl-card" data-os="macos" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>macOS</strong><span>Apple Silicon · .zip</span></a>
+      <a class="dl-card" data-os="windows" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>Windows</strong><span>64 位 · .zip</span></a>
+      <a class="dl-card" data-os="linux" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>Linux</strong><span>x86_64 · .tar.gz</span></a>
+    </div>
+    <p class="desktop-note reveal">Crack Attack! 是一款<strong>电脑游戏</strong>：请在 Windows、macOS 或 Linux 电脑上下载。没有手机或平板版本。</p>
+    <p class="fine reveal">早期版本可能还不够完善。<a href="https://github.com/thiosaur/crackattack/releases/latest">发布说明</a> · <a href="https://github.com/thiosaur/crackattack">源代码</a></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p><strong>Crack Attack!</strong> 由 Daniel Nelson 创作，并以 GNU 通用公共许可证作为自由软件发布。它沿袭了 Nintendo 的 <em>Panel de Pon</em> 系列的传统——该系列在西方以 Super Nintendo 上的 <em>Tetris Attack</em> 和 Nintendo 64 上的 <em>Pokémon Puzzle League</em> 之名为人所知。</p>
+    <p class="fine">阅读原始页面： <a href="https://aluminumangel.org/attack/">aluminumangel.org/attack</a> · <a href="https://www.nongnu.org/crack-attack/game_play.html">nongnu.org/crack-attack</a>. 本页的动画是游戏的简化模型，仅用于讲解。</p>
+    <p class="fine">Tetris Attack、Panel de Pon 和 Pokémon Puzzle League 是其各自所有者的商标；本站与它们无关联。</p>
+    <nav class="lang-footer" aria-label="语言">
+      <a href="../" hreflang="en" lang="en">English</a>
+      <a href="../fr/" hreflang="fr" lang="fr">Français</a>
+      <a href="../de/" hreflang="de" lang="de">Deutsch</a>
+      <a href="../es/" hreflang="es" lang="es">Español</a>
+      <a href="../ru/" hreflang="ru" lang="ru">Русский</a>
+      <a href="../zh/" hreflang="zh-Hans" lang="zh-Hans" aria-current="true">简体中文</a>
+      <a href="../ja/" hreflang="ja" lang="ja">日本語</a>
+      <a href="../ko/" hreflang="ko" lang="ko">한국어</a>
+      <a href="../pl/" hreflang="pl" lang="pl">Polski</a>
+      <a href="../tr/" hreflang="tr" lang="tr">Türkçe</a>
+      <a href="../it/" hreflang="it" lang="it">Italiano</a>
+    </nav>
+  </div>
+</footer>
+
+<noscript><p class="noscript">动画教程需要 JavaScript。每节教程旁仍写有规则文字。</p></noscript>
+<script type="application/json" id="i18n">{"js.pause":"暂停","js.play":"播放","js.reduced":"动画已暂停。点击播放观看本节教程。","js.sent":"发送给对手：","js.slab":"宽 {w}，高 {h}","js.version":"版本 {v}","js.beta":"（测试版）","js.swap.c1":"光标覆盖左右相邻的两个方块。","js.swap.c2":"交换它们：两个方块互换位置。","js.swap.c3":"可以移到任意位置再次交换。","js.swap.c4":"你也可以把方块与空位交换……","js.swap.c5":"……它会滑过去，下面没有支撑就会掉落。","js.lines.big":"一次 {n} 个方块！消除得越多，发送的垃圾就越大。","js.lines.i1":"把三个同色方块排成一行……","js.lines.o1":"……它们闪烁后消失。","js.lines.i2":"……或者排成一列。","js.lines.o2":"三个或更多连成一线，无论横竖都会消除。","js.lines.i3":"一次消除超过三个就会发送垃圾。这里是一列四个。","js.lines.i4":"交叉的线会一起计算：这次交换消除了五个方块。","js.chain.i1":"一次交换引发一切。","js.chain.i2":"还可能有更长的连锁：再看同样的交换……","js.chain.i3":"这是另一个长连锁。","js.chain.w1":"三个消除了。上方的方块落入空隙……","js.chain.w2":"……并自己连成了线：白送一次消除！","js.chain.w3":"……又来了：第三次！","js.chain.end":"x{m} 连锁：发送一整行宽的垃圾板（高 {rows}），并按连锁倍数提高你的得分。","js.garbage.i1":"对手发动攻击时，一块垃圾板会落到你的方块堆上。","js.garbage.i2":"垃圾有各种大小。这块宽三格。","js.garbage.i3":"大连锁会发送更高的垃圾板。碎裂方式相同。","js.garbage.c1":"你无法直接消除它。消除与它相邻的方块……","js.garbage.c2":"……它就会碎裂成普通方块！","js.danger.1":"你的方块堆不断从下方升起。两侧的灯显示它有多高。","js.danger.2":"升到顶部时它会停住，你只有七秒钟！","js.danger.3":"把高柱降下来：把它最上面的方块滑到一旁。","js.danger.4":"得救了！消除方块同样会暂停上升和倒计时。","js.danger.5":"如果你什么都不做，方块堆就会升到顶部……","js.danger.6":"……七秒一到，你就输了。","js.danger.7":"没步可走时，按住回车让方块堆升得更快。","js.gray.1":"灰色方块很罕见。它们和其他方块一样，三个或更多连成一线就会消除。","js.gray.2":"三个灰色方块会发送一整行灰色垃圾。","js.gray.3":"灰色垃圾（上方）压在普通垃圾上。","js.gray.4":"普通垃圾碎裂了。灰色垃圾板仍在：只有消除直接碰到它时才会碎裂。","js.calc.min":"最少要三个方块：不发送垃圾。","js.calc.one":"一块垃圾，宽 {w} 格。","js.calc.many":"{n} 块垃圾，宽度分别为 {list} 格。","js.calc.nochain":"单次消除不算连锁：不会额外发送。","js.calc.chain":"一块垃圾，整行宽，高 {h}。","js.calc.chainmax":"一块垃圾，整行宽，高 {h}（最大值）。"}</script>
+<script src="../dist/site.js?v=8e9bc88f"></script>
+</body>
+</html>

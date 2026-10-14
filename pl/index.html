@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crack Attack! — darmowa gra w stylu Tetris Attack i Panel de Pon</title>
+<meta name="description" content="Crack Attack! to darmowa gra logiczna w duchu Tetris Attack i Panel de Pon: zamieniaj bloki, twórz łańcuchy i zasyp rywala śmieciami. Windows, macOS, Linux.">
+<meta name="theme-color" content="#05030b">
+<link rel="canonical" href="https://thiosaur.github.io/crackattack/pl/">
+<link rel="alternate" hreflang="en" href="https://thiosaur.github.io/crackattack/">
+<link rel="alternate" hreflang="fr" href="https://thiosaur.github.io/crackattack/fr/">
+<link rel="alternate" hreflang="de" href="https://thiosaur.github.io/crackattack/de/">
+<link rel="alternate" hreflang="es" href="https://thiosaur.github.io/crackattack/es/">
+<link rel="alternate" hreflang="ru" href="https://thiosaur.github.io/crackattack/ru/">
+<link rel="alternate" hreflang="zh-Hans" href="https://thiosaur.github.io/crackattack/zh/">
+<link rel="alternate" hreflang="ja" href="https://thiosaur.github.io/crackattack/ja/">
+<link rel="alternate" hreflang="ko" href="https://thiosaur.github.io/crackattack/ko/">
+<link rel="alternate" hreflang="pl" href="https://thiosaur.github.io/crackattack/pl/">
+<link rel="alternate" hreflang="tr" href="https://thiosaur.github.io/crackattack/tr/">
+<link rel="alternate" hreflang="it" href="https://thiosaur.github.io/crackattack/it/">
+<link rel="alternate" hreflang="x-default" href="https://thiosaur.github.io/crackattack/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Crack Attack!">
+<meta property="og:title" content="Crack Attack! — darmowa gra w stylu Tetris Attack i Panel de Pon">
+<meta property="og:description" content="Darmowa gra w duchu Tetris Attack i Panel de Pon. Zamieniaj, twórz łańcuchy, zasypuj rywala. Windows, macOS, Linux.">
+<meta property="og:url" content="https://thiosaur.github.io/crackattack/pl/">
+<meta property="og:image" content="https://thiosaur.github.io/crackattack/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="pl_PL">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="it_IT">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Crack Attack! — darmowa gra w stylu Tetris Attack i Panel de Pon">
+<meta name="twitter:description" content="Darmowa gra w duchu Tetris Attack i Panel de Pon. Zamieniaj, twórz łańcuchy, zasypuj rywala. Windows, macOS, Linux.">
+<meta name="twitter:image" content="https://thiosaur.github.io/crackattack/assets/og.png">
+<link rel="icon" href="../assets/ui/logo.png">
+<link rel="stylesheet" href="../css/style.css?v=e89368be">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":["VideoGame","SoftwareApplication"],"name":"Crack Attack!","url":"https://thiosaur.github.io/crackattack/pl/","inLanguage":"pl","description":"Crack Attack! to darmowa gra logiczna w duchu Tetris Attack i Panel de Pon: zamieniaj bloki, twórz łańcuchy i zasyp rywala śmieciami. Windows, macOS, Linux.","image":"https://thiosaur.github.io/crackattack/assets/og.png","applicationCategory":"GameApplication","genre":"Puzzle","operatingSystem":"Windows, macOS, Linux","license":"https://www.gnu.org/licenses/gpl-3.0.html","author":{"@type":"Person","name":"Daniel Nelson"},"isBasedOn":{"@type":"VideoGame","name":"Tetris Attack"},"codeRepository":"https://github.com/thiosaur/crackattack","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+</head>
+<body>
+<a class="skip" href="#learn">Przejdź do treści</a>
+
+<header class="nav-wrap">
+  <nav class="nav" aria-label="Główna">
+    <a class="brand" href="#top"><img src="../assets/ui/logo.png" alt="" width="40" height="34"><span>Crack Attack!</span></a>
+    <div class="links">
+      <a href="#learn">Jak grać</a>
+      <a href="#modes">Tryby</a>
+      <a href="#controls">Sterowanie</a>
+      <a href="#tips">Porady</a>
+      <a href="#gallery">Galeria</a>
+      <a href="#reviews">Opinie</a>
+    </div>
+    <a class="btn primary nav-dl" href="#get">Pobierz</a>
+    <details class="lang-menu">
+      <summary aria-label="Język"><span aria-hidden="true">🌐</span><b>PL</b></summary>
+      <ul>
+        <li><a href="../" hreflang="en" lang="en">English</a></li>
+        <li><a href="../fr/" hreflang="fr" lang="fr">Français</a></li>
+        <li><a href="../de/" hreflang="de" lang="de">Deutsch</a></li>
+        <li><a href="../es/" hreflang="es" lang="es">Español</a></li>
+        <li><a href="../ru/" hreflang="ru" lang="ru">Русский</a></li>
+        <li><a href="../zh/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a></li>
+        <li><a href="../ja/" hreflang="ja" lang="ja">日本語</a></li>
+        <li><a href="../ko/" hreflang="ko" lang="ko">한국어</a></li>
+        <li><a href="../pl/" hreflang="pl" lang="pl" aria-current="true">Polski</a></li>
+        <li><a href="../tr/" hreflang="tr" lang="tr">Türkçe</a></li>
+        <li><a href="../it/" hreflang="it" lang="it">Italiano</a></li>
+      </ul>
+    </details>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- ============================ HERO ============================ -->
+<section id="top" class="hero">
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <img class="hero-logo" src="../assets/ui/logo.png" alt="Crack Attack!" width="420" height="357">
+    <h1 class="tagline">Zamieniaj. Czyść. <span class="grad">Łącz w łańcuchy.</span> Miażdż.</h1>
+    <p class="lead">Szybki pojedynek logiczny. Układaj bloki, uruchamiaj łańcuchy i zasyp przeciwnika lawiną śmieci — zanim twój własny stos dosięgnie szczytu.</p>
+    <div class="cta">
+      <a class="btn primary big" href="#get">Pobierz · za darmo</a>
+      <a class="btn" href="#learn">Naucz się grać</a>
+      <a class="btn" href="#learn" data-tab="attacks">Jak działają ataki</a>
+    </div>
+    <ul class="facts">
+      <li><strong>Darmowa</strong> i open source</li>
+      <li><strong>Solo</strong>, z komputerem lub z przyjacielem</li>
+      <li>Łatwa do opanowania, <strong>trudna do mistrzostwa</strong></li>
+      <li>Na <strong>Windows, macOS i Linux</strong></li>
+    </ul>
+  </div>
+  <a class="scroll-hint" href="#origin" aria-label="Przewiń do lekcji"><span></span></a>
+</section>
+
+<!-- ============================ ORIGIN ============================ -->
+<section id="origin" class="origin">
+  <div class="wrap narrow center">
+    <h2 class="reveal">Zainspirowana grami Tetris Attack i Panel de Pon</h2>
+    <p class="reveal">Crack Attack! powstała z inspiracji <em>Tetris Attack</em>, grą logiczną Nintendo na Super Nintendo — zachodnią wersją japońskiej gry <em>Panel de Pon</em>. Podstawowy pomysł jest ten sam: zamieniaj bloki w stosie, który nieustannie rośnie, twórz łańcuchy i wysyłaj śmieci przeciwnikowi. Daniel Nelson stworzył Crack Attack! jako wolne oprogramowanie; ta wersja to kompletne przepisanie w Rust.</p>
+  </div>
+</section>
+
+<!-- ============================ LEARN ============================ -->
+<section id="learn" class="section">
+  <div class="wrap">
+    <h2 class="reveal">Jak grać</h2>
+    <p class="section-lead reveal">Siedem krótkich lekcji. Wybierz jedną lub użyj strzałek. Każda animacja odtwarza się w pętli z kilkoma przykładami; zatrzymasz ją przyciskiem.</p>
+
+    <div class="tabs" role="tablist" aria-label="Lekcje">
+      <button class="tab" role="tab" id="t-swap" data-tab="swap" aria-controls="tab-swap"><b>1</b><span>Kursor</span></button>
+      <button class="tab" role="tab" id="t-lines" data-tab="lines" aria-controls="tab-lines"><b>2</b><span>Linie</span></button>
+      <button class="tab" role="tab" id="t-chain" data-tab="chain" aria-controls="tab-chain"><b>3</b><span>Łańcuchy</span></button>
+      <button class="tab" role="tab" id="t-garbage" data-tab="garbage" aria-controls="tab-garbage"><b>4</b><span>Śmieci</span></button>
+      <button class="tab" role="tab" id="t-danger" data-tab="danger" aria-controls="tab-danger"><b>5</b><span>Szczyt</span></button>
+      <button class="tab" role="tab" id="t-gray" data-tab="gray" aria-controls="tab-gray"><b>6</b><span>Szare bloki</span></button>
+      <button class="tab" role="tab" id="t-attacks" data-tab="attacks" aria-controls="tab-attacks"><b>7</b><span>Rozmiary ataków</span></button>
+    </div>
+    <div class="stage">
+    <div class="tabpanel" id="tab-swap" role="tabpanel" aria-labelledby="t-swap" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">1</span>
+        <h3>Plansza i kursor</h3>
+        <p>Grasz na planszy szerokiej na sześć bloków. Twój <strong>kursor</strong> zawsze obejmuje <strong>dwa sąsiednie bloki</strong>. Przesuwaj go po planszy i zamieniaj miejscami dwa bloki, które obejmuje.</p>
+        <p>Blok możesz też zamienić z pustym miejscem: przesunie się tam, a potem spadnie, jeśli nic pod nim nie ma.</p>
+      </div>
+      <div class="demo-card" data-lesson="swap" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Lekcja w pętli: kursor zamienia dwa sąsiednie bloki, a potem przesuwa blok na puste miejsce"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Pauza</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-lines" role="tabpanel" aria-labelledby="t-lines" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">2</span>
+        <h3>Ułóż trzy — albo więcej</h3>
+        <p>Ułóż w rzędzie <strong>trzy lub więcej bloków tego samego koloru</strong> — poziomo lub pionowo — a znikną.</p>
+        <ul class="gems">
+          <li><i class="gem purple"></i><i class="gem green"></i><i class="gem yellow"></i><i class="gem orange"></i><i class="gem blue"></i> pięć kolorów do dopasowania</li>
+          <li>Stos <strong>stale rośnie od dołu</strong>, więc czyszczenie bloków to sposób, by przetrwać.</li>
+        </ul>
+        <p><strong>Wyczyść naraz cztery, pięć lub więcej</strong> — długą linią albo liniami, które się krzyżują — a wyślesz przeciwnikowi <strong>śmieci</strong>. Im większe czyszczenie, tym większe śmieci. <a href="#learn" data-tab="attacks">Zobacz rozmiary.</a></p>
+      </div>
+      <div class="demo-card" data-lesson="lines" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Lekcja w pętli: linie po trzy poziomo i pionowo, potem czyszczenia po cztery i pięć bloków, które wysyłają śmieci"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Pauza</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-chain" role="tabpanel" aria-labelledby="t-chain" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">3</span>
+        <h3>Łańcuchy: niech grawitacja pracuje dla ciebie</h3>
+        <p>Gdy bloki znikają, wszystko powyżej spada. Jeśli spadające bloki same ułożą się w linię, dostajesz kolejne czyszczenie — i <strong>łańcuch</strong>. Drugie czyszczenie daje <strong>x2</strong>, trzecie <strong>x3</strong> i tak dalej.</p>
+        <ul>
+          <li>W trybie Solo <strong>wszystkie punkty</strong> z łańcucha są mnożone przez jego mnożnik.</li>
+          <li>W pojedynku zakończony łańcuch wysyła przeciwnikowi jeden duży blok śmieci: im dłuższy łańcuch, tym jest wyższy.</li>
+        </ul>
+        <aside class="note"><strong>Słowo o słowach.</strong> W tej grze <em>łańcuch</em> to seria czyszczeń następujących po sobie samoczynnie, a <em>combo</em> to wyczyszczenie kilku bloków naraz. Starsze poradniki nazywają łańcuch „combo”.</aside>
+      </div>
+      <div class="demo-card" data-lesson="chain" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Lekcja w pętli: jedna zamiana uruchamia łańcuch dwóch, a potem trzech czyszczeń"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Pauza</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-garbage" role="tabpanel" aria-labelledby="t-garbage" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">4</span>
+        <h3>Śmieci: gdy jesteś atakowany</h3>
+        <p>Śmieci to <strong>duża płyta</strong>, która spada na twój stos. Nie możesz jej wyczyścić bezpośrednio — ale jeśli wyczyścisz dowolny blok, który <strong>ją dotyka</strong>, <strong>rozpadnie się</strong> na zwykłe bloki.</p>
+        <p>Śmieci stykające się z innymi śmieciami rozpadają się razem z nimi. To często twoja droga powrotu do gry, bo świeże bloki mogą spaść w nowe linie.</p>
+      </div>
+      <div class="demo-card" data-lesson="garbage" style="--ratio: 7.2 / 7.2">
+        <canvas role="img" aria-label="Lekcja w pętli: płyty śmieci o różnych rozmiarach lądują na stosie i rozpadają się, gdy zostanie wyczyszczony sąsiedni blok"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Pauza</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-danger" role="tabpanel" aria-labelledby="t-danger" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">5</span>
+        <h3>Nie dotknij szczytu</h3>
+        <p>Stos rośnie coraz szybciej. <strong>Światła po obu stronach</strong> pokazują, jak jest wysoki. Gdy dojdzie do szczytu, zatrzymuje się, a ty masz <strong>siedem sekund</strong>, by go obniżyć — inaczej przegrywasz.</p>
+        <ul>
+          <li>Czyszczenie bloków <strong>wstrzymuje wzrost</strong>, a odliczanie nie biegnie, gdy bloki znikają.</li>
+          <li>Brakuje ci bloków? <strong>Przytrzymaj Enter</strong>, by stos rósł szybciej.</li>
+        </ul>
+      </div>
+      <div class="demo-card" data-lesson="danger" style="--ratio: 7.2 / 10.2">
+        <canvas role="img" aria-label="Lekcja w pętli: stos rośnie do szczytu, zaczyna się siedmiosekundowe odliczanie, potem raz udaje się go uratować, a raz przegrywasz"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Pauza</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-gray" role="tabpanel" aria-labelledby="t-gray" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">6</span>
+        <h3>Rzadki szary blok</h3>
+        <p>Od czasu do czasu pojawia się <strong>szary blok</strong>. Czyści się jak pozostałe, w liniach po trzy lub więcej, ale jest wyjątkowy: jego wyczyszczenie wysyła <strong>szare śmieci na całą szerokość</strong>.</p>
+        <p>Szare śmieci nie rozpadają się razem ze zwykłymi śmieciami. Rozpadają się tylko wtedy, gdy czyszczenie dotyka ich <strong>bezpośrednio</strong>.</p>
+      </div>
+      <div class="demo-card" data-lesson="gray" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Lekcja w pętli: trzy szare bloki wysyłają szare śmieci, a szare śmieci przetrwają rozpad zwykłych śmieci"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Pauza</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-attacks" role="tabpanel" aria-labelledby="t-attacks" hidden>
+      <h3 class="panel-title">Ile wysyłasz?</h3>
+      <p class="section-lead">W pojedynku to, co wyczyścisz, ląduje na przeciwniku jako śmieci. Wypróbuj suwaki — rozmiary są takie jak w samej grze.</p>
+    <div id="calc" class="calc">
+      <div class="calc-col">
+        <h3>Czyszczenie bloków naraz</h3>
+        <label for="calc-n">Bloki wyczyszczone razem: <output id="calc-n-out">4</output></label>
+        <input id="calc-n" type="range" min="3" max="16" value="4">
+        <div class="calc-strip" id="calc-pieces" aria-live="polite"></div>
+        <p id="calc-piece-text" class="calc-text"></p>
+        <p class="fine">Każdy kawałek ma wysokość jednego rzędu. Linia z 4 bloków wysyła śmieci o szerokości 3 bloków; od 7 bloków śmieci są dzielone na kawałki.</p>
+      </div>
+      <div class="calc-col">
+        <h3>Zakończenie łańcucha</h3>
+        <label for="calc-c">Długość łańcucha: <output id="calc-c-out">x2</output></label>
+        <input id="calc-c" type="range" min="1" max="13" value="2">
+        <div class="calc-strip tall" id="calc-chain" aria-live="polite"></div>
+        <p id="calc-chain-text" class="calc-text"></p>
+        <p class="fine">Łańcuch x<em>n</em> wysyła jeden blok na całą szerokość, o wysokości w rzędach równej <em>n − 1</em> (maksymalnie 11). Łańcuchy to najsilniejszy atak w grze.</p>
+      </div>
+    </div>
+    </div>
+    </div>
+    <div class="tab-nav">
+      <button class="btn" data-step="-1">← Poprzednia</button>
+      <button class="btn primary" data-step="1">Następna →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ MODES ============================ -->
+<section id="modes" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">Sposoby gry</h2>
+    <div class="cards">
+      <article class="card reveal">
+        <i class="gem purple big"></i>
+        <h3>Solo</h3>
+        <p>Zdobądź jak najwięcej punktów, zanim stos cię pokona. Większe czyszczenia i dłuższe łańcuchy są warte więcej — ale twoje własne duże ataki wracają do ciebie, więc to kwestia kompromisu. Twój najlepszy wynik jest zapisywany.</p>
+      </article>
+      <article class="card reveal">
+        <i class="gem orange big"></i>
+        <h3>Przeciw komputerowi</h3>
+        <p>Pojedynek z komputerem na trzech poziomach trudności: <strong>łatwym</strong>, <strong>średnim</strong> i <strong>trudnym</strong>. Idealne miejsce do ćwiczenia łańcuchów przed starciem z człowiekiem.</p>
+      </article>
+      <article class="card reveal">
+        <i class="gem blue big"></i>
+        <h3>Przeciw przyjacielowi</h3>
+        <p>Rzuć wyzwanie komuś w swojej <strong>sieci lokalnej</strong> albo połącz się bezpośrednio, wpisując jego adres. Rundę wygrywa ten, czyj stos przetrwa najdłużej.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CONTROLS ============================ -->
+<section id="controls" class="section">
+  <div class="wrap narrow">
+    <h2 class="reveal">Sterowanie</h2>
+    <p class="section-lead reveal">Klawiatura lub pad. Klawisze możesz zmienić w opcjach.</p>
+    <table class="controls reveal">
+      <thead><tr><th>Akcja</th><th>Klawiatura</th><th>Pad</th></tr></thead>
+      <tbody>
+        <tr><td>Przesuń kursor</td><td><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></td><td>Krzyżak lub lewa gałka</td></tr>
+        <tr><td>Zamień dwa bloki</td><td><kbd>Spacja</kbd></td><td><kbd>A</kbd> / <kbd>✕</kbd></td></tr>
+        <tr><td>Podnieś stos</td><td><kbd>Enter</kbd></td><td><kbd>X</kbd> / <kbd>□</kbd></td></tr>
+        <tr><td>Pauza</td><td><kbd>P</kbd> lub <kbd>Esc</kbd></td><td><kbd>Start</kbd></td></tr>
+      </tbody>
+    </table>
+    <p class="fine center reveal">Crack Attack! to gra komputerowa: gra się w nią na klawiaturze lub padzie.</p>
+  </div>
+</section>
+
+<!-- ============================ TIPS ============================ -->
+<section id="tips" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">Graj mądrzej</h2>
+    <div class="cards tips">
+      <article class="card reveal"><i class="gem green"></i><h3>Czyść, by odetchnąć</h3><p>Stos przestaje rosnąć, gdy bloki znikają. Gdy masz kłopoty, każde czyszczenie daje ci czas.</p></article>
+      <article class="card reveal"><i class="gem yellow"></i><h3>Myśl łańcuchami</h3><p>Ustaw bloki tak, by jedno czyszczenie zrzuciło inne w nową linię. Łańcuch x4 wysyła trzy pełne rzędy.</p></article>
+      <article class="card reveal"><i class="gem orange"></i><h3>Rozbijaj celowo</h3><p>Śmieci zamieniają się w bloki, gdy się rozpadają. Czyść obok nich i pozwól, by świeże bloki spadły na swoje miejsce.</p></article>
+      <article class="card reveal"><i class="gem purple"></i><h3>Trzymaj go nisko</h3><p>Niski, płaski stos zostawia czas na myślenie. Nie czekaj do ostatnich sekund.</p></article>
+      <article class="card reveal"><i class="gem blue"></i><h3>Podnoś, gdy brakuje ruchów</h3><p>Nie widać żadnych linii? Przytrzymaj Enter, by wyciągnąć nowe bloki zamiast czekać.</p></article>
+      <article class="card reveal"><i class="gem gray"></i><h3>Uważaj na szare</h3><p>Szare śmieci ignorują rozpad, który niszczy zwykłe śmieci. Zaplanuj, jak dotknąć ich bezpośrednio.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ GALLERY ============================ -->
+<section id="gallery" class="section">
+  <div class="wrap">
+    <h2 class="reveal">W grze</h2>
+    <div class="gallery">
+      <figure class="reveal"><img src="../assets/shots/solo-chain-sign.jpg" alt="Stos kolorowych bloków z wielką liczbą wyskakującą nad czyszczeniem" width="820" height="820" loading="lazy"><figcaption>Bloki znikają, a napis pokazuje wielkość czyszczenia.</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/danger-stack.jpg" alt="Wysoki stos tuż przy szczycie, z zapalonymi światłami poziomu po obu stronach" width="820" height="820" loading="lazy"><figcaption>Niebezpieczeństwo! Światła po bokach ostrzegają, że stos jest wysoki.</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/vs-garbage-shatter.jpg" alt="Śmieci rozpadające się na czerwone klejnoty nad stosem w pojedynku" width="820" height="820" loading="lazy"><figcaption>Pojedynek: śmieci rozpadają się na czerwone klejnoty.</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/vs-garbage-awaking.jpg" alt="Bloki uwolnione z rozbitych śmieci budzące się w kolorze" width="820" height="820" loading="lazy"><figcaption>Rozbite śmieci zamieniają się w bloki, które budzą się w kolorze.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ REVIEWS ============================ -->
+<section id="reviews" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">Co mówią ludzie</h2>
+    <p class="section-lead reveal">Magazyny i strony internetowe polecają Crack Attack! od prawie dwudziestu lat.</p>
+    <div class="quotes">
+      <blockquote class="quote big reveal">
+        <p lang="en">The graphics and gameplay are simple, but it’s so criminally addictive that you won’t care.</p>
+        <footer>magazyn <cite>Atomic</cite>, numer 61, 2006 · <a href="https://archive.org/details/atomic-061/page/68" hreflang="en">czytaj</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Two-player Crack Attack games are about as much fun as you can have with your Linux box.</p>
+        <footer><cite>Linux Starter Pack</cite> (<cite>Linux Format</cite>), 2008 · <a href="https://archive.org/details/manualzilla-id-5971019/page/60" hreflang="en">czytaj</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">If I can mention only one classic puzzle game, it has to be Crack-Attack.</p>
+        <footer>magazyn <cite>Atomic</cite>, numer 85, 2008 · <a href="https://archive.org/details/atomic-085" hreflang="en">czytaj</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">An excellent, fast paced puzzle game… the game play is really addictive and polished.</p>
+        <footer><cite>Acid Play</cite>, ocena 8,5/10 · <a href="https://web.archive.org/web/20081221153303/http://www.acid-play.com/download/crack-attack/" hreflang="en">czytaj</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Learning time is minimal, of course, but the fun is guaranteed.</p>
+        <details class="orig"><summary>Tłumaczenie na angielski</summary><p lang="it">Il tempo di apprendimento necessario è ovviamente minimo, ma il divertimento è assicurato</p><small>Oryginał (po włosku)</small></details>
+        <footer><cite>PC Professionale</cite> (Włochy), 2010 · <a href="https://archive.org/details/pcprofessionale233/page/103" hreflang="it">czytaj</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Crack-Attack, a free Tetris clone, and Neverball stand out for their cool sound and nice 3D graphics.</p>
+        <details class="orig"><summary>Tłumaczenie na angielski</summary><p lang="de">Crack-Attack, ein freier Tetris-Klon, und das Geschicklichkeitsspiel Neverball zeichnen sich durch coolen Sound und schicke 3D-Grafik aus</p><small>Oryginał (po niemiecku)</small></details>
+        <footer><cite>c’t</cite> (Niemcy), 2008 · <a href="https://archive.org/details/ct0825_202310/ct0806" hreflang="de">czytaj</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Linux Format had two unofficial-official games of choice… Unreal Tournament and the less resource-hungry Crack Attack.</p>
+        <footer><cite>Linux Format</cite>, ostatni numer, 2025 · <a href="https://archive.org/details/linux-format-july-2025-final-issue/page/8" hreflang="en">czytaj</a></footer>
+      </blockquote>
+    </div>
+    <p class="fine center reveal">Cytaty to krótkie fragmenty wraz ze źródłami, w języku oryginału. Jeśli sami przetłumaczyliśmy cytat na polski, oryginalny tekst jest o jedno dotknięcie dalej.</p>
+  </div>
+</section>
+
+<!-- ============================ GET ============================ -->
+<section id="get" class="section dl">
+  <div class="wrap narrow center">
+    <h2 class="reveal">Pobierz Crack Attack!</h2>
+    <p class="section-lead reveal">Darmowa i open source (GPL-3.0). <span id="dl-version">Najnowsza wersja</span> — solo, przeciw komputerowi i przeciw przyjacielowi w twojej sieci.</p>
+    <div class="dl-grid reveal">
+      <a class="dl-card" data-os="macos" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>macOS</strong><span>Apple Silicon · .zip</span></a>
+      <a class="dl-card" data-os="windows" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>Windows</strong><span>64-bitowy · .zip</span></a>
+      <a class="dl-card" data-os="linux" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>Linux</strong><span>x86_64 · .tar.gz</span></a>
+    </div>
+    <p class="desktop-note reveal">Crack Attack! to <strong>gra komputerowa</strong>: pobierz ją na komputer z systemem Windows, macOS lub Linux. Nie ma wersji na telefon ani tablet.</p>
+    <p class="fine reveal">Wczesne wydania mogą mieć niedociągnięcia. <a href="https://github.com/thiosaur/crackattack/releases/latest">Informacje o wydaniu</a> · <a href="https://github.com/thiosaur/crackattack">Kod źródłowy</a></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p><strong>Crack Attack!</strong> została stworzona przez Daniela Nelsona i wydana jako wolne oprogramowanie na licencji GNU General Public License. Nawiązuje do tradycji serii <em>Panel de Pon</em> Nintendo — znanej na Zachodzie jako <em>Tetris Attack</em> na Super Nintendo i <em>Pokémon Puzzle League</em> na Nintendo 64.</p>
+    <p class="fine">Przeczytaj oryginalne strony: <a href="https://aluminumangel.org/attack/">aluminumangel.org/attack</a> · <a href="https://www.nongnu.org/crack-attack/game_play.html">nongnu.org/crack-attack</a>. Animacje na tej stronie to uproszczony model gry, stworzony do celów wyjaśniających.</p>
+    <p class="fine">Tetris Attack, Panel de Pon i Pokémon Puzzle League są znakami towarowymi ich właścicieli; ta strona nie jest z nimi powiązana.</p>
+    <nav class="lang-footer" aria-label="Języki">
+      <a href="../" hreflang="en" lang="en">English</a>
+      <a href="../fr/" hreflang="fr" lang="fr">Français</a>
+      <a href="../de/" hreflang="de" lang="de">Deutsch</a>
+      <a href="../es/" hreflang="es" lang="es">Español</a>
+      <a href="../ru/" hreflang="ru" lang="ru">Русский</a>
+      <a href="../zh/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a>
+      <a href="../ja/" hreflang="ja" lang="ja">日本語</a>
+      <a href="../ko/" hreflang="ko" lang="ko">한국어</a>
+      <a href="../pl/" hreflang="pl" lang="pl" aria-current="true">Polski</a>
+      <a href="../tr/" hreflang="tr" lang="tr">Türkçe</a>
+      <a href="../it/" hreflang="it" lang="it">Italiano</a>
+    </nav>
+  </div>
+</footer>
+
+<noscript><p class="noscript">Animowane lekcje wymagają JavaScriptu. Zasady są mimo to opisane obok każdej z nich.</p></noscript>
+<script type="application/json" id="i18n">{"js.pause":"Pauza","js.play":"Odtwórz","js.reduced":"Animacje są wstrzymane. Naciśnij Odtwórz, by obejrzeć tę lekcję.","js.sent":"Wysyła przeciwnikowi:","js.slab":"szerokość: {w}, wysokość: {h}","js.version":"Wersja {v}","js.beta":"(beta)","js.swap.c1":"Kursor obejmuje dwa sąsiednie bloki.","js.swap.c2":"Zamień je: dwa bloki zamieniają się miejscami.","js.swap.c3":"Przesuń się gdziekolwiek i zamień ponownie.","js.swap.c4":"Możesz też zamienić blok z pustym miejscem...","js.swap.c5":"...przesunie się tam i spadnie, jeśli nic pod nim nie ma.","js.lines.big":"Bloków naraz: {n}! Im większe czyszczenie, tym większe śmieci wysyłasz.","js.lines.i1":"Ułóż poziomo trzy bloki tego samego koloru...","js.lines.o1":"...a zamigoczą i znikną.","js.lines.i2":"...albo trzy w pionie, w kolumnie.","js.lines.o2":"Linie po trzy lub więcej znikają, poziomo lub pionowo.","js.lines.i3":"Wyczyść naraz więcej niż trzy, a wyślesz śmieci. Tu: cztery w kolumnie.","js.lines.i4":"Linie, które się krzyżują, liczą się razem: ta zamiana czyści pięć bloków.","js.chain.i1":"Jedna zamiana uruchamia wszystko.","js.chain.i2":"Możliwe są dłuższe łańcuchy: patrz na tę samą zamianę...","js.chain.i3":"A oto kolejny, długi.","js.chain.w1":"Trzy znikają. Bloki powyżej spadają w lukę...","js.chain.w2":"...i same się układają: drugie czyszczenie, za darmo!","js.chain.w3":"...i jeszcze raz: trzecie!","js.chain.end":"Łańcuch x{m}: wysyła płytę śmieci na całą szerokość (wysokość: {rows}) i mnoży twoje punkty.","js.garbage.i1":"Gdy przeciwnik atakuje, płyta śmieci spada na twój stos.","js.garbage.i2":"Śmieci mają różne rozmiary. Te mają szerokość trzech bloków.","js.garbage.i3":"Duży łańcuch wysyła wyższą płytę. Rozpada się tak samo.","js.garbage.c1":"Nie wyczyścisz jej bezpośrednio. Czyść bloki, które ją dotykają...","js.garbage.c2":"...a rozpadnie się na zwykłe bloki!","js.danger.1":"Twój stos stale rośnie od dołu. Światła po bokach pokazują, jak jest wysoki.","js.danger.2":"Na szczycie się zatrzymuje, a ty masz siedem sekund!","js.danger.3":"Obniż wysoką kolumnę: przesuń jej górny blok na bok.","js.danger.4":"Uratowany! Czyszczenie bloków wstrzymuje też wzrost i odliczanie.","js.danger.5":"Jeśli nic nie zrobisz, stos dojdzie do szczytu...","js.danger.6":"...a gdy minie siedem sekund, przegrywasz.","js.danger.7":"Przytrzymaj Enter, by stos rósł szybciej, gdy brakuje ruchów.","js.gray.1":"Szare bloki są rzadkie. Czyszczą się jak inne, w liniach po trzy lub więcej.","js.gray.2":"Trzy szare bloki wysyłają pełny rząd szarych śmieci.","js.gray.3":"Szare śmieci (u góry) leżą na zwykłych śmieciach.","js.gray.4":"Zwykłe śmieci się rozpadają. Szara płyta zostaje: pęka tylko wtedy, gdy czyszczenie dotyka jej bezpośrednio.","js.calc.min":"Minimum to trzy bloki: bez śmieci.","js.calc.one":"Jeden kawałek śmieci, szerokość w blokach: {w}.","js.calc.many":"Kawałków śmieci: {n}, szerokości w blokach: {list}.","js.calc.nochain":"Pojedyncze czyszczenie to nie łańcuch: nic dodatkowego nie jest wysyłane.","js.calc.chain":"Jeden blok śmieci na całą szerokość, wysokość: {h}.","js.calc.chainmax":"Jeden blok śmieci na całą szerokość, wysokość: {h} (maksimum)."}</script>
+<script src="../dist/site.js?v=8e9bc88f"></script>
+</body>
+</html>

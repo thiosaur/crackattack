@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crack Attack! — ücretsiz Tetris Attack / Panel de Pon tarzı bulmaca</title>
+<meta name="description" content="Crack Attack!, Tetris Attack ve Panel de Pon'dan esinlenen ücretsiz bir bulmaca düellosu: blokları değiştir, üçlü sıra yap, zincirleri birbirine bağla, rakibini çöpün altına göm. Windows, macOS, Linux.">
+<meta name="theme-color" content="#05030b">
+<link rel="canonical" href="https://thiosaur.github.io/crackattack/tr/">
+<link rel="alternate" hreflang="en" href="https://thiosaur.github.io/crackattack/">
+<link rel="alternate" hreflang="fr" href="https://thiosaur.github.io/crackattack/fr/">
+<link rel="alternate" hreflang="de" href="https://thiosaur.github.io/crackattack/de/">
+<link rel="alternate" hreflang="es" href="https://thiosaur.github.io/crackattack/es/">
+<link rel="alternate" hreflang="ru" href="https://thiosaur.github.io/crackattack/ru/">
+<link rel="alternate" hreflang="zh-Hans" href="https://thiosaur.github.io/crackattack/zh/">
+<link rel="alternate" hreflang="ja" href="https://thiosaur.github.io/crackattack/ja/">
+<link rel="alternate" hreflang="ko" href="https://thiosaur.github.io/crackattack/ko/">
+<link rel="alternate" hreflang="pl" href="https://thiosaur.github.io/crackattack/pl/">
+<link rel="alternate" hreflang="tr" href="https://thiosaur.github.io/crackattack/tr/">
+<link rel="alternate" hreflang="it" href="https://thiosaur.github.io/crackattack/it/">
+<link rel="alternate" hreflang="x-default" href="https://thiosaur.github.io/crackattack/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Crack Attack!">
+<meta property="og:title" content="Crack Attack! — ücretsiz Tetris Attack / Panel de Pon tarzı bulmaca">
+<meta property="og:description" content="Tetris Attack ve Panel de Pon'dan esinlenen ücretsiz bulmaca düellosu. Değiştir, zincirle, rakibini çöpe göm. Windows, macOS, Linux.">
+<meta property="og:url" content="https://thiosaur.github.io/crackattack/tr/">
+<meta property="og:image" content="https://thiosaur.github.io/crackattack/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="it_IT">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Crack Attack! — ücretsiz Tetris Attack / Panel de Pon tarzı bulmaca">
+<meta name="twitter:description" content="Tetris Attack ve Panel de Pon'dan esinlenen ücretsiz bulmaca düellosu. Değiştir, zincirle, rakibini çöpe göm. Windows, macOS, Linux.">
+<meta name="twitter:image" content="https://thiosaur.github.io/crackattack/assets/og.png">
+<link rel="icon" href="../assets/ui/logo.png">
+<link rel="stylesheet" href="../css/style.css?v=e89368be">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":["VideoGame","SoftwareApplication"],"name":"Crack Attack!","url":"https://thiosaur.github.io/crackattack/tr/","inLanguage":"tr","description":"Crack Attack!, Tetris Attack ve Panel de Pon'dan esinlenen ücretsiz bir bulmaca düellosu: blokları değiştir, üçlü sıra yap, zincirleri birbirine bağla, rakibini çöpün altına göm. Windows, macOS, Linux.","image":"https://thiosaur.github.io/crackattack/assets/og.png","applicationCategory":"GameApplication","genre":"Puzzle","operatingSystem":"Windows, macOS, Linux","license":"https://www.gnu.org/licenses/gpl-3.0.html","author":{"@type":"Person","name":"Daniel Nelson"},"isBasedOn":{"@type":"VideoGame","name":"Tetris Attack"},"codeRepository":"https://github.com/thiosaur/crackattack","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+</head>
+<body>
+<a class="skip" href="#learn">İçeriğe geç</a>
+
+<header class="nav-wrap">
+  <nav class="nav" aria-label="Ana menü">
+    <a class="brand" href="#top"><img src="../assets/ui/logo.png" alt="" width="40" height="34"><span>Crack Attack!</span></a>
+    <div class="links">
+      <a href="#learn">Nasıl oynanır</a>
+      <a href="#modes">Modlar</a>
+      <a href="#controls">Kontroller</a>
+      <a href="#tips">İpuçları</a>
+      <a href="#gallery">Galeri</a>
+      <a href="#reviews">Yorumlar</a>
+    </div>
+    <a class="btn primary nav-dl" href="#get">İndir</a>
+    <details class="lang-menu">
+      <summary aria-label="Dil"><span aria-hidden="true">🌐</span><b>TR</b></summary>
+      <ul>
+        <li><a href="../" hreflang="en" lang="en">English</a></li>
+        <li><a href="../fr/" hreflang="fr" lang="fr">Français</a></li>
+        <li><a href="../de/" hreflang="de" lang="de">Deutsch</a></li>
+        <li><a href="../es/" hreflang="es" lang="es">Español</a></li>
+        <li><a href="../ru/" hreflang="ru" lang="ru">Русский</a></li>
+        <li><a href="../zh/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a></li>
+        <li><a href="../ja/" hreflang="ja" lang="ja">日本語</a></li>
+        <li><a href="../ko/" hreflang="ko" lang="ko">한국어</a></li>
+        <li><a href="../pl/" hreflang="pl" lang="pl">Polski</a></li>
+        <li><a href="../tr/" hreflang="tr" lang="tr" aria-current="true">Türkçe</a></li>
+        <li><a href="../it/" hreflang="it" lang="it">Italiano</a></li>
+      </ul>
+    </details>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- ============================ HERO ============================ -->
+<section id="top" class="hero">
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <img class="hero-logo" src="../assets/ui/logo.png" alt="Crack Attack!" width="420" height="357">
+    <h1 class="tagline">Değiştir. Temizle. <span class="grad">Zincirle.</span> Ez.</h1>
+    <p class="lead">Hızlı tempolu bir bulmaca düellosu. Blokları sıraya diz, zincirleri tetikle ve kendi yığının tepeye ulaşmadan rakibini çöp yağmuruna göm.</p>
+    <div class="cta">
+      <a class="btn primary big" href="#get">İndir · ücretsiz</a>
+      <a class="btn" href="#learn">Oynamayı öğren</a>
+      <a class="btn" href="#learn" data-tab="attacks">Saldırılar nasıl işler</a>
+    </div>
+    <ul class="facts">
+      <li><strong>Ücretsiz</strong> ve açık kaynak</li>
+      <li><strong>Solo</strong>, bilgisayara karşı veya bir arkadaşına karşı</li>
+      <li>Öğrenmesi kolay, <strong>ustalaşması zor</strong></li>
+      <li><strong>Windows, macOS ve Linux</strong> için</li>
+    </ul>
+  </div>
+  <a class="scroll-hint" href="#origin" aria-label="Derslere kaydır"><span></span></a>
+</section>
+
+<!-- ============================ ORIGIN ============================ -->
+<section id="origin" class="origin">
+  <div class="wrap narrow center">
+    <h2 class="reveal">Tetris Attack ve Panel de Pon'dan esinlenildi</h2>
+    <p class="reveal">Crack Attack!, başlangıçta Nintendo'nun Super Nintendo için çıkardığı bulmaca oyunu <em>Tetris Attack</em>'tan esinlenmiştir; bu oyun da Japonya'daki <em>Panel de Pon</em>'un Batı sürümüdür. Temel fikir aynı: durmadan yükselen bir yığında blokları değiştir, temizlemeleri zincirle ve rakibine çöp gönder. Crack Attack!'ı özgür yazılım olarak Daniel Nelson yarattı; bu sürüm Rust ile baştan yazılmış tam bir yeniden yazımdır.</p>
+  </div>
+</section>
+
+<!-- ============================ LEARN ============================ -->
+<section id="learn" class="section">
+  <div class="wrap">
+    <h2 class="reveal">Nasıl oynanır</h2>
+    <p class="section-lead reveal">Yedi kısa ders. Birini seç ya da oklarla gez. Her demo, birkaç örnekle döngü halinde oynar; düğmeyle duraklatabilirsin.</p>
+
+    <div class="tabs" role="tablist" aria-label="Dersler">
+      <button class="tab" role="tab" id="t-swap" data-tab="swap" aria-controls="tab-swap"><b>1</b><span>İmleç</span></button>
+      <button class="tab" role="tab" id="t-lines" data-tab="lines" aria-controls="tab-lines"><b>2</b><span>Sıralar</span></button>
+      <button class="tab" role="tab" id="t-chain" data-tab="chain" aria-controls="tab-chain"><b>3</b><span>Zincirler</span></button>
+      <button class="tab" role="tab" id="t-garbage" data-tab="garbage" aria-controls="tab-garbage"><b>4</b><span>Çöp</span></button>
+      <button class="tab" role="tab" id="t-danger" data-tab="danger" aria-controls="tab-danger"><b>5</b><span>Tepe</span></button>
+      <button class="tab" role="tab" id="t-gray" data-tab="gray" aria-controls="tab-gray"><b>6</b><span>Gri bloklar</span></button>
+      <button class="tab" role="tab" id="t-attacks" data-tab="attacks" aria-controls="tab-attacks"><b>7</b><span>Saldırı boyutları</span></button>
+    </div>
+    <div class="stage">
+    <div class="tabpanel" id="tab-swap" role="tabpanel" aria-labelledby="t-swap" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">1</span>
+        <h3>Tahta ve imleç</h3>
+        <p>Altı blok genişliğinde bir tahtada oynarsın. <strong>İmlecin</strong> her zaman <strong>yan yana iki bloğu</strong> kaplar. İmleci istediğin yere götür ve kapladığı iki bloğu değiştir.</p>
+        <p>Bir bloğu boş bir kareyle de değiştirebilirsin: blok oraya kayar, altında bir şey yoksa da düşer.</p>
+      </div>
+      <div class="demo-card" data-lesson="swap" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Döngüdeki ders: imleç yan yana iki bloğu değiştiriyor, sonra bir bloğu boş bir kareye kaydırıyor"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Duraklat</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-lines" role="tabpanel" aria-labelledby="t-lines" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">2</span>
+        <h3>Üçlü sıra yap — ya da daha fazlası</h3>
+        <p><strong>Aynı renkten üç veya daha fazla bloğu</strong> yan yana ya da alt alta diz; temizlenirler.</p>
+        <ul class="gems">
+          <li><i class="gem purple"></i><i class="gem green"></i><i class="gem yellow"></i><i class="gem orange"></i><i class="gem blue"></i> eşleştirilecek beş renk</li>
+          <li>Yığın <strong>alttan yükselmeye</strong> devam eder; bu yüzden hayatta kalmanın yolu blokları temizlemektir.</li>
+        </ul>
+        <p><strong>Dört, beş veya daha fazlasını tek seferde temizle</strong> — uzun bir sıra ya da kesişen sıralar — ve rakibine <strong>çöp</strong> gönder. Temizleme ne kadar büyükse çöp de o kadar büyük olur. <a href="#learn" data-tab="attacks">Boyutlara bak.</a></p>
+      </div>
+      <div class="demo-card" data-lesson="lines" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Döngüdeki ders: yan yana ve alt alta üçlü sıralar, ardından çöp gönderen dörtlü ve beşli temizlemeler"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Duraklat</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-chain" role="tabpanel" aria-labelledby="t-chain" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">3</span>
+        <h3>Zincirler: yerçekimi senin için çalışsın</h3>
+        <p>Bloklar yok olunca üstündeki her şey düşer. Düşen bloklar kendiliğinden sıra oluşturursa bir temizleme daha elde edersin — ve bir <strong>zincir</strong> doğar. İkinci temizleme <strong>x2</strong>, üçüncüsü <strong>x3</strong> yapar, böyle devam eder.</p>
+        <ul>
+          <li>Solo modunda, bir zincirin <strong>tüm puanları</strong> çarpanıyla çarpılır.</li>
+          <li>Düelloda biten bir zincir rakibe büyük bir çöp bloğu gönderir: zincir ne kadar uzunsa blok o kadar yüksek olur.</li>
+        </ul>
+        <aside class="note"><strong>Kelimeler üzerine bir not.</strong> Bu oyunda <em>zincir</em>, kendiliğinden birbirini izleyen temizlemeler dizisidir; <em>kombo</em> ise birden fazla bloğu tek seferde temizlemektir. Eski rehberler zincire “kombo” der.</aside>
+      </div>
+      <div class="demo-card" data-lesson="chain" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Döngüdeki ders: tek bir değiştirme, iki sonra üç temizlemelik bir zincir başlatıyor"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Duraklat</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-garbage" role="tabpanel" aria-labelledby="t-garbage" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">4</span>
+        <h3>Çöp: saldırıya uğradığında</h3>
+        <p>Çöp, yığınının üzerine düşen <strong>büyük bir levhadır</strong>. Doğrudan temizleyemezsin — ama ona <strong>değen</strong> herhangi bir bloğu temizlersen çöp <strong>kırılır</strong> ve sıradan bloklara dönüşür.</p>
+        <p>Başka bir çöpe değen çöp, onunla birlikte kırılır. Çoğu zaman oyuna geri dönüşün yolu budur, çünkü yeni bloklar yeni sıralar oluşturacak şekilde düşebilir.</p>
+      </div>
+      <div class="demo-card" data-lesson="garbage" style="--ratio: 7.2 / 7.2">
+        <canvas role="img" aria-label="Döngüdeki ders: farklı boyutlardaki çöp levhaları yığının üzerine iniyor ve yakındaki bir blok temizlenince kırılıyor"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Duraklat</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-danger" role="tabpanel" aria-labelledby="t-danger" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">5</span>
+        <h3>Tepeye ulaşma</h3>
+        <p>Yığın gitgide hızlanarak yükselir. <strong>İki yandaki ışıklar</strong> ne kadar yüksek olduğunu gösterir. Tepeye ulaşınca durur ve onu aşağı indirmek için <strong>yedi saniyen</strong> vardır — yoksa kaybedersin.</p>
+        <ul>
+          <li>Blokları temizlemek <strong>yükselişi durdurur</strong>; bloklar yok olurken geri sayım da işlemez.</li>
+          <li>Blok mu kıtlaştı? Yığını daha hızlı yükseltmek için <strong>Enter'a basılı tut</strong>.</li>
+        </ul>
+      </div>
+      <div class="demo-card" data-lesson="danger" style="--ratio: 7.2 / 10.2">
+        <canvas role="img" aria-label="Döngüdeki ders: yığın tepeye yükseliyor, yedi saniyelik geri sayım başlıyor, sonra bir kez kurtarılıyor, bir kez kaybediliyor"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Duraklat</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-gray" role="tabpanel" aria-labelledby="t-gray" hidden>
+    <article class="lesson">
+      <div class="lesson-text">
+        <span class="step">6</span>
+        <h3>Nadir görülen gri blok</h3>
+        <p>Ara sıra <strong>gri bir blok</strong> çıkar. Diğerleri gibi üç veya daha fazlalık sıralarda temizlenir, ama özeldir: temizlenince <strong>tam genişlikte gri çöp</strong> gönderir.</p>
+        <p>Gri çöp, sıradan çöple birlikte kırılmaz. Yalnızca bir temizleme ona <strong>doğrudan</strong> değdiğinde kırılır.</p>
+      </div>
+      <div class="demo-card" data-lesson="gray" style="--ratio: 7.2 / 6.2">
+        <canvas role="img" aria-label="Döngüdeki ders: üç gri blok gri çöp gönderiyor, sıradan çöp kırılırken gri çöp ayakta kalıyor"></canvas>
+        <p class="demo-caption" aria-live="off"></p>
+        <div class="sent"></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ Duraklat</button><span class="dots" aria-hidden="true"></span></div>
+      </div>
+    </article>
+    </div>
+    <div class="tabpanel" id="tab-attacks" role="tabpanel" aria-labelledby="t-attacks" hidden>
+      <h3 class="panel-title">Ne kadar gönderirsin?</h3>
+      <p class="section-lead">Düelloda temizlediklerin rakibinin üzerine çöp olarak iner. Kaydırıcıları dene — boyutlar oyunun kendi değerleridir.</p>
+    <div id="calc" class="calc">
+      <div class="calc-col">
+        <h3>Blokları tek seferde temizlemek</h3>
+        <label for="calc-n">Birlikte temizlenen blok: <output id="calc-n-out">4</output></label>
+        <input id="calc-n" type="range" min="3" max="16" value="4">
+        <div class="calc-strip" id="calc-pieces" aria-live="polite"></div>
+        <p id="calc-piece-text" class="calc-text"></p>
+        <p class="fine">Her parça bir sıra yüksekliğindedir. 4'lük bir sıra 3 blokluk çöp gönderir; 7 bloktan itibaren çöp parçalara bölünür.</p>
+      </div>
+      <div class="calc-col">
+        <h3>Bir zinciri bitirmek</h3>
+        <label for="calc-c">Zincir uzunluğu: <output id="calc-c-out">x2</output></label>
+        <input id="calc-c" type="range" min="1" max="13" value="2">
+        <div class="calc-strip tall" id="calc-chain" aria-live="polite"></div>
+        <p id="calc-chain-text" class="calc-text"></p>
+        <p class="fine">x<em>n</em> bir zincir, <em>n − 1</em> sıra yüksekliğinde (en çok 11) tam genişlikte bir blok gönderir. Zincirler oyundaki en güçlü saldırıdır.</p>
+      </div>
+    </div>
+    </div>
+    </div>
+    <div class="tab-nav">
+      <button class="btn" data-step="-1">← Önceki</button>
+      <button class="btn primary" data-step="1">Sonraki →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ MODES ============================ -->
+<section id="modes" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">Oynama biçimleri</h2>
+    <div class="cards">
+      <article class="card reveal">
+        <i class="gem purple big"></i>
+        <h3>Solo</h3>
+        <p>Yığın seni yenmeden en yüksek skoru topla. Daha büyük temizlemeler ve daha uzun zincirler daha çok puan değerindedir — ama kendi büyük saldırıların da üstüne düşer, yani bir denge kurman gerekir. En iyi skorun kaydedilir.</p>
+      </article>
+      <article class="card reveal">
+        <i class="gem orange big"></i>
+        <h3>Bilgisayara karşı</h3>
+        <p>Bilgisayara karşı üç zorluk seviyeli bir düello: <strong>kolay</strong>, <strong>orta</strong> ve <strong>zor</strong>. Bir insanla karşılaşmadan önce zincir çalışmak için ideal yer.</p>
+      </article>
+      <article class="card reveal">
+        <i class="gem blue big"></i>
+        <h3>Bir arkadaşa karşı</h3>
+        <p><strong>Yerel ağındaki</strong> birine meydan oku ya da adresini girerek doğrudan bağlan. Ayakta kalan son yığın turu kazanır.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CONTROLS ============================ -->
+<section id="controls" class="section">
+  <div class="wrap narrow">
+    <h2 class="reveal">Kontroller</h2>
+    <p class="section-lead reveal">Klavye veya oyun kolu. Tuşları seçeneklerden değiştirebilirsin.</p>
+    <table class="controls reveal">
+      <thead><tr><th>Eylem</th><th>Klavye</th><th>Oyun kolu</th></tr></thead>
+      <tbody>
+        <tr><td>İmleci hareket ettir</td><td><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></td><td>Yön tuşları veya sol analog</td></tr>
+        <tr><td>İki bloğu değiştir</td><td><kbd>Boşluk</kbd></td><td><kbd>A</kbd> / <kbd>✕</kbd></td></tr>
+        <tr><td>Yığını yükselt</td><td><kbd>Enter</kbd></td><td><kbd>X</kbd> / <kbd>□</kbd></td></tr>
+        <tr><td>Duraklat</td><td><kbd>P</kbd> veya <kbd>Esc</kbd></td><td><kbd>Start</kbd></td></tr>
+      </tbody>
+    </table>
+    <p class="fine center reveal">Crack Attack! bir bilgisayar oyunudur: klavye veya oyun koluyla oynanır.</p>
+  </div>
+</section>
+
+<!-- ============================ TIPS ============================ -->
+<section id="tips" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">Daha akıllı oyna</h2>
+    <div class="cards tips">
+      <article class="card reveal"><i class="gem green"></i><h3>Nefes almak için temizle</h3><p>Bloklar yok olurken yığın yükselmez. Zor durumdayken her temizleme sana zaman kazandırır.</p></article>
+      <article class="card reveal"><i class="gem yellow"></i><h3>Zincir düşün</h3><p>Blokları, bir temizleme diğerlerini yeni bir sıraya düşürecek şekilde hazırla. x4 bir zincir üç tam sıra gönderir.</p></article>
+      <article class="card reveal"><i class="gem orange"></i><h3>Bilerek kır</h3><p>Çöp kırılınca bloklara dönüşür. Yanında bir temizleme yap ve yeni blokların yerine düşmesine izin ver.</p></article>
+      <article class="card reveal"><i class="gem purple"></i><h3>Alçak tut</h3><p>Alçak ve düz bir yığın düşünmek için zaman bırakır. Son saniyeleri bekleme.</p></article>
+      <article class="card reveal"><i class="gem blue"></i><h3>Hamlen kalmadığında yükselt</h3><p>Görünürde sıra yok mu? Beklemek yerine yeni blokları getirmek için Enter'a basılı tut.</p></article>
+      <article class="card reveal"><i class="gem gray"></i><h3>Griye dikkat</h3><p>Gri çöp, sıradan çöpü yok eden kırılmayı yok sayar. Ona doğrudan değmeyi planla.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ GALLERY ============================ -->
+<section id="gallery" class="section">
+  <div class="wrap">
+    <h2 class="reveal">Oyundan</h2>
+    <div class="gallery">
+      <figure class="reveal"><img src="../assets/shots/solo-chain-sign.jpg" alt="Renkli blokların yığını ve bir temizlemenin üstünde beliren büyük bir sayı" width="820" height="820" loading="lazy"><figcaption>Bloklar temizleniyor ve bir tabela temizlemenin boyutunu gösteriyor.</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/danger-stack.jpg" alt="Tepeye neredeyse ulaşmış uzun bir yığın, iki yandaki seviye ışıkları yanıyor" width="820" height="820" loading="lazy"><figcaption>Tehlike! Yandaki ışıklar yığının yüksek olduğunu bildiriyor.</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/vs-garbage-shatter.jpg" alt="Bir düelloda yığının üzerinde kırmızı mücevherlere dönüşen çöp" width="820" height="820" loading="lazy"><figcaption>Bir düello: çöp kırmızı mücevherlere dönüşerek kırılıyor.</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/vs-garbage-awaking.jpg" alt="Kırılan çöpten kurtulan blokların renklenerek uyanışı" width="820" height="820" loading="lazy"><figcaption>Kırılan çöp, renklenerek uyanan bloklara dönüşür.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ REVIEWS ============================ -->
+<section id="reviews" class="section alt">
+  <div class="wrap">
+    <h2 class="reveal">İnsanlar ne diyor</h2>
+    <p class="section-lead reveal">Dergiler ve web siteleri Crack Attack!'ı neredeyse yirmi yıldır öneriyor.</p>
+    <div class="quotes">
+      <blockquote class="quote big reveal">
+        <p lang="en">The graphics and gameplay are simple, but it’s so criminally addictive that you won’t care.</p>
+        <footer><cite>Atomic</cite> dergisi, sayı 61, 2006 · <a href="https://archive.org/details/atomic-061/page/68" hreflang="en">oku</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Two-player Crack Attack games are about as much fun as you can have with your Linux box.</p>
+        <footer><cite>Linux Starter Pack</cite> (<cite>Linux Format</cite>), 2008 · <a href="https://archive.org/details/manualzilla-id-5971019/page/60" hreflang="en">oku</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">If I can mention only one classic puzzle game, it has to be Crack-Attack.</p>
+        <footer><cite>Atomic</cite> dergisi, sayı 85, 2008 · <a href="https://archive.org/details/atomic-085" hreflang="en">oku</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">An excellent, fast paced puzzle game… the game play is really addictive and polished.</p>
+        <footer><cite>Acid Play</cite>, puan: 8,5/10 · <a href="https://web.archive.org/web/20081221153303/http://www.acid-play.com/download/crack-attack/" hreflang="en">oku</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Learning time is minimal, of course, but the fun is guaranteed.</p>
+        <details class="orig"><summary>İngilizce çeviri</summary><p lang="it">Il tempo di apprendimento necessario è ovviamente minimo, ma il divertimento è assicurato</p><small>Orijinal (İtalyanca)</small></details>
+        <footer><cite>PC Professionale</cite> (İtalya), 2010 · <a href="https://archive.org/details/pcprofessionale233/page/103" hreflang="it">oku</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Crack-Attack, a free Tetris clone, and Neverball stand out for their cool sound and nice 3D graphics.</p>
+        <details class="orig"><summary>İngilizce çeviri</summary><p lang="de">Crack-Attack, ein freier Tetris-Klon, und das Geschicklichkeitsspiel Neverball zeichnen sich durch coolen Sound und schicke 3D-Grafik aus</p><small>Orijinal (Almanca)</small></details>
+        <footer><cite>c’t</cite> (Almanya), 2008 · <a href="https://archive.org/details/ct0825_202310/ct0806" hreflang="de">oku</a></footer>
+      </blockquote>
+      <blockquote class="quote reveal">
+        <p lang="en">Linux Format had two unofficial-official games of choice… Unreal Tournament and the less resource-hungry Crack Attack.</p>
+        <footer><cite>Linux Format</cite>, son sayı, 2025 · <a href="https://archive.org/details/linux-format-july-2025-final-issue/page/8" hreflang="en">oku</a></footer>
+      </blockquote>
+    </div>
+    <p class="fine center reveal">Alıntılar, kaynaklarıyla birlikte, özgün dilinde kısa pasajlardır. Birini kendimiz Türkçeye çevirdiysek özgün metin tek dokunuş uzağınızda.</p>
+  </div>
+</section>
+
+<!-- ============================ GET ============================ -->
+<section id="get" class="section dl">
+  <div class="wrap narrow center">
+    <h2 class="reveal">Crack Attack!'ı indir</h2>
+    <p class="section-lead reveal">Ücretsiz ve açık kaynak (GPL-3.0). <span id="dl-version">Son sürüm</span> — solo, bilgisayara karşı ve ağındaki bir arkadaşına karşı.</p>
+    <div class="dl-grid reveal">
+      <a class="dl-card" data-os="macos" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>macOS</strong><span>Apple Silicon · .zip</span></a>
+      <a class="dl-card" data-os="windows" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>Windows</strong><span>64 bit · .zip</span></a>
+      <a class="dl-card" data-os="linux" href="https://github.com/thiosaur/crackattack/releases/latest"><strong>Linux</strong><span>x86_64 · .tar.gz</span></a>
+    </div>
+    <p class="desktop-note reveal">Crack Attack! bir <strong>bilgisayar oyunudur</strong>: Windows, macOS veya Linux çalıştıran bir makineye indir. Telefon veya tablet sürümü yoktur.</p>
+    <p class="fine reveal">İlk sürümlerde pürüzler olabilir. <a href="https://github.com/thiosaur/crackattack/releases/latest">Sürüm notları</a> · <a href="https://github.com/thiosaur/crackattack">Kaynak kodu</a></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p><strong>Crack Attack!</strong>, Daniel Nelson tarafından yaratılmış ve GNU Genel Kamu Lisansı altında özgür yazılım olarak yayımlanmıştır. Nintendo'nun <em>Panel de Pon</em> serisinin geleneğini sürdürür — bu seri Batı'da Super Nintendo'da <em>Tetris Attack</em>, Nintendo 64'te <em>Pokémon Puzzle League</em> adıyla bilinir.</p>
+    <p class="fine">Orijinal sayfaları oku: <a href="https://aluminumangel.org/attack/">aluminumangel.org/attack</a> · <a href="https://www.nongnu.org/crack-attack/game_play.html">nongnu.org/crack-attack</a>. Bu sayfadaki animasyonlar, açıklama amacıyla hazırlanmış, oyunun basitleştirilmiş bir modelidir.</p>
+    <p class="fine">Tetris Attack, Panel de Pon ve Pokémon Puzzle League ilgili sahiplerinin ticari markalarıdır; bu site onlarla bağlantılı değildir.</p>
+    <nav class="lang-footer" aria-label="Diller">
+      <a href="../" hreflang="en" lang="en">English</a>
+      <a href="../fr/" hreflang="fr" lang="fr">Français</a>
+      <a href="../de/" hreflang="de" lang="de">Deutsch</a>
+      <a href="../es/" hreflang="es" lang="es">Español</a>
+      <a href="../ru/" hreflang="ru" lang="ru">Русский</a>
+      <a href="../zh/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a>
+      <a href="../ja/" hreflang="ja" lang="ja">日本語</a>
+      <a href="../ko/" hreflang="ko" lang="ko">한국어</a>
+      <a href="../pl/" hreflang="pl" lang="pl">Polski</a>
+      <a href="../tr/" hreflang="tr" lang="tr" aria-current="true">Türkçe</a>
+      <a href="../it/" hreflang="it" lang="it">Italiano</a>
+    </nav>
+  </div>
+</footer>
+
+<noscript><p class="noscript">Animasyonlu derslerin çalışması için JavaScript gerekir. Kurallar yine de her dersin yanında yazılıdır.</p></noscript>
+<script type="application/json" id="i18n">{"js.pause":"Duraklat","js.play":"Oynat","js.reduced":"Animasyonlar duraklatıldı. Bu dersi izlemek için Oynat'a bas.","js.sent":"Rakibine giden:","js.slab":"{w} geniş, {h} yüksek","js.version":"Sürüm {v}","js.beta":"(beta)","js.swap.c1":"İmleç yan yana iki bloğu kaplar.","js.swap.c2":"Değiştir: iki blok yer değiştirir.","js.swap.c3":"İstediğin yere git ve yine değiştir.","js.swap.c4":"Bir bloğu boş bir kareyle de değiştirebilirsin...","js.swap.c5":"...blok oraya kayar, altında bir şey yoksa düşer.","js.lines.big":"Tek seferde {n} blok! Temizleme ne kadar büyükse gönderdiğin çöp de o kadar büyük.","js.lines.i1":"Aynı renkten üç bloğu yan yana diz...","js.lines.o1":"...yanıp sönüp yok olurlar.","js.lines.i2":"...ya da bir sütunda alt alta üç tane.","js.lines.o2":"Üç veya daha fazlalık sıralar, yan yana ya da alt alta, temizlenir.","js.lines.i3":"Tek seferde üçten fazlasını temizle, çöp göndermiş olursun. Burada bir sütunda dört.","js.lines.i4":"Kesişen sıralar birlikte sayılır: bu hamle beş blok temizler.","js.chain.i1":"Tek bir hamle her şeyi başlatır.","js.chain.i2":"Daha uzun zincirler de mümkün: aynı hamleyi izle...","js.chain.i3":"İşte bir uzun zincir daha.","js.chain.w1":"Üçü temizlendi. Üstündeki bloklar boşluğa düşüyor...","js.chain.w2":"...ve kendiliğinden sıralanıyor: bedavaya ikinci temizleme!","js.chain.w3":"...ve bir daha: üçüncü!","js.chain.end":"x{m} bir zincir: tam genişlikte bir çöp levhası (yükseklik {rows}) gönderir ve puanlarını çarpar.","js.garbage.i1":"Rakibin saldırınca yığınının üzerine bir çöp levhası düşer.","js.garbage.i2":"Çöp farklı boyutlarda gelir. Bu üç geniş.","js.garbage.i3":"Büyük bir zincir daha yüksek bir levha gönderir. Aynı şekilde kırılır.","js.garbage.c1":"Doğrudan temizleyemezsin. Ona değen blokları temizle...","js.garbage.c2":"...ve sıradan bloklara dönüşerek kırılır!","js.danger.1":"Yığının alttan yükselmeye devam eder. Yandaki ışıklar ne kadar yüksek olduğunu gösterir.","js.danger.2":"Tepede durur ve yedi saniyen vardır!","js.danger.3":"Uzun sütunu indir: en üstteki bloğu yana kaydır.","js.danger.4":"Kurtuldun! Blok temizlemek yükselişi ve geri sayımı da durdurur.","js.danger.5":"Hiçbir şey yapmazsan yığın tepeye ulaşır...","js.danger.6":"...ve yedi saniye dolunca kaybedersin.","js.danger.7":"Hamlen kalmadığında yığını daha hızlı yükseltmek için Enter'a basılı tut.","js.gray.1":"Gri bloklar nadirdir. Diğerleri gibi üç veya daha fazlalık sıralarda temizlenir.","js.gray.2":"Üç gri blok, tam bir sıra gri çöp gönderir.","js.gray.3":"Gri çöp (üstte) sıradan çöpün üzerinde duruyor.","js.gray.4":"Sıradan çöp kırılır. Gri levha yerinde kalır: yalnızca bir temizleme ona doğrudan değince kırılır.","js.calc.min":"Minimum üç bloktur: çöp yok.","js.calc.one":"{w} blok genişliğinde tek parça çöp.","js.calc.many":"{n} parça çöp: {list} blok genişliğinde.","js.calc.nochain":"Tek bir temizleme zincir değildir: fazladan bir şey gönderilmez.","js.calc.chain":"Tek parça çöp, tam genişlik, yükseklik {h}.","js.calc.chainmax":"Tek parça çöp, tam genişlik, yükseklik {h} (en çok)."}</script>
+<script src="../dist/site.js?v=8e9bc88f"></script>
+</body>
+</html>
