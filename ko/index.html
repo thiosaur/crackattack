@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Crack Attack! — Tetris Attack / Panel de Pon풍 무료 퍼즐 게임</title>
-<meta name="description" content="Crack Attack!은 Tetris Attack과 Panel de Pon에서 영감을 받은 무료 퍼즐 대전 게임이에요. 블록을 바꿔 세 개를 맞추고, 연쇄를 이어 가며 상대를 방해 블록 아래에 묻어 보세요. 움직이는 데모로 규칙을 배울 수 있어요. Windows, macOS, Linux.">
+<meta name="description" content="Crack Attack!은 Tetris Attack과 Panel de Pon에서 영감을 받은 무료 퍼즐 게임이에요. 블록을 바꿔 세 개 이상을 맞추고, 연쇄를 쌓아 방해 블록으로 상대를 압박해 보세요. 움직이는 데모로 규칙을 배울 수 있어요. Windows, macOS, Linux 지원.">
 <meta name="theme-color" content="#05030b">
 <link rel="canonical" href="https://thiosaur.github.io/crackattack/ko/">
 <link rel="alternate" hreflang="en" href="https://thiosaur.github.io/crackattack/">
@@ -22,7 +22,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Crack Attack!">
 <meta property="og:title" content="Crack Attack! — Tetris Attack / Panel de Pon풍 무료 퍼즐 게임">
-<meta property="og:description" content="Tetris Attack과 Panel de Pon에서 영감을 받은 무료 퍼즐 대전. 바꾸고, 연쇄하고, 상대를 방해 블록으로 묻어 버리세요. Windows, macOS, Linux.">
+<meta property="og:description" content="Tetris Attack과 Panel de Pon에서 영감을 받은 무료 퍼즐 게임. 블록을 바꾸고 연쇄를 쌓아 방해 블록으로 상대를 압박하세요. Windows, macOS, Linux 지원.">
 <meta property="og:url" content="https://thiosaur.github.io/crackattack/ko/">
 <meta property="og:image" content="https://thiosaur.github.io/crackattack/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -40,17 +40,17 @@
 <meta property="og:locale:alternate" content="it_IT">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Crack Attack! — Tetris Attack / Panel de Pon풍 무료 퍼즐 게임">
-<meta name="twitter:description" content="Tetris Attack과 Panel de Pon에서 영감을 받은 무료 퍼즐 대전. 바꾸고, 연쇄하고, 상대를 방해 블록으로 묻어 버리세요. Windows, macOS, Linux.">
+<meta name="twitter:description" content="Tetris Attack과 Panel de Pon에서 영감을 받은 무료 퍼즐 게임. 블록을 바꾸고 연쇄를 쌓아 방해 블록으로 상대를 압박하세요. Windows, macOS, Linux 지원.">
 <meta name="twitter:image" content="https://thiosaur.github.io/crackattack/assets/og.png">
 <link rel="icon" href="../assets/ui/logo.png">
 <link rel="stylesheet" href="../css/style.css?v=a96f76e5">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":["VideoGame","SoftwareApplication"],"name":"Crack Attack!","url":"https://thiosaur.github.io/crackattack/ko/","inLanguage":"ko","description":"Crack Attack!은 Tetris Attack과 Panel de Pon에서 영감을 받은 무료 퍼즐 대전 게임이에요. 블록을 바꿔 세 개를 맞추고, 연쇄를 이어 가며 상대를 방해 블록 아래에 묻어 보세요. 움직이는 데모로 규칙을 배울 수 있어요. Windows, macOS, Linux.","image":"https://thiosaur.github.io/crackattack/assets/og.png","applicationCategory":"GameApplication","genre":"Puzzle","operatingSystem":"Windows, macOS, Linux","license":"https://www.gnu.org/licenses/gpl-3.0.html","author":{"@type":"Person","name":"Daniel Nelson"},"isBasedOn":{"@type":"VideoGame","name":"Tetris Attack"},"codeRepository":"https://github.com/thiosaur/crackattack","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":["VideoGame","SoftwareApplication"],"name":"Crack Attack!","url":"https://thiosaur.github.io/crackattack/ko/","inLanguage":"ko","description":"Crack Attack!은 Tetris Attack과 Panel de Pon에서 영감을 받은 무료 퍼즐 게임이에요. 블록을 바꿔 세 개 이상을 맞추고, 연쇄를 쌓아 방해 블록으로 상대를 압박해 보세요. 움직이는 데모로 규칙을 배울 수 있어요. Windows, macOS, Linux 지원.","image":"https://thiosaur.github.io/crackattack/assets/og.png","applicationCategory":"GameApplication","genre":"Puzzle","operatingSystem":"Windows, macOS, Linux","license":"https://www.gnu.org/licenses/gpl-3.0.html","author":{"@type":"Person","name":"Daniel Nelson"},"isBasedOn":{"@type":"VideoGame","name":"Tetris Attack"},"codeRepository":"https://github.com/thiosaur/crackattack","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 </head>
 <body>
 <a class="skip" href="#learn">본문으로 건너뛰기</a>
 
 <header class="nav-wrap">
-  <nav class="nav" aria-label="메인">
+  <nav class="nav" aria-label="메인 내비게이션">
     <a class="brand" href="#top"><img src="../assets/ui/logo.png" alt="" width="40" height="34"><span>Crack Attack!</span></a>
     <div class="links">
       <a href="#learn">게임 방법</a>
@@ -87,8 +87,8 @@
   <canvas id="hero-canvas" aria-hidden="true"></canvas>
   <div class="hero-inner">
     <img class="hero-logo" src="../assets/ui/logo.png" alt="Crack Attack!" width="420" height="357">
-    <h1 class="tagline">바꾸고. 지우고. <span class="grad">연쇄하고.</span> 박살 내라.</h1>
-    <p class="lead">빠른 퍼즐 대전. 블록을 맞추고, 연쇄를 일으키고, 내 블록 더미가 맨 위에 닿기 전에 상대를 방해 블록의 산사태 아래에 묻어 버리세요.</p>
+    <h1 class="tagline">바꾸세요. 지우세요. <span class="grad">연쇄를 만드세요.</span> 승리하세요.</h1>
+    <p class="lead">빠르게 펼쳐지는 퍼즐 대전이에요. 같은 색 블록을 맞추고 연쇄를 일으켜 방해 블록으로 상대를 압도하세요. 내 블록 더미가 맨 위에 닿지 않도록 주의하세요.</p>
     <div class="cta">
       <a class="btn primary big" href="#get">다운로드 · 무료</a>
       <a class="btn" href="#learn">게임 방법 배우기</a>
@@ -119,13 +119,13 @@
     <p class="section-lead reveal">짧은 강좌 일곱 개. 하나를 고르거나 화살표로 넘겨 보세요. 각 데모는 여러 예시를 반복 재생하며, 버튼으로 일시 정지할 수 있어요.</p>
 
     <div class="tabs" role="tablist" aria-label="강좌">
-      <button class="tab" role="tab" id="t-swap" data-tab="swap" aria-controls="tab-swap"><b>1</b><span>커서</span></button>
+      <button class="tab" role="tab" id="t-swap" data-tab="swap" aria-controls="tab-swap"><b>1</b><span>블록 바꾸기</span></button>
       <button class="tab" role="tab" id="t-lines" data-tab="lines" aria-controls="tab-lines"><b>2</b><span>줄 맞추기</span></button>
       <button class="tab" role="tab" id="t-chain" data-tab="chain" aria-controls="tab-chain"><b>3</b><span>연쇄</span></button>
       <button class="tab" role="tab" id="t-garbage" data-tab="garbage" aria-controls="tab-garbage"><b>4</b><span>방해 블록</span></button>
-      <button class="tab" role="tab" id="t-danger" data-tab="danger" aria-controls="tab-danger"><b>5</b><span>꼭대기</span></button>
+      <button class="tab" role="tab" id="t-danger" data-tab="danger" aria-controls="tab-danger"><b>5</b><span>패배 피하기</span></button>
       <button class="tab" role="tab" id="t-gray" data-tab="gray" aria-controls="tab-gray"><b>6</b><span>회색 블록</span></button>
-      <button class="tab" role="tab" id="t-attacks" data-tab="attacks" aria-controls="tab-attacks"><b>7</b><span>공격 크기</span></button>
+      <button class="tab" role="tab" id="t-attacks" data-tab="attacks" aria-controls="tab-attacks"><b>7</b><span>방해 블록 크기</span></button>
     </div>
     <div class="stage">
     <div class="tabpanel" id="tab-swap" role="tabpanel" aria-labelledby="t-swap" hidden>
@@ -133,13 +133,13 @@
       <div class="lesson-text">
         <span class="step">1</span>
         <h3>게임판과 커서</h3>
-        <p>게임판은 블록 여섯 개 너비예요. <strong>커서</strong>는 항상 <strong>나란히 있는 블록 두 개</strong>를 덮고 있어요. 커서를 움직여 덮고 있는 두 블록의 자리를 바꾸세요.</p>
+        <p>게임판의 너비는 블록 여섯 칸이에요. <strong>커서</strong>는 항상 <strong>좌우로 나란한 두 칸</strong>을 선택해요. 커서를 움직여 두 칸에 있는 블록의 자리를 바꾸세요.</p>
         <p>블록과 빈칸을 바꿀 수도 있어요. 블록이 옆으로 밀려가고, 아래가 비어 있으면 떨어져요.</p>
       </div>
       <div class="demo-card" data-lesson="swap" style="--ratio: 7.2 / 6.2">
-        <canvas role="img" aria-label="반복 재생 강좌: 커서가 나란한 블록 두 개를 바꾼 뒤, 블록 하나를 빈칸으로 밀어 넣는다"></canvas>
+        <canvas role="img" aria-label="움직이는 데모: 커서가 나란한 블록 두 개를 바꾼 뒤, 블록 하나를 빈칸으로 옮긴다"></canvas>
         <p class="demo-caption" aria-live="off"></p>
-        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 정지</button><span class="dots" aria-hidden="true"></span></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 일시 정지</button><span class="dots" aria-hidden="true"></span></div>
       </div>
     </article>
     </div>
@@ -147,19 +147,19 @@
     <article class="lesson">
       <div class="lesson-text">
         <span class="step">2</span>
-        <h3>세 개 이상을 한 줄로</h3>
+        <h3>세 개 이상 맞추기</h3>
         <p><strong>같은 색 블록 세 개 이상</strong>을 가로나 세로로 한 줄에 맞추면 사라져요.</p>
         <ul class="gems">
           <li><i class="gem purple"></i><i class="gem green"></i><i class="gem yellow"></i><i class="gem orange"></i><i class="gem blue"></i> 맞춰야 할 다섯 가지 색</li>
-          <li>블록 더미는 <strong>아래에서 계속 올라와요</strong>. 블록을 지워야 살아남을 수 있죠.</li>
+          <li>새 줄이 <strong>아래에서 계속 올라와요</strong>. 블록을 지워서 더미가 꼭대기에 닿지 않게 하세요.</li>
         </ul>
-        <p><strong>네 개, 다섯 개 이상을 한꺼번에 지우면</strong> — 긴 줄이든, 교차하는 줄이든 — 상대에게 <strong>방해 블록</strong>을 보내요. 많이 지울수록 방해 블록도 커져요. <a href="#learn" data-tab="attacks">크기 보기.</a></p>
+        <p><strong>같은 색 블록 네 개 이상을 한꺼번에 지우면</strong> — 긴 한 줄이든, 이어진 여러 줄이든 — 상대에게 <strong>방해 블록</strong>을 보내요. 많이 지울수록 방해 블록도 많이 가요. <a href="#learn" data-tab="attacks">크기 보기.</a></p>
       </div>
       <div class="demo-card" data-lesson="lines" style="--ratio: 7.2 / 6.2">
         <canvas role="img" aria-label="반복 재생 강좌: 가로와 세로로 세 개 줄이 지워지고, 이어서 네 개와 다섯 개를 지워 방해 블록을 보낸다"></canvas>
         <p class="demo-caption" aria-live="off"></p>
         <div class="sent"></div>
-        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 정지</button><span class="dots" aria-hidden="true"></span></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 일시 정지</button><span class="dots" aria-hidden="true"></span></div>
       </div>
     </article>
     </div>
@@ -173,13 +173,13 @@
           <li>솔로에서는 연쇄의 <strong>모든 점수</strong>에 그 배율이 곱해져요.</li>
           <li>대전에서는 연쇄가 끝나면 상대에게 커다란 방해 블록 하나가 가요. 연쇄가 길수록 더 높아요.</li>
         </ul>
-        <aside class="note"><strong>용어 설명.</strong> 이 게임에서 <em>연쇄</em>는 저절로 이어지는 연속된 소거이고, <em>콤보</em>는 블록 여러 개를 한꺼번에 지우는 것이에요. 오래된 공략에서는 연쇄를 “콤보”라고 부르기도 해요.</aside>
+        <aside class="note"><strong>연쇄와 콤보.</strong> <em>연쇄</em>는 떨어지는 블록이 새로 줄을 만들면서 이어지는 연속된 소거이고, <em>콤보</em>는 같은 색 블록 네 개 이상을 한꺼번에 지우는 것이에요. 오래된 Crack Attack! 공략 중에는 연쇄를 “콤보”라고 부르는 것도 있어요.</aside>
       </div>
       <div class="demo-card" data-lesson="chain" style="--ratio: 7.2 / 6.2">
         <canvas role="img" aria-label="반복 재생 강좌: 한 번 바꿨더니 2연쇄, 이어서 3연쇄가 일어난다"></canvas>
         <p class="demo-caption" aria-live="off"></p>
         <div class="sent"></div>
-        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 정지</button><span class="dots" aria-hidden="true"></span></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 일시 정지</button><span class="dots" aria-hidden="true"></span></div>
       </div>
     </article>
     </div>
@@ -188,13 +188,13 @@
       <div class="lesson-text">
         <span class="step">4</span>
         <h3>방해 블록: 공격당했을 때</h3>
-        <p>방해 블록은 내 블록 더미 위로 떨어지는 <strong>커다란 판</strong>이에요. 직접 지울 수는 없지만, <strong>맞닿은</strong> 블록 아무거나 지우면 <strong>산산조각</strong> 나 일반 블록이 돼요.</p>
-        <p>다른 방해 블록과 맞닿아 있으면 함께 부서져요. 새로 생긴 블록이 떨어져 새 줄을 만들 수 있어서, 흔히 이것이 판세를 뒤집는 기회가 돼요.</p>
+        <p>방해 블록은 내 블록 더미 위에 <strong>단단한 판</strong>으로 도착해요. 일반 블록처럼 바꾸거나 지울 수는 없어요. <strong>바로 옆</strong>에서 같은 색 블록을 지우면 <strong>부서져서</strong> 일반 블록이 나와요.</p>
+        <p>부서짐은 맞닿은 같은 종류의 다른 방해 블록으로 번져요. 풀려난 블록이 새 줄을 만들어 회복에 도움이 될 수 있어요.</p>
       </div>
       <div class="demo-card" data-lesson="garbage" style="--ratio: 7.2 / 7.2">
         <canvas role="img" aria-label="반복 재생 강좌: 여러 크기의 방해 블록이 블록 더미 위에 떨어지고, 가까운 블록을 지우면 부서진다"></canvas>
         <p class="demo-caption" aria-live="off"></p>
-        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 정지</button><span class="dots" aria-hidden="true"></span></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 일시 정지</button><span class="dots" aria-hidden="true"></span></div>
       </div>
     </article>
     </div>
@@ -202,17 +202,17 @@
     <article class="lesson">
       <div class="lesson-text">
         <span class="step">5</span>
-        <h3>꼭대기에 닿지 마세요</h3>
+        <h3>더미를 꼭대기 아래로 유지하기</h3>
         <p>블록 더미는 점점 빠르게 올라와요. <strong>양옆의 불빛</strong>이 현재 높이를 알려 줘요. 맨 위에 닿으면 멈추고, <strong>7초</strong> 안에 낮추지 못하면 져요.</p>
         <ul>
-          <li>블록을 지우면 <strong>상승이 멈추고</strong>, 블록이 사라지는 동안에는 카운트다운도 흐르지 않아요.</li>
+          <li>블록을 지우면 <strong>상승이 멈춰요</strong>. 카운트다운도 소거와 방해 블록이 부서지는 연출 동안에는 멈춰요.</li>
           <li>블록이 모자라나요? <strong>Enter를 길게 눌러</strong> 더미를 더 빨리 올리세요.</li>
         </ul>
       </div>
       <div class="demo-card" data-lesson="danger" style="--ratio: 7.2 / 10.2">
-        <canvas role="img" aria-label="반복 재생 강좌: 블록 더미가 꼭대기까지 올라와 7초 카운트다운이 시작되고, 한 번은 위기를 넘기고 한 번은 진다"></canvas>
+        <canvas role="img" aria-label="움직이는 데모: 블록 더미가 꼭대기에 닿아 7초 카운트다운이 시작되고, 한 예시는 위기를 넘기고 다른 예시는 패배로 끝난다"></canvas>
         <p class="demo-caption" aria-live="off"></p>
-        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 정지</button><span class="dots" aria-hidden="true"></span></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 일시 정지</button><span class="dots" aria-hidden="true"></span></div>
       </div>
     </article>
     </div>
@@ -220,37 +220,37 @@
     <article class="lesson">
       <div class="lesson-text">
         <span class="step">6</span>
-        <h3>드물게 나오는 회색 블록</h3>
-        <p>가끔 <strong>회색 블록</strong>이 나와요. 다른 블록처럼 세 개 이상 한 줄로 맞추면 지워지지만 특별해요. 지우면 <strong>가로 전체 너비의 회색 방해 블록</strong>을 보내거든요.</p>
-        <p>회색 방해 블록은 일반 방해 블록이 부서질 때 함께 부서지지 않아요. 소거가 <strong>직접</strong> 닿아야만 깨져요.</p>
+        <h3>회색 블록</h3>
+        <p><strong>회색 블록</strong>이 가끔 나와요. 색깔 블록처럼 세 개 이상을 한 줄로 맞추면 지워져요. 지우면 <strong>판 전체 너비의 회색 방해 블록</strong>을 보내요.</p>
+        <p>회색 방해 블록은 일반 방해 블록과 함께 부서지지 않아요. <strong>직접</strong> 맞닿은 블록을 지우거나, 맞닿은 다른 회색 방해 블록을 부수면 깨져요.</p>
       </div>
       <div class="demo-card" data-lesson="gray" style="--ratio: 7.2 / 6.2">
         <canvas role="img" aria-label="반복 재생 강좌: 회색 블록 세 개가 회색 방해 블록을 보내고, 일반 방해 블록이 부서져도 회색 방해 블록은 남는다"></canvas>
         <p class="demo-caption" aria-live="off"></p>
         <div class="sent"></div>
-        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 정지</button><span class="dots" aria-hidden="true"></span></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 일시 정지</button><span class="dots" aria-hidden="true"></span></div>
       </div>
     </article>
     </div>
     <div class="tabpanel" id="tab-attacks" role="tabpanel" aria-labelledby="t-attacks" hidden>
-      <h3 class="panel-title">얼마나 보낼까요?</h3>
-      <p class="section-lead">대전에서는 내가 지운 만큼 상대에게 방해 블록으로 떨어져요. 슬라이더를 움직여 보세요. 크기는 실제 게임 그대로예요.</p>
+      <h3 class="panel-title">방해 블록을 얼마나 보낼까요?</h3>
+      <p class="section-lead">대전에서는 콤보와 연쇄로 상대에게 방해 블록을 보내요. 슬라이더를 움직여 크기를 확인해 보세요. 실제 게임의 규칙을 따릅니다.</p>
     <div id="calc" class="calc">
       <div class="calc-col">
-        <h3>한꺼번에 지우기</h3>
+        <h3>콤보 크기</h3>
         <label for="calc-n">한꺼번에 지운 블록 수: <output id="calc-n-out">4</output></label>
         <input id="calc-n" type="range" min="3" max="16" value="4">
         <div class="calc-strip" id="calc-pieces" aria-live="polite"></div>
         <p id="calc-piece-text" class="calc-text"></p>
-        <p class="fine">조각은 모두 한 줄 높이예요. 4개 줄은 방해 블록 3칸을 보내고, 7개부터는 방해 블록이 여러 조각으로 나뉘어요.</p>
+        <p class="fine">방해 블록은 한 줄 높이예요. 같은 색 블록 네 개를 한꺼번에 지우면 너비 세 칸의 방해 블록 하나를 보내요. 일곱 개 이상을 지우면 여러 조각으로 나뉘어요.</p>
       </div>
       <div class="calc-col">
-        <h3>연쇄 마무리</h3>
+        <h3>연쇄 길이</h3>
         <label for="calc-c">연쇄 길이: <output id="calc-c-out">x2</output></label>
         <input id="calc-c" type="range" min="1" max="13" value="2">
         <div class="calc-strip tall" id="calc-chain" aria-live="polite"></div>
         <p id="calc-chain-text" class="calc-text"></p>
-        <p class="fine">x<em>n</em> 연쇄는 가로 전체 너비에 높이 <em>n − 1</em>줄(최대 11줄)의 블록 하나를 보내요. 연쇄는 게임에서 가장 강력한 공격이에요.</p>
+        <p class="fine">x<em>n</em> 연쇄는 판 전체 너비에 높이 <em>n − 1</em>줄(최대 11줄)의 판 하나를 보내요. 연쇄가 길수록 판이 높아져요.</p>
       </div>
     </div>
     </div>
@@ -270,17 +270,17 @@
       <article class="card reveal">
         <i class="gem purple big"></i>
         <h3>솔로</h3>
-        <p>블록 더미에 지기 전에 최고 점수를 노려 보세요. 크게 지우고 길게 연쇄할수록 점수가 높지만, 내가 보낸 큰 공격이 나에게 돌아오기도 해서 선택이 필요해요. 최고 점수는 저장돼요.</p>
+        <p>블록 더미가 꼭대기에 닿기 전에 최고 점수를 노려 보세요. 콤보가 크고 연쇄가 길수록 점수가 높지만, 내가 보낸 큰 공격은 내 판에 방해 블록으로 돌아와요. 최고 점수는 저장돼요.</p>
       </article>
       <article class="card reveal">
         <i class="gem orange big"></i>
         <h3>컴퓨터와 대전</h3>
-        <p>컴퓨터와 겨루는 대전이에요. 난이도는 <strong>쉬움</strong>, <strong>보통</strong>, <strong>어려움</strong> 세 단계. 사람과 붙기 전에 연쇄를 연습하기에 딱 좋아요.</p>
+        <p>컴퓨터와 세 가지 난이도 중 하나로 겨뤄요: <strong>쉬움</strong>, <strong>보통</strong>, <strong>어려움</strong>. 다른 사람과 붙기 전에 연쇄를 연습해 보세요.</p>
       </article>
       <article class="card reveal">
         <i class="gem blue big"></i>
         <h3>친구와 대전</h3>
-        <p><strong>로컬 네트워크</strong>에 있는 사람에게 도전하거나, 상대의 주소를 입력해 바로 연결하세요. 마지막까지 살아남은 더미가 라운드를 이겨요.</p>
+        <p><strong>로컬 네트워크</strong>의 상대와 대전하거나, 상대의 네트워크 주소를 입력해 바로 연결하세요. 마지막까지 살아남은 플레이어가 라운드에서 이겨요.</p>
       </article>
     </div>
   </div>
@@ -309,12 +309,12 @@
   <div class="wrap">
     <h2 class="reveal">더 똑똑하게 플레이하기</h2>
     <div class="cards tips">
-      <article class="card reveal"><i class="gem green"></i><h3>지워서 숨 돌리기</h3><p>블록이 사라지는 동안에는 더미가 올라오지 않아요. 위기일 때는 아무거나 지워도 시간을 벌 수 있어요.</p></article>
-      <article class="card reveal"><i class="gem yellow"></i><h3>연쇄를 생각하세요</h3><p>한 번 지우면 다른 블록이 떨어져 새 줄을 만들도록 블록을 배치하세요. x4 연쇄는 세 줄 높이의 방해 블록을 보내요.</p></article>
-      <article class="card reveal"><i class="gem orange"></i><h3>일부러 부수세요</h3><p>방해 블록은 깨지면 블록으로 바뀌어요. 바로 옆을 지우고, 새로 생긴 블록이 알맞은 자리에 떨어지게 하세요.</p></article>
-      <article class="card reveal"><i class="gem purple"></i><h3>낮게 유지하세요</h3><p>낮고 평평한 더미는 생각할 시간을 줘요. 마지막 몇 초까지 기다리지 마세요.</p></article>
-      <article class="card reveal"><i class="gem blue"></i><h3>둘 곳이 없으면 올리세요</h3><p>맞출 줄이 안 보이나요? 기다리지 말고 Enter를 길게 눌러 새 블록을 올리세요.</p></article>
-      <article class="card reveal"><i class="gem gray"></i><h3>회색을 조심하세요</h3><p>회색 방해 블록은 일반 방해 블록을 부수는 파편에도 꿈쩍하지 않아요. 직접 닿도록 계획하세요.</p></article>
+      <article class="card reveal"><i class="gem green"></i><h3>지워서 시간 벌기</h3><p>블록이 사라지는 동안에는 더미가 올라오지 않아요. 위기일 때는 아무거나 지워도 시간을 벌 수 있어요.</p></article>
+      <article class="card reveal"><i class="gem yellow"></i><h3>연쇄를 생각하세요</h3><p>한 번 맞춰 지우면 다른 블록이 떨어져 다음 줄을 만들도록 블록을 배치하세요. x4 연쇄는 판 전체 너비에 세 줄 높이의 방해 블록을 보내요.</p></article>
+      <article class="card reveal"><i class="gem orange"></i><h3>방해 블록을 유리하게 부수세요</h3><p>방해 블록은 깨지면 블록으로 바뀌어요. 바로 옆을 지우고, 새로 생긴 블록이 알맞은 자리에 떨어지게 하세요.</p></article>
+      <article class="card reveal"><i class="gem purple"></i><h3>낮게 유지하세요</h3><p>낮고 고른 더미는 생각할 시간을 줘요. 카운트다운이 시작되기 전에 움직이세요.</p></article>
+      <article class="card reveal"><i class="gem blue"></i><h3>맞출 블록이 없으면 더미를 올리세요</h3><p>맞출 줄이 안 보이나요? 기다리지 말고 Enter를 길게 눌러 새 블록을 올리세요.</p></article>
+      <article class="card reveal"><i class="gem gray"></i><h3>회색 방해 블록을 조심하세요</h3><p>일반 방해 블록을 부숴도 옆의 회색 방해 블록은 그대로 남아요. 회색 방해 블록에 직접 맞닿은 블록을 지워서 부수세요.</p></article>
     </div>
   </div>
 </section>
@@ -324,10 +324,10 @@
   <div class="wrap">
     <h2 class="reveal">게임 화면</h2>
     <div class="gallery">
-      <figure class="reveal"><img src="../assets/shots/solo-chain-sign.jpg" alt="알록달록한 블록 더미, 소거 위에 큼직한 숫자가 떠오른다" width="820" height="820" loading="lazy"><figcaption>블록이 지워지고 소거 크기를 알리는 표시가 나타나요.</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/solo-chain-sign.jpg" alt="알록달록한 블록 더미, 소거 위에 큼직한 숫자가 떠오른다" width="820" height="820" loading="lazy"><figcaption>블록이 지워지면 지운 블록 수가 표시돼요.</figcaption></figure>
       <figure class="reveal"><img src="../assets/shots/danger-stack.jpg" alt="꼭대기에 거의 닿은 높은 블록 더미, 양옆의 레벨 불빛이 켜져 있다" width="820" height="820" loading="lazy"><figcaption>위험! 양옆의 불빛이 더미가 높다고 경고해요.</figcaption></figure>
-      <figure class="reveal"><img src="../assets/shots/vs-garbage-shatter.jpg" alt="대전 중 블록 더미 위에서 방해 블록이 붉은 보석으로 부서진다" width="820" height="820" loading="lazy"><figcaption>대전 중: 방해 블록이 붉은 보석으로 부서져요.</figcaption></figure>
-      <figure class="reveal"><img src="../assets/shots/vs-garbage-awaking.jpg" alt="부서진 방해 블록에서 풀려난 블록들이 색을 띠며 깨어난다" width="820" height="820" loading="lazy"><figcaption>부서진 방해 블록은 블록이 되어 색을 띠며 깨어나요.</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/vs-garbage-shatter.jpg" alt="대전 중 블록 더미 위에서 방해 블록이 붉은 블록으로 바뀌는 모습" width="820" height="820" loading="lazy"><figcaption>방해 블록이 부서지며 일반 블록이 나와요.</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/vs-garbage-awaking.jpg" alt="부서진 방해 블록에서 새 색깔 블록들이 나오는 모습" width="820" height="820" loading="lazy"><figcaption>부서진 방해 블록에서 새로운 색깔 블록이 나와요.</figcaption></figure>
     </div>
   </div>
 </section>
@@ -335,8 +335,8 @@
 <!-- ============================ REVIEWS ============================ -->
 <section id="reviews" class="section alt">
   <div class="wrap">
-    <h2 class="reveal">사람들의 평가</h2>
-    <p class="section-lead reveal">잡지와 웹사이트가 거의 20년째 Crack Attack!을 추천하고 있어요.</p>
+    <h2 class="reveal">자료실에서</h2>
+    <p class="section-lead reveal">Crack Attack!은 적어도 2006년부터 잡지와 게임 웹사이트에 소개되어 왔어요. 아래 발췌문은 이전 버전의 게임에 관한 것이에요.</p>
     <div class="quotes">
       <blockquote class="quote big reveal">
         <p lang="en">The graphics and gameplay are simple, but it’s so criminally addictive that you won’t care.</p>
@@ -356,12 +356,12 @@
       </blockquote>
       <blockquote class="quote reveal">
         <p lang="en">Learning time is minimal, of course, but the fun is guaranteed.</p>
-        <details class="orig"><summary>영어 번역</summary><p lang="it">Il tempo di apprendimento necessario è ovviamente minimo, ma il divertimento è assicurato</p><small>원문 (이탈리아어)</small></details>
+        <details class="orig"><summary>원문 보기</summary><p lang="it">Il tempo di apprendimento necessario è ovviamente minimo, ma il divertimento è assicurato</p><small>원문 (이탈리아어)</small></details>
         <footer><cite>PC Professionale</cite> (이탈리아), 2010년 · <a href="https://archive.org/details/pcprofessionale233/page/103" hreflang="it">읽기</a></footer>
       </blockquote>
       <blockquote class="quote reveal">
         <p lang="en">Crack-Attack, a free Tetris clone, and Neverball stand out for their cool sound and nice 3D graphics.</p>
-        <details class="orig"><summary>영어 번역</summary><p lang="de">Crack-Attack, ein freier Tetris-Klon, und das Geschicklichkeitsspiel Neverball zeichnen sich durch coolen Sound und schicke 3D-Grafik aus</p><small>원문 (독일어)</small></details>
+        <details class="orig"><summary>원문 보기</summary><p lang="de">Crack-Attack, ein freier Tetris-Klon, und das Geschicklichkeitsspiel Neverball zeichnen sich durch coolen Sound und schicke 3D-Grafik aus</p><small>원문 (독일어)</small></details>
         <footer><cite>c’t</cite> (독일), 2008년 · <a href="https://archive.org/details/ct0825_202310/ct0806" hreflang="de">읽기</a></footer>
       </blockquote>
       <blockquote class="quote reveal">
@@ -369,7 +369,7 @@
         <footer><cite>Linux Format</cite>, 마지막 호, 2025년 · <a href="https://archive.org/details/linux-format-july-2025-final-issue/page/8" hreflang="en">읽기</a></footer>
       </blockquote>
     </div>
-    <p class="fine center reveal">인용문은 출처를 밝힌 짧은 발췌이며 원문 언어 그대로예요. 직접 한국어로 옮긴 경우에는 한 번의 탭으로 원문을 볼 수 있어요.</p>
+    <p class="fine center reveal">인용문은 출처 링크가 있는 짧은 발췌예요. 대부분 영어로 표시돼요. 이탈리아어와 독일어 인용문은 해당 언어 페이지에서는 원문으로, 다른 페이지에서는 영어 번역으로 표시돼요. 번역문이 표시될 때는 원문도 확인할 수 있어요.</p>
   </div>
 </section>
 
@@ -393,7 +393,7 @@
 <footer class="footer">
   <div class="wrap">
     <p><strong>Crack Attack!</strong>은 Daniel Nelson이 만들어 GNU 일반 공중 사용 허가서에 따라 자유 소프트웨어로 공개했어요. Nintendo의 <em>Panel de Pon</em> 시리즈의 전통을 잇고 있는데, 이 시리즈는 서양에서 Super Nintendo의 <em>Tetris Attack</em>, Nintendo 64의 <em>Pokémon Puzzle League</em>로 알려져 있어요.</p>
-    <p class="fine">원본 페이지 읽기: <a href="https://aluminumangel.org/attack/">aluminumangel.org/attack</a> · <a href="https://www.nongnu.org/crack-attack/game_play.html">nongnu.org/crack-attack</a>. 이 페이지의 애니메이션은 설명을 위해 만든, 게임을 단순화한 모형이에요.</p>
+    <p class="fine">원본 페이지 읽기: <a href="https://aluminumangel.org/attack/">aluminumangel.org/attack</a> · <a href="https://www.nongnu.org/crack-attack/game_play.html">nongnu.org/crack-attack</a>. 움직이는 강좌는 게임 규칙을 설명하기 위해 단순화한 모형을 사용해요.</p>
     <p class="fine">Tetris Attack, Panel de Pon, Pokémon Puzzle League는 각 소유자의 상표이며, 이 사이트는 그들과 관련이 없어요.</p>
     <nav class="lang-footer" aria-label="언어">
       <a href="../" hreflang="en" lang="en">English</a>
@@ -412,7 +412,7 @@
 </footer>
 
 <noscript><p class="noscript">애니메이션 강좌에는 JavaScript가 필요해요. 규칙은 각 강좌 옆에 글로도 적혀 있어요.</p></noscript>
-<script type="application/json" id="i18n">{"js.pause":"정지","js.play":"재생","js.reduced":"애니메이션이 멈춰 있어요. 재생을 눌러 이 강좌를 보세요.","js.sent":"상대에게 보내는 양:","js.slab":"너비 {w}, 높이 {h}","js.version":"버전 {v}","js.beta":"(베타)","js.swap.c1":"커서가 나란한 블록 두 개를 덮고 있어요.","js.swap.c2":"바꾸면 두 블록이 자리를 맞바꿔요.","js.swap.c3":"어디로든 움직여 다시 바꾸세요.","js.swap.c4":"블록과 빈칸을 바꿀 수도 있어요...","js.swap.c5":"...옆으로 밀려가고, 아래가 비면 떨어져요.","js.lines.big":"한꺼번에 {n}개! 많이 지울수록 방해 블록도 커져요.","js.lines.i1":"같은 색 블록 세 개를 가로로 맞추면...","js.lines.o1":"...번쩍이며 사라져요.","js.lines.i2":"...세로 세 개도 마찬가지예요.","js.lines.o2":"가로든 세로든 세 개 이상이면 지워져요.","js.lines.i3":"세 개보다 많이 지우면 방해 블록을 보내요. 여기서는 세로 네 개.","js.lines.i4":"교차하는 줄은 함께 계산돼요. 이번 한 번으로 블록 다섯 개가 지워져요.","js.chain.i1":"한 번 바꾸면 모든 게 시작돼요.","js.chain.i2":"더 긴 연쇄도 가능해요. 같은 바꾸기를 지켜보세요...","js.chain.i3":"또 다른 긴 연쇄예요.","js.chain.w1":"세 개가 지워져요. 위의 블록이 빈틈으로 떨어지면...","js.chain.w2":"...저절로 한 줄이 맞아요. 두 번째 소거가 공짜로!","js.chain.w3":"...또 한 번, 세 번째!","js.chain.end":"x{m} 연쇄: 가로 전체 너비의 방해 블록(높이 {rows})을 보내고 점수에 배율이 곱해져요.","js.garbage.i1":"상대가 공격하면 방해 블록이 내 블록 더미 위로 떨어져요.","js.garbage.i2":"방해 블록은 크기가 다양해요. 이건 너비 3칸이에요.","js.garbage.i3":"큰 연쇄는 더 높은 방해 블록을 보내요. 부서지는 방식은 같아요.","js.garbage.c1":"직접 지울 수는 없어요. 맞닿은 블록을 지우세요...","js.garbage.c2":"...그러면 일반 블록으로 산산조각 나요!","js.danger.1":"블록 더미는 아래에서 계속 올라와요. 양옆의 불빛이 높이를 알려 줘요.","js.danger.2":"맨 위에 닿으면 멈추고, 7초가 주어져요!","js.danger.3":"높은 기둥을 낮추세요. 맨 위 블록을 옆으로 밀어 보세요.","js.danger.4":"살았다! 블록을 지우면 상승과 카운트다운도 멈춰요.","js.danger.5":"아무것도 하지 않으면 더미가 꼭대기에 닿아요...","js.danger.6":"...그리고 7초가 지나면 져요.","js.danger.7":"둘 곳이 없으면 Enter를 길게 눌러 더미를 더 빨리 올리세요.","js.gray.1":"회색 블록은 드물어요. 다른 블록처럼 세 개 이상 한 줄로 지워요.","js.gray.2":"회색 블록 세 개가 회색 방해 블록 한 줄을 통째로 보내요.","js.gray.3":"회색 방해 블록(위)이 일반 방해 블록 위에 있어요.","js.gray.4":"일반 방해 블록은 부서져요. 회색 판은 남아요. 소거가 직접 닿아야만 깨져요.","js.calc.min":"블록 세 개가 최소예요. 방해 블록은 없어요.","js.calc.one":"너비 {w}칸의 방해 블록 한 조각.","js.calc.many":"방해 블록 {n}조각: 너비 {list}칸.","js.calc.nochain":"한 번의 소거는 연쇄가 아니에요. 추가로 보내는 건 없어요.","js.calc.chain":"가로 전체 너비, 높이 {h}의 방해 블록 하나.","js.calc.chainmax":"가로 전체 너비, 높이 {h}의 방해 블록 하나(최대)."}</script>
+<script type="application/json" id="i18n">{"js.pause":"일시 정지","js.play":"재생","js.reduced":"애니메이션이 멈춰 있어요. 재생을 눌러 이 강좌를 보세요.","js.sent":"상대에게 보내는 방해 블록:","js.slab":"너비 {w}칸, 높이 {h}줄","js.version":"버전 {v}","js.beta":"(베타)","js.swap.c1":"커서가 나란한 블록 두 개를 덮고 있어요.","js.swap.c2":"바꾸면 두 블록이 자리를 맞바꿔요.","js.swap.c3":"커서를 다른 칸 쌍으로 옮겨 다시 바꾸세요.","js.swap.c4":"블록과 빈칸을 바꿀 수도 있어요...","js.swap.c5":"...옆으로 밀려가고, 아래가 비면 떨어져요.","js.lines.big":"한꺼번에 {n}개! 많이 지울수록 방해 블록도 커져요.","js.lines.i1":"같은 색 블록 세 개를 가로로 맞추면...","js.lines.o1":"...번쩍이며 사라져요.","js.lines.i2":"...세로 세 개도 마찬가지예요.","js.lines.o2":"가로든 세로든 세 개 이상이면 지워져요.","js.lines.i3":"세 개보다 많이 지우면 방해 블록을 보내요. 여기서는 세로 네 개.","js.lines.i4":"교차하는 줄은 함께 계산돼요. 이번 한 번으로 블록 다섯 개가 지워져요.","js.chain.i1":"한 번 바꾸면 모든 게 시작돼요.","js.chain.i2":"더 긴 연쇄도 가능해요. 같은 교환 동작을 다시 지켜보세요...","js.chain.i3":"또 다른 긴 연쇄예요.","js.chain.w1":"세 개가 지워져요. 위의 블록이 빈틈으로 떨어지면...","js.chain.w2":"...저절로 한 줄이 맞아요. 두 번째 소거가 공짜로!","js.chain.w3":"...또 한 번, 세 번째!","js.chain.end":"x{m} 연쇄는 가로 전체 너비, 높이 {rows}줄의 방해 블록을 보내요. 솔로에서는 점수에도 배율이 곱해져요.","js.garbage.i1":"상대가 공격하면 방해 블록이 내 블록 더미 위로 떨어져요.","js.garbage.i2":"방해 블록은 크기가 다양해요. 이 판은 너비 3칸이에요.","js.garbage.i3":"큰 연쇄는 더 높은 방해 블록을 보내요. 부서지는 방식은 같아요.","js.garbage.c1":"직접 지울 수는 없어요. 맞닿은 블록을 지우세요...","js.garbage.c2":"...그러면 일반 블록으로 산산조각 나요!","js.danger.1":"블록 더미는 아래에서 계속 올라와요. 양옆의 불빛이 높이를 알려 줘요.","js.danger.2":"맨 위에 닿으면 멈추고, 7초가 주어져요!","js.danger.3":"높은 기둥을 낮추세요. 맨 위 블록을 옆으로 밀어 보세요.","js.danger.4":"살았다! 블록을 지우면 상승과 카운트다운도 멈춰요.","js.danger.5":"아무것도 하지 않으면 더미가 꼭대기에 닿아요...","js.danger.6":"...그리고 7초가 지나면 져요.","js.danger.7":"맞출 블록이 없으면 Enter를 길게 눌러 더미를 더 빨리 올리세요.","js.gray.1":"회색 블록은 드물어요. 다른 블록처럼 세 개 이상 한 줄로 지워요.","js.gray.2":"회색 블록 세 개가 회색 방해 블록 한 줄을 통째로 보내요.","js.gray.3":"회색 방해 블록(위)이 일반 방해 블록 위에 있어요.","js.gray.4":"일반 방해 블록은 부서지지만 회색 판은 그대로 남아요. 회색 판은 바로 옆에서 같은 색 블록을 지우거나, 맞닿은 다른 회색 판이 부서질 때만 깨져요.","js.calc.min":"일반 블록 세 개를 지우면 방해 블록은 가지 않아요.","js.calc.one":"너비 {w}칸의 방해 블록 한 조각.","js.calc.many":"방해 블록 {n}개, 너비 {list}칸.","js.calc.nochain":"한 번의 소거는 연쇄가 아니에요. 추가로 보내는 건 없어요.","js.calc.chain":"가로 전체 너비에 높이가 {h}줄인 방해 블록 하나.","js.calc.chainmax":"가로 전체 너비, 높이 {h}줄의 방해 블록 하나(최대)."}</script>
 <script src="../dist/site.js?v=8e9bc88f"></script>
 </body>
 </html>

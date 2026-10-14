@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Crack Attack! — Tetris Attack・Panel de Pon系の無料パズルゲーム</title>
-<meta name="description" content="Crack Attack!は、Tetris AttackやPanel de Ponに着想を得た無料の対戦パズルゲーム。ブロックを入れ替えて3つ揃え、連鎖を決めて、おじゃまブロックで相手を埋めつくそう。動くアニメーションでルールを学べます。Windows・macOS・Linux対応。">
+<meta name="description" content="Crack Attack!は、Tetris AttackやPanel de Ponに着想を得た無料の対戦パズルゲームです。ブロックを入れ替えて3つ以上揃え、連鎖を起こして、おじゃまブロックで相手を圧倒しましょう。アニメーションでルールを学べます。Windows・macOS・Linux対応。">
 <meta name="theme-color" content="#05030b">
 <link rel="canonical" href="https://thiosaur.github.io/crackattack/ja/">
 <link rel="alternate" hreflang="en" href="https://thiosaur.github.io/crackattack/">
@@ -22,7 +22,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Crack Attack!">
 <meta property="og:title" content="Crack Attack! — Tetris Attack・Panel de Pon系の無料パズルゲーム">
-<meta property="og:description" content="Tetris AttackとPanel de Ponに着想を得た無料の対戦パズル。入れ替えて、連鎖して、おじゃまで相手を埋めよう。Windows・macOS・Linux対応。">
+<meta property="og:description" content="Tetris AttackとPanel de Ponに着想を得た無料のパズルゲーム。ブロックを入れ替え、連鎖を起こして、おじゃまブロックで相手を圧倒しよう。Windows・macOS・Linux対応。">
 <meta property="og:url" content="https://thiosaur.github.io/crackattack/ja/">
 <meta property="og:image" content="https://thiosaur.github.io/crackattack/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -40,17 +40,17 @@
 <meta property="og:locale:alternate" content="it_IT">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Crack Attack! — Tetris Attack・Panel de Pon系の無料パズルゲーム">
-<meta name="twitter:description" content="Tetris AttackとPanel de Ponに着想を得た無料の対戦パズル。入れ替えて、連鎖して、おじゃまで相手を埋めよう。Windows・macOS・Linux対応。">
+<meta name="twitter:description" content="Tetris AttackとPanel de Ponに着想を得た無料のパズルゲーム。ブロックを入れ替え、連鎖を起こして、おじゃまブロックで相手を圧倒しよう。Windows・macOS・Linux対応。">
 <meta name="twitter:image" content="https://thiosaur.github.io/crackattack/assets/og.png">
 <link rel="icon" href="../assets/ui/logo.png">
 <link rel="stylesheet" href="../css/style.css?v=a96f76e5">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":["VideoGame","SoftwareApplication"],"name":"Crack Attack!","url":"https://thiosaur.github.io/crackattack/ja/","inLanguage":"ja","description":"Crack Attack!は、Tetris AttackやPanel de Ponに着想を得た無料の対戦パズルゲーム。ブロックを入れ替えて3つ揃え、連鎖を決めて、おじゃまブロックで相手を埋めつくそう。動くアニメーションでルールを学べます。Windows・macOS・Linux対応。","image":"https://thiosaur.github.io/crackattack/assets/og.png","applicationCategory":"GameApplication","genre":"Puzzle","operatingSystem":"Windows, macOS, Linux","license":"https://www.gnu.org/licenses/gpl-3.0.html","author":{"@type":"Person","name":"Daniel Nelson"},"isBasedOn":{"@type":"VideoGame","name":"Tetris Attack"},"codeRepository":"https://github.com/thiosaur/crackattack","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":["VideoGame","SoftwareApplication"],"name":"Crack Attack!","url":"https://thiosaur.github.io/crackattack/ja/","inLanguage":"ja","description":"Crack Attack!は、Tetris AttackやPanel de Ponに着想を得た無料の対戦パズルゲームです。ブロックを入れ替えて3つ以上揃え、連鎖を起こして、おじゃまブロックで相手を圧倒しましょう。アニメーションでルールを学べます。Windows・macOS・Linux対応。","image":"https://thiosaur.github.io/crackattack/assets/og.png","applicationCategory":"GameApplication","genre":"Puzzle","operatingSystem":"Windows, macOS, Linux","license":"https://www.gnu.org/licenses/gpl-3.0.html","author":{"@type":"Person","name":"Daniel Nelson"},"isBasedOn":{"@type":"VideoGame","name":"Tetris Attack"},"codeRepository":"https://github.com/thiosaur/crackattack","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 </head>
 <body>
 <a class="skip" href="#learn">本文へスキップ</a>
 
 <header class="nav-wrap">
-  <nav class="nav" aria-label="メイン">
+  <nav class="nav" aria-label="メインナビゲーション">
     <a class="brand" href="#top"><img src="../assets/ui/logo.png" alt="" width="40" height="34"><span>Crack Attack!</span></a>
     <div class="links">
       <a href="#learn">遊び方</a>
@@ -87,8 +87,8 @@
   <canvas id="hero-canvas" aria-hidden="true"></canvas>
   <div class="hero-inner">
     <img class="hero-logo" src="../assets/ui/logo.png" alt="Crack Attack!" width="420" height="357">
-    <h1 class="tagline">入れ替えて、消して、<span class="grad">連鎖</span>で、粉砕。</h1>
-    <p class="lead">スピード感あふれる対戦パズル。ブロックを揃え、連鎖を起こし、おじゃまブロックの雪崩で相手を埋めつくそう。ただし、自分のブロックの山が天井に届く前に。</p>
+    <h1 class="tagline">入れ替える。消す。<span class="grad">連鎖する。</span>勝つ。</h1>
+    <p class="lead">スピード感あふれるパズルゲーム。ブロックを揃え、連鎖を起こし、おじゃまブロックの山で相手を埋めつくそう。ただし、自分のブロックの山が天井に届く前に。</p>
     <div class="cta">
       <a class="btn primary big" href="#get">ダウンロード · 無料</a>
       <a class="btn" href="#learn">遊び方を見る</a>
@@ -116,16 +116,16 @@
 <section id="learn" class="section">
   <div class="wrap">
     <h2 class="reveal">遊び方</h2>
-    <p class="section-lead reveal">7つの短いレッスンです。好きなものを選ぶか、矢印で進んでください。各デモは複数の例をくり返し再生します。ボタンで一時停止もできます。</p>
+    <p class="section-lead reveal">7つの短いレッスンです。レッスンを選ぶか、矢印で切り替えてください。各アニメーションデモは複数の例をくり返し再生します。一時停止ボタンで止められます。</p>
 
     <div class="tabs" role="tablist" aria-label="レッスン">
-      <button class="tab" role="tab" id="t-swap" data-tab="swap" aria-controls="tab-swap"><b>1</b><span>カーソル</span></button>
+      <button class="tab" role="tab" id="t-swap" data-tab="swap" aria-controls="tab-swap"><b>1</b><span>ブロックの入れ替え</span></button>
       <button class="tab" role="tab" id="t-lines" data-tab="lines" aria-controls="tab-lines"><b>2</b><span>ライン</span></button>
       <button class="tab" role="tab" id="t-chain" data-tab="chain" aria-controls="tab-chain"><b>3</b><span>連鎖</span></button>
       <button class="tab" role="tab" id="t-garbage" data-tab="garbage" aria-controls="tab-garbage"><b>4</b><span>おじゃま</span></button>
-      <button class="tab" role="tab" id="t-danger" data-tab="danger" aria-controls="tab-danger"><b>5</b><span>てっぺん</span></button>
+      <button class="tab" role="tab" id="t-danger" data-tab="danger" aria-controls="tab-danger"><b>5</b><span>ピンチを切り抜ける</span></button>
       <button class="tab" role="tab" id="t-gray" data-tab="gray" aria-controls="tab-gray"><b>6</b><span>灰色ブロック</span></button>
-      <button class="tab" role="tab" id="t-attacks" data-tab="attacks" aria-controls="tab-attacks"><b>7</b><span>攻撃の大きさ</span></button>
+      <button class="tab" role="tab" id="t-attacks" data-tab="attacks" aria-controls="tab-attacks"><b>7</b><span>おじゃまの大きさ</span></button>
     </div>
     <div class="stage">
     <div class="tabpanel" id="tab-swap" role="tabpanel" aria-labelledby="t-swap" hidden>
@@ -133,13 +133,13 @@
       <div class="lesson-text">
         <span class="step">1</span>
         <h3>盤面とカーソル</h3>
-        <p>盤面の幅はブロック6つ分です。<strong>カーソル</strong>はいつも<strong>隣り合う2つのブロック</strong>を囲んでいます。カーソルを動かして、囲んだ2つのブロックを入れ替えましょう。</p>
+        <p>盤面の幅はブロック6つ分です。<strong>カーソル</strong>は常に<strong>左右に隣り合う2つのマス</strong>を囲んでいます。カーソルを動かして、その2つのマスのブロックを入れ替えましょう。</p>
         <p>ブロックと空きマスを入れ替えることもできます。ブロックは横にすべり、下に何もなければそのまま落ちます。</p>
       </div>
       <div class="demo-card" data-lesson="swap" style="--ratio: 7.2 / 6.2">
-        <canvas role="img" aria-label="くり返しレッスン：カーソルが隣り合う2つのブロックを入れ替え、次にブロックを空きマスへすべらせる"></canvas>
+        <canvas role="img" aria-label="アニメーションデモ：カーソルが左右に隣り合う2つのブロックを入れ替え、次にブロックを空きマスへ動かす"></canvas>
         <p class="demo-caption" aria-live="off"></p>
-        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 停止</button><span class="dots" aria-hidden="true"></span></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 一時停止</button><span class="dots" aria-hidden="true"></span></div>
       </div>
     </article>
     </div>
@@ -151,15 +151,15 @@
         <p><strong>同じ色のブロックを3つ以上</strong>、横か縦に並べると消えます。</p>
         <ul class="gems">
           <li><i class="gem purple"></i><i class="gem green"></i><i class="gem yellow"></i><i class="gem orange"></i><i class="gem blue"></i> 揃える色は5種類</li>
-          <li>ブロックの山は<strong>下からせり上がり続ける</strong>ので、ブロックを消すことが生き残る方法です。</li>
+          <li>新しい段が<strong>下からせり上がり続ける</strong>ので、ブロックを消して山が天井に届かないようにしましょう。</li>
         </ul>
-        <p><strong>4つ、5つ以上を同時に消す</strong>と（長いラインでも、交差したラインでも）、相手に<strong>おじゃまブロック</strong>を送れます。大きく消すほど、大きなおじゃまになります。 <a href="#learn" data-tab="attacks">大きさを見る。</a></p>
+        <p><strong>同じ色のブロックを4つ以上同時に消す</strong>と、長いラインでもつながったラインでも、相手に<strong>おじゃまブロック</strong>を送れます。消すブロックが多いほど、送るおじゃまも増えます。 <a href="#learn" data-tab="attacks">大きさを見る。</a></p>
       </div>
       <div class="demo-card" data-lesson="lines" style="--ratio: 7.2 / 6.2">
         <canvas role="img" aria-label="くり返しレッスン：横と縦の3つ揃い、そしておじゃまを送る4つ消しと5つ消し"></canvas>
         <p class="demo-caption" aria-live="off"></p>
         <div class="sent"></div>
-        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 停止</button><span class="dots" aria-hidden="true"></span></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 一時停止</button><span class="dots" aria-hidden="true"></span></div>
       </div>
     </article>
     </div>
@@ -173,13 +173,13 @@
           <li>ソロでは、連鎖の<strong>すべての得点</strong>に連鎖の倍率がかかります。</li>
           <li>対戦では、連鎖が終わると大きなおじゃまブロックが1つ相手に送られます。連鎖が長いほど背が高くなります。</li>
         </ul>
-        <aside class="note"><strong>用語について。</strong>このゲームでは、<em>連鎖</em>とは勝手に続いていく一連の消去のことで、<em>コンボ</em>とは複数のブロックを一度に消すことです。古い攻略記事では、連鎖を「コンボ」と呼んでいます。</aside>
+        <aside class="note"><strong>連鎖とコンボ。</strong><em>連鎖</em>とは、落ちてきたブロックが新たに揃って起こる、連続した消去のことです。<em>コンボ</em>は、同じ色のブロックを4つ以上同時に消すことです。古いCrack Attack!の攻略記事では、連鎖を「コンボ」と呼ぶことがあります。</aside>
       </div>
       <div class="demo-card" data-lesson="chain" style="--ratio: 7.2 / 6.2">
         <canvas role="img" aria-label="くり返しレッスン：1回の入れ替えで、2連鎖、そして3連鎖が起こる"></canvas>
         <p class="demo-caption" aria-live="off"></p>
         <div class="sent"></div>
-        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 停止</button><span class="dots" aria-hidden="true"></span></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 一時停止</button><span class="dots" aria-hidden="true"></span></div>
       </div>
     </article>
     </div>
@@ -188,13 +188,13 @@
       <div class="lesson-text">
         <span class="step">4</span>
         <h3>おじゃま：攻撃を受けたとき</h3>
-        <p>おじゃまブロックは、山の上に落ちてくる<strong>大きな板</strong>です。直接消すことはできませんが、<strong>それに接しているブロック</strong>を消すと、<strong>砕けて</strong>ふつうのブロックになります。</p>
-        <p>ほかのおじゃまブロックと接していると、いっしょに砕けます。新しいブロックが落ちて次のラインになるので、これが逆転のきっかけになることも多いです。</p>
+        <p>おじゃまブロックは、山の上に<strong>大きな板</strong>として現れます。ふつうのブロックのように入れ替えたり消したりはできません。<strong>すぐ隣</strong>で同じ色のブロックを消すと<strong>砕けて</strong>、ふつうのブロックが出てきます。</p>
+        <p>砕けると、接している同じ種類のおじゃまにも広がります。出てきたブロックが新しいラインを作り、立て直す助けになります。</p>
       </div>
       <div class="demo-card" data-lesson="garbage" style="--ratio: 7.2 / 7.2">
         <canvas role="img" aria-label="くり返しレッスン：大きさの違うおじゃまブロックが山に落ち、近くのブロックを消すと砕ける"></canvas>
         <p class="demo-caption" aria-live="off"></p>
-        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 停止</button><span class="dots" aria-hidden="true"></span></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 一時停止</button><span class="dots" aria-hidden="true"></span></div>
       </div>
     </article>
     </div>
@@ -202,17 +202,17 @@
     <article class="lesson">
       <div class="lesson-text">
         <span class="step">5</span>
-        <h3>てっぺんに届かないように</h3>
-        <p>ブロックの山はだんだん速く上がっていきます。<strong>両側のライト</strong>が山の高さを教えてくれます。てっぺんに届くと上昇が止まり、山を下げるまでの猶予は<strong>7秒</strong>。間に合わなければ負けです。</p>
+        <h3>山を天井より下に保とう</h3>
+        <p>ブロックの山は、ゲームが進むほど速く上がります。<strong>両側のライト</strong>が山の高さを示します。てっぺんに届くと上昇が止まり、<strong>7秒</strong>のカウントダウンが始まります。時間切れになる前に山を下げないと負けです。</p>
         <ul>
-          <li>ブロックを消すと<strong>上昇が止まり</strong>、ブロックが消えている間はカウントダウンも進みません。</li>
+          <li>ブロックを消すと<strong>上昇が止まります</strong>。消えている間やおじゃまが砕ける間も、カウントダウンは止まります。</li>
           <li>ブロックが足りない？ <strong>Enterを長押し</strong>すると、山が速くせり上がります。</li>
         </ul>
       </div>
       <div class="demo-card" data-lesson="danger" style="--ratio: 7.2 / 10.2">
-        <canvas role="img" aria-label="くり返しレッスン：山がてっぺんまで上がって7秒のカウントダウンが始まり、一度は助かり、一度は負ける"></canvas>
+        <canvas role="img" aria-label="アニメーションデモ：山がてっぺんまで上がって7秒のカウントダウンが始まり、一つの例では立て直し、別の例では負けに終わる"></canvas>
         <p class="demo-caption" aria-live="off"></p>
-        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 停止</button><span class="dots" aria-hidden="true"></span></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 一時停止</button><span class="dots" aria-hidden="true"></span></div>
       </div>
     </article>
     </div>
@@ -220,37 +220,37 @@
     <article class="lesson">
       <div class="lesson-text">
         <span class="step">6</span>
-        <h3>めずらしい灰色ブロック</h3>
-        <p>ときどき<strong>灰色のブロック</strong>が現れます。ほかのブロックと同じく3つ以上で消えますが、特別です。消すと<strong>横幅いっぱいの灰色のおじゃま</strong>が送られます。</p>
-        <p>灰色のおじゃまは、ふつうのおじゃまといっしょには砕けません。消去が<strong>直接</strong>触れたときだけ砕けます。</p>
+        <h3>灰色ブロック</h3>
+        <p><strong>灰色のブロック</strong>はときどき現れます。色つきブロックと同じく、3つ以上を一列に揃えると消えます。消すと<strong>盤面の横幅いっぱいの灰色のおじゃま</strong>が送られます。</p>
+        <p>灰色のおじゃまは、ふつうのおじゃまといっしょには砕けません。<strong>直接</strong>接しているブロックを消すか、接している別の灰色のおじゃまを砕くと壊せます。</p>
       </div>
       <div class="demo-card" data-lesson="gray" style="--ratio: 7.2 / 6.2">
         <canvas role="img" aria-label="くり返しレッスン：灰色ブロック3つで灰色のおじゃまが送られ、ふつうのおじゃまが砕けても灰色は残る"></canvas>
         <p class="demo-caption" aria-live="off"></p>
         <div class="sent"></div>
-        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 停止</button><span class="dots" aria-hidden="true"></span></div>
+        <div class="demo-controls"><button class="btn small" data-action="toggle" aria-pressed="false">⏸ 一時停止</button><span class="dots" aria-hidden="true"></span></div>
       </div>
     </article>
     </div>
     <div class="tabpanel" id="tab-attacks" role="tabpanel" aria-labelledby="t-attacks" hidden>
-      <h3 class="panel-title">どれくらい送れる？</h3>
-      <p class="section-lead">対戦では、消したブロックがおじゃまとなって相手に降りかかります。スライダーを動かしてみてください。大きさはゲームそのままの値です。</p>
+      <h3 class="panel-title">どれくらいおじゃまを送れる？</h3>
+      <p class="section-lead">対戦では、コンボや連鎖で相手におじゃまが送られます。スライダーを動かして、その量を確かめましょう。大きさはゲームのルールどおりです。</p>
     <div id="calc" class="calc">
       <div class="calc-col">
-        <h3>ブロックを同時に消す</h3>
+        <h3>コンボの大きさ</h3>
         <label for="calc-n">同時に消したブロック： <output id="calc-n-out">4</output></label>
         <input id="calc-n" type="range" min="3" max="16" value="4">
         <div class="calc-strip" id="calc-pieces" aria-live="polite"></div>
         <p id="calc-piece-text" class="calc-text"></p>
-        <p class="fine">おじゃまは1つあたり高さ1段です。4つのラインならおじゃまブロック3個分を送ります。7ブロック以上になると、おじゃまは分割されます。</p>
+        <p class="fine">おじゃまは1つあたり高さ1段です。同じ色を4つ消すと、幅3ブロック分の板を送ります。7つ以上を消すと、複数の板に分割されます。</p>
       </div>
       <div class="calc-col">
-        <h3>連鎖を決める</h3>
+        <h3>連鎖の長さ</h3>
         <label for="calc-c">連鎖の長さ： <output id="calc-c-out">x2</output></label>
         <input id="calc-c" type="range" min="1" max="13" value="2">
         <div class="calc-strip tall" id="calc-chain" aria-live="polite"></div>
         <p id="calc-chain-text" class="calc-text"></p>
-        <p class="fine">x<em>n</em>の連鎖は、横幅いっぱいで高さ<em>n − 1</em>段のブロックを1つ送ります（最大11段）。連鎖はこのゲームで最強の攻撃です。</p>
+        <p class="fine">x<em>n</em>の連鎖は、盤面の横幅いっぱいで高さ<em>n − 1</em>段の板を1つ送ります（最大11段）。連鎖が長いほど、高い板を送れます。</p>
       </div>
     </div>
     </div>
@@ -270,17 +270,17 @@
       <article class="card reveal">
         <i class="gem purple big"></i>
         <h3>ソロ</h3>
-        <p>ブロックの山に負ける前に、最高得点を目指します。大きく消すほど、連鎖が長いほど高得点ですが、自分の大技は自分にも返ってくるので、駆け引きが必要です。ベストスコアは保存されます。</p>
+        <p>山がてっぺんに届く前に、できるだけ高い得点を目指します。大きなコンボや長い連鎖ほど得点が増えますが、大きな攻撃は自分の盤面にもおじゃまとして返ってきます。ベストスコアは保存されます。</p>
       </article>
       <article class="card reveal">
         <i class="gem orange big"></i>
         <h3>コンピュータと対戦</h3>
-        <p>コンピュータとの対戦で、難易度は<strong>かんたん</strong>、<strong>ふつう</strong>、<strong>むずかしい</strong>の3段階。人と戦う前に連鎖を練習するのにぴったりです。</p>
+        <p>コンピュータと、<strong>かんたん</strong>、<strong>ふつう</strong>、<strong>むずかしい</strong>の3段階の難易度で対戦します。人と戦う前に連鎖を練習しましょう。</p>
       </article>
       <article class="card reveal">
         <i class="gem blue big"></i>
         <h3>友だちと対戦</h3>
-        <p><strong>ローカルネットワーク</strong>上の相手に挑戦したり、アドレスを入力して直接つないだりできます。最後までブロックの山が残った人がそのラウンドの勝者です。</p>
+        <p><strong>ローカルネットワーク</strong>上の相手と対戦したり、相手のネットワークアドレスを入力して直接接続したりできます。最後までゲームオーバーにならなかったプレイヤーが、そのラウンドの勝者です。</p>
       </article>
     </div>
   </div>
@@ -309,12 +309,12 @@
   <div class="wrap">
     <h2 class="reveal">もっと上手に</h2>
     <div class="cards tips">
-      <article class="card reveal"><i class="gem green"></i><h3>消して一息つこう</h3><p>ブロックが消えている間、山の上昇は止まります。ピンチのときは、どんな消去でも時間をかせげます。</p></article>
-      <article class="card reveal"><i class="gem yellow"></i><h3>連鎖を意識しよう</h3><p>1回の消去でほかのブロックが落ちて新しいラインになるように、ブロックを組んでおきましょう。x4の連鎖なら、3段分のおじゃまを送れます。</p></article>
-      <article class="card reveal"><i class="gem orange"></i><h3>わざと砕こう</h3><p>おじゃまブロックは砕けるとブロックに変わります。そばで消して、新しいブロックをうまく落としましょう。</p></article>
-      <article class="card reveal"><i class="gem purple"></i><h3>低く保とう</h3><p>低く平らな山なら、考える余裕が生まれます。ギリギリまで待たないでください。</p></article>
-      <article class="card reveal"><i class="gem blue"></i><h3>手がないときはせり上げ</h3><p>揃えられるラインが見当たらない？ 待たずに、Enterを長押しして新しいブロックを上げましょう。</p></article>
-      <article class="card reveal"><i class="gem gray"></i><h3>灰色に注意</h3><p>灰色のおじゃまは、ふつうのおじゃまを一掃する砕け方では壊れません。直接触れる作戦を立てましょう。</p></article>
+      <article class="card reveal"><i class="gem green"></i><h3>消して時間をかせごう</h3><p>ブロックが消えている間、山の上昇は止まります。ピンチのときは、どんな消去でも時間をかせげます。</p></article>
+      <article class="card reveal"><i class="gem yellow"></i><h3>連鎖を意識しよう</h3><p>1回の消去でほかのブロックが落ち、次のラインになるようにブロックを組んでおきましょう。x4の連鎖なら、盤面の横幅いっぱいで高さ3段の板を送れます。</p></article>
+      <article class="card reveal"><i class="gem orange"></i><h3>おじゃまを上手に砕こう</h3><p>おじゃまブロックは砕けるとブロックに変わります。そばで消して、新しいブロックをうまく落としましょう。</p></article>
+      <article class="card reveal"><i class="gem purple"></i><h3>山を低く保とう</h3><p>低く平らな山なら、考える余裕が生まれます。カウントダウンが始まる前に動きましょう。</p></article>
+      <article class="card reveal"><i class="gem blue"></i><h3>手がないときは山をせり上げよう</h3><p>揃えられるラインが見当たらない？ 待たずに、Enterを長押しして新しいブロックを上げましょう。</p></article>
+      <article class="card reveal"><i class="gem gray"></i><h3>灰色のおじゃまに注意</h3><p>ふつうのおじゃまを砕いても、隣の灰色のおじゃまは壊れません。灰色のおじゃまに直接接しているブロックを消しましょう。</p></article>
     </div>
   </div>
 </section>
@@ -324,10 +324,10 @@
   <div class="wrap">
     <h2 class="reveal">ゲーム画面</h2>
     <div class="gallery">
-      <figure class="reveal"><img src="../assets/shots/solo-chain-sign.jpg" alt="色とりどりのブロックの山。消した場所の上に大きな数字が浮かんでいる" width="820" height="820" loading="lazy"><figcaption>ブロックが消えると、消した大きさを示す表示が出ます。</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/solo-chain-sign.jpg" alt="色とりどりのブロックの山。消した場所の上に大きな数字が浮かんでいる" width="820" height="820" loading="lazy"><figcaption>消したブロックの数が数字で表示されます。</figcaption></figure>
       <figure class="reveal"><img src="../assets/shots/danger-stack.jpg" alt="てっぺんに近い高い山。両側のレベルライトが点灯している" width="820" height="820" loading="lazy"><figcaption>危険！ 両側のライトが、山が高いことを知らせます。</figcaption></figure>
-      <figure class="reveal"><img src="../assets/shots/vs-garbage-shatter.jpg" alt="対戦中、山の上でおじゃまブロックが赤い宝石に砕けている" width="820" height="820" loading="lazy"><figcaption>対戦：おじゃまブロックが赤い宝石に砕けます。</figcaption></figure>
-      <figure class="reveal"><img src="../assets/shots/vs-garbage-awaking.jpg" alt="砕けたおじゃまブロックから解放されたブロックが色づいていく" width="820" height="820" loading="lazy"><figcaption>砕けたおじゃまはブロックになり、色づいて動きだします。</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/vs-garbage-shatter.jpg" alt="対戦中、山の上でおじゃまブロックが赤いブロックに変わっている" width="820" height="820" loading="lazy"><figcaption>おじゃまブロックが砕けて、ふつうのブロックが出てきます。</figcaption></figure>
+      <figure class="reveal"><img src="../assets/shots/vs-garbage-awaking.jpg" alt="砕けたおじゃまブロックから新しい色つきブロックが現れる" width="820" height="820" loading="lazy"><figcaption>砕けたおじゃまから、新しい色つきブロックが出てきます。</figcaption></figure>
     </div>
   </div>
 </section>
@@ -335,8 +335,8 @@
 <!-- ============================ REVIEWS ============================ -->
 <section id="reviews" class="section alt">
   <div class="wrap">
-    <h2 class="reveal">みんなの声</h2>
-    <p class="section-lead reveal">雑誌やウェブサイトが、20年近くCrack Attack! をおすすめし続けています。</p>
+    <h2 class="reveal">アーカイブから</h2>
+    <p class="section-lead reveal">Crack Attack!は、少なくとも2006年から雑誌やゲームサイトで取り上げられてきました。以下の抜粋は、ゲームの以前のバージョンについてのものです。</p>
     <div class="quotes">
       <blockquote class="quote big reveal">
         <p lang="en">The graphics and gameplay are simple, but it’s so criminally addictive that you won’t care.</p>
@@ -356,12 +356,12 @@
       </blockquote>
       <blockquote class="quote reveal">
         <p lang="en">Learning time is minimal, of course, but the fun is guaranteed.</p>
-        <details class="orig"><summary>英語訳</summary><p lang="it">Il tempo di apprendimento necessario è ovviamente minimo, ma il divertimento è assicurato</p><small>原文（イタリア語）</small></details>
+        <details class="orig"><summary>原文を表示</summary><p lang="it">Il tempo di apprendimento necessario è ovviamente minimo, ma il divertimento è assicurato</p><small>原文（イタリア語）</small></details>
         <footer><cite>PC Professionale</cite>（イタリア）、2010年 · <a href="https://archive.org/details/pcprofessionale233/page/103" hreflang="it">読む</a></footer>
       </blockquote>
       <blockquote class="quote reveal">
         <p lang="en">Crack-Attack, a free Tetris clone, and Neverball stand out for their cool sound and nice 3D graphics.</p>
-        <details class="orig"><summary>英語訳</summary><p lang="de">Crack-Attack, ein freier Tetris-Klon, und das Geschicklichkeitsspiel Neverball zeichnen sich durch coolen Sound und schicke 3D-Grafik aus</p><small>原文（ドイツ語）</small></details>
+        <details class="orig"><summary>原文を表示</summary><p lang="de">Crack-Attack, ein freier Tetris-Klon, und das Geschicklichkeitsspiel Neverball zeichnen sich durch coolen Sound und schicke 3D-Grafik aus</p><small>原文（ドイツ語）</small></details>
         <footer><cite>c’t</cite>（ドイツ）、2008年 · <a href="https://archive.org/details/ct0825_202310/ct0806" hreflang="de">読む</a></footer>
       </blockquote>
       <blockquote class="quote reveal">
@@ -369,7 +369,7 @@
         <footer><cite>Linux Format</cite>、最終号、2025年 · <a href="https://archive.org/details/linux-format-july-2025-final-issue/page/8" hreflang="en">読む</a></footer>
       </blockquote>
     </div>
-    <p class="fine center reveal">引用は出典つきの短い抜粋で、原文の言語のままです。当サイトで日本語に訳したものは、タップすると原文を読めます。</p>
+    <p class="fine center reveal">引用は出典へのリンクを添えた短い抜粋です。大半は英語です。イタリア語とドイツ語の抜粋は、それぞれの言語のページでは原文を、それ以外のページでは英語訳を表示しています。訳文が表示されている場合は、原文も確認できます。</p>
   </div>
 </section>
 
@@ -393,7 +393,7 @@
 <footer class="footer">
   <div class="wrap">
     <p><strong>Crack Attack!</strong> は Daniel Nelson が作り、GNU General Public License のもとでフリーソフトウェアとして公開されました。Nintendo の <em>Panel de Pon</em> シリーズの流れをくむ作品です。海外では、Super Nintendo では <em>Tetris Attack</em>、Nintendo 64 では <em>Pokémon Puzzle League</em> として知られています。</p>
-    <p class="fine">オリジナルのページを読む： <a href="https://aluminumangel.org/attack/">aluminumangel.org/attack</a> · <a href="https://www.nongnu.org/crack-attack/game_play.html">nongnu.org/crack-attack</a>. このページのアニメーションは、説明のために作った、ゲームを簡略化したモデルです。</p>
+    <p class="fine">オリジナルのページを読む： <a href="https://aluminumangel.org/attack/">aluminumangel.org/attack</a> · <a href="https://www.nongnu.org/crack-attack/game_play.html">nongnu.org/crack-attack</a>. アニメーションのレッスンは、ゲームのルールを説明するために簡略化したモデルを使っています。</p>
     <p class="fine">Tetris Attack、Panel de Pon、Pokémon Puzzle League は、それぞれの権利者の商標です。このサイトはそれらとは関係ありません。</p>
     <nav class="lang-footer" aria-label="言語">
       <a href="../" hreflang="en" lang="en">English</a>
@@ -412,7 +412,7 @@
 </footer>
 
 <noscript><p class="noscript">アニメーションのレッスンにはJavaScriptが必要です。ルールは各レッスンの横にも書かれています。</p></noscript>
-<script type="application/json" id="i18n">{"js.pause":"停止","js.play":"再生","js.reduced":"アニメーションは停止中です。「再生」を押すとこのレッスンを見られます。","js.sent":"相手に送られるもの：","js.slab":"幅{w}、高さ{h}","js.version":"バージョン {v}","js.beta":"（ベータ版）","js.swap.c1":"カーソルは、隣り合う2つのブロックを囲んでいます。","js.swap.c2":"入れ替えると、2つのブロックの位置が替わります。","js.swap.c3":"好きな場所へ動かして、また入れ替えましょう。","js.swap.c4":"ブロックと空きマスも入れ替えられます…","js.swap.c5":"…ブロックは横にすべり、下に何もなければ落ちます。","js.lines.big":"一度に{n}ブロック！ 大きく消すほど、大きなおじゃまを送れます。","js.lines.i1":"同じ色のブロックを横に3つ揃えると…","js.lines.o1":"…点滅して消えます。","js.lines.i2":"…縦の3つでも同じです。","js.lines.o2":"3つ以上のラインは、横でも縦でも消えます。","js.lines.i3":"4つ以上を同時に消すと、おじゃまを送れます。ここでは縦に4つ。","js.lines.i4":"交差したラインはまとめて数えます。この入れ替えで5ブロックが消えます。","js.chain.i1":"1回の入れ替えがきっかけです。","js.chain.i2":"もっと長い連鎖もできます。同じ入れ替えを見てください…","js.chain.i3":"こちらも長い連鎖です。","js.chain.w1":"3つ消えました。上のブロックがすき間に落ちて…","js.chain.w2":"…自然に揃います。2回目の消去がタダで起こりました！","js.chain.w3":"…さらにもう一度、3回目！","js.chain.end":"x{m}の連鎖：横幅いっぱいのおじゃま（高さ{rows}）を送り、得点も倍になります。","js.garbage.i1":"相手が攻撃すると、おじゃまブロックが山の上に落ちてきます。","js.garbage.i2":"おじゃまにはいろいろな大きさがあります。これは幅3です。","js.garbage.i3":"大きな連鎖は、背の高いおじゃまを送ります。砕け方は同じです。","js.garbage.c1":"直接は消せません。接しているブロックを消すと…","js.garbage.c2":"…ふつうのブロックに砕けます！","js.danger.1":"ブロックの山は下からせり上がり続けます。両側のライトが高さを示します。","js.danger.2":"てっぺんで止まると、猶予は7秒です！","js.danger.3":"高い列を下げましょう。一番上のブロックを横へずらします。","js.danger.4":"助かった！ ブロックを消すと、上昇とカウントダウンも止まります。","js.danger.5":"何もしないと、山はてっぺんに届き…","js.danger.6":"…7秒がたつと、負けです。","js.danger.7":"手がなくなったら、Enterを長押しして山を速くせり上げましょう。","js.gray.1":"灰色ブロックはめずらしい存在です。ほかと同じく、3つ以上で消えます。","js.gray.2":"灰色ブロック3つで、1段ぶんの灰色のおじゃまが送られます。","js.gray.3":"灰色のおじゃま（上）が、ふつうのおじゃまの上にのっています。","js.gray.4":"ふつうのおじゃまは砕けます。灰色の板は残り、消去が直接触れたときだけ砕けます。","js.calc.min":"最小は3ブロック。おじゃまはありません。","js.calc.one":"おじゃまが1つ、幅{w}ブロック。","js.calc.many":"おじゃまが{n}つ：幅{list}ブロック。","js.calc.nochain":"1回の消去は連鎖ではありません。追加では何も送られません。","js.calc.chain":"おじゃまが1つ、横幅いっぱい、高さ{h}。","js.calc.chainmax":"おじゃまが1つ、横幅いっぱい、高さ{h}（最大）。"}</script>
+<script type="application/json" id="i18n">{"js.pause":"一時停止","js.play":"再生","js.reduced":"アニメーションは停止中です。「再生」を押すとこのレッスンを見られます。","js.sent":"相手に送られるおじゃま：","js.slab":"幅{w}ブロック、高さ{h}段","js.version":"バージョン {v}","js.beta":"（ベータ版）","js.swap.c1":"カーソルは、隣り合う2つのブロックを囲んでいます。","js.swap.c2":"入れ替えると、2つのブロックの位置が替わります。","js.swap.c3":"カーソルを別の2マスへ動かして、また入れ替えましょう。","js.swap.c4":"ブロックと空きマスも入れ替えられます…","js.swap.c5":"…ブロックは横にすべり、下に何もなければ落ちます。","js.lines.big":"一度に{n}ブロック！ 大きく消すほど、大きなおじゃまを送れます。","js.lines.i1":"同じ色のブロックを横に3つ揃えると…","js.lines.o1":"…点滅して消えます。","js.lines.i2":"…縦の3つでも同じです。","js.lines.o2":"3つ以上のラインは、横でも縦でも消えます。","js.lines.i3":"4つ以上を同時に消すと、おじゃまを送れます。ここでは縦に4つ。","js.lines.i4":"交差したラインはまとめて数えます。この入れ替えで5ブロックが消えます。","js.chain.i1":"1回の入れ替えがきっかけです。","js.chain.i2":"もっと長い連鎖もできます。同じ入れ替えを見てください…","js.chain.i3":"こちらも長い連鎖です。","js.chain.w1":"3つ消えました。上のブロックがすき間に落ちて…","js.chain.w2":"…自然に揃います。2回目の消去がタダで起こりました！","js.chain.w3":"…さらにもう一度、3回目！","js.chain.end":"x{m}の連鎖：横幅いっぱいのおじゃま（高さ{rows}段）を送ります。ソロでは、得点にも連鎖の倍率がかかります。","js.garbage.i1":"相手が攻撃すると、おじゃまブロックが山の上に落ちてきます。","js.garbage.i2":"おじゃまにはいろいろな大きさがあります。この板は幅3ブロックです。","js.garbage.i3":"大きな連鎖は、背の高いおじゃまを送ります。砕け方は同じです。","js.garbage.c1":"直接は消せません。接しているブロックを消すと…","js.garbage.c2":"…ふつうのブロックに砕けます！","js.danger.1":"ブロックの山は下からせり上がり続けます。両側のライトが高さを示します。","js.danger.2":"てっぺんで止まると、猶予は7秒です！","js.danger.3":"高い列を下げましょう。一番上のブロックを横へずらします。","js.danger.4":"助かった！ ブロックを消すと、上昇とカウントダウンも止まります。","js.danger.5":"何もしないと、山はてっぺんに届き…","js.danger.6":"…7秒がたつと、負けです。","js.danger.7":"手がなくなったら、Enterを長押しして山を速くせり上げましょう。","js.gray.1":"灰色ブロックはめずらしい存在です。ほかと同じく、3つ以上で消えます。","js.gray.2":"灰色ブロック3つで、1段ぶんの灰色のおじゃまが送られます。","js.gray.3":"灰色のおじゃま（上）が、ふつうのおじゃまの上にのっています。","js.gray.4":"ふつうのおじゃまは砕けますが、灰色の板は残ります。灰色の板は、すぐ隣で同じ色のブロックを消すか、接している別の灰色の板を砕くと壊せます。","js.calc.min":"ふつうのブロックを3つ消してもおじゃまは送られません。","js.calc.one":"おじゃまが1つ、幅{w}ブロック。","js.calc.many":"おじゃまが{n}個：幅はそれぞれ{list}ブロック分。","js.calc.nochain":"1回の消去は連鎖ではありません。追加では何も送られません。","js.calc.chain":"おじゃまが1つ、横幅いっぱい、高さ{h}段。","js.calc.chainmax":"おじゃまが1つ、横幅いっぱい、高さ{h}段（最大）。"}</script>
 <script src="../dist/site.js?v=8e9bc88f"></script>
 </body>
 </html>
