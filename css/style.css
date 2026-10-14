@@ -267,7 +267,7 @@ kbd { display: inline-block; min-width: 2em; text-align: center; padding: 2px 8p
 .calc input[type=range] { min-height: 32px; }
 .footer a:not(.lang-footer a) { text-underline-offset: 3px; }
 h1, h2, h3, p, li { overflow-wrap: break-word; }
-.lesson-text, .card, .quote { hyphens: auto; }
+@media (max-width: 600px) { .lesson-text, .card { hyphens: auto; } }
 
 @media (max-width: 820px) {
   /* the seven lessons: one swipeable row instead of four wrapped rows */
@@ -293,3 +293,12 @@ html:lang(ja) .lesson-text, html:lang(ko) .lesson-text, html:lang(zh-Hans) .less
 .tagline .grad { display: inline-block; white-space: nowrap; }
 .tagline { text-wrap: balance; }
 .quote.big, h1, h2, h3 { hyphens: manual; }
+
+/* images with width/height attributes (they only reserve the space): the height must follow the width */
+img { height: auto; }
+.gallery img { height: auto; aspect-ratio: 1; }
+h2 { text-wrap: balance; }
+
+.controls + .fine { margin-top: 16px; }
+.brand { flex: none; }
+.brand img { flex: none; width: 40px; height: auto; }
