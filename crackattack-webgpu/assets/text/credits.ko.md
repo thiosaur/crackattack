@@ -2,7 +2,7 @@
 
 **원작 Crack Attack!** (2000–2006): **Daniel R. Nelson** 제작, **R. Andrew Sayman** 개발 및 유지 관리, **Kevin Webb** 참여.
 
-**이 버전** — Back From The Stack: Rust / WebGPU로 다시 작성 (2.x), 만든 사람 Thiosaur.
+**이번 버전** — Back From The Stack: Thiosaur가 Rust / WebGPU로 새로 작성한 버전(2.x).
 
 이미지: Crack Attack! 1.1.14의 원본 텍스처와, AI 모델로 생성해 이 버전을 위해 다듬은 새 이미지. 효과음: 이 버전을 위해 제작, 합성하거나 AI로 생성. 음악: 노래 「Les Crapauds」(Victor Meusy, 1897년, 퍼블릭 도메인)를 바탕으로 한 편곡.
 

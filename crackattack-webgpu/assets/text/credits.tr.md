@@ -1,8 +1,8 @@
 # Emeği geçenler
 
-**Orijinal Crack Attack!** (2000–2006): yaratan **Daniel R. Nelson**; geliştiren ve sürdüren **R. Andrew Sayman**, **Kevin Webb** ile birlikte.
+**Orijinal Crack Attack!** (2000–2006): **Daniel R. Nelson** tarafından yaratıldı; **R. Andrew Sayman** tarafından, **Kevin Webb** ile birlikte geliştirildi ve bakımı yapıldı.
 
-**Bu sürüm** — Back From The Stack: Rust / WebGPU ile yeniden yazım (2.x), Thiosaur.
+**Bu sürüm** — Back From The Stack: Thiosaur tarafından Rust / WebGPU ile tamamen yeniden yazılan 2.x sürümü.
 
 Görseller: Crack Attack! 1.1.14'ün orijinal dokuları ve yapay zekâ modelleriyle üretilip bu sürüm için düzenlenen yeni görseller. Ses efektleri: bu sürüm için hazırlandı, sentezlendi ya da yapay zekâ ile üretildi. Müzik: "Les Crapauds" (Victor Meusy, 1897, kamu malı) temel alınarak yapılan düzenlemeler.
 

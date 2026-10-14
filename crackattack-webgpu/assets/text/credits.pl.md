@@ -2,7 +2,7 @@
 
 **Oryginalny Crack Attack!** (2000–2006): stworzony przez **Daniela R. Nelsona**; rozwijany i utrzymywany przez **R. Andrew Saymana**, z udziałem **Kevina Webba**.
 
-**Ta edycja** — Back From The Stack: przepisanie w Rust / WebGPU (2.x), autor: Thiosaur.
+**Ta edycja** — Back From The Stack: wersja 2.x napisana od nowa w Rust / WebGPU przez Thiosaura.
 
 Grafika: oryginalne tekstury z Crack Attack! 1.1.14 oraz nowe obrazy wygenerowane modelami AI i poprawione na potrzeby tej edycji. Efekty dźwiękowe: przygotowane dla tej edycji, syntezowane lub wygenerowane przez AI. Muzyka: aranżacje oparte na „Les Crapauds” (Victor Meusy, 1897, domena publiczna).
 
