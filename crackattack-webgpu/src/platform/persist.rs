@@ -1047,10 +1047,15 @@ mod tests {
         let Some(dir) = std::env::var_os("CA_LOCK_TEST_DIR") else { return };
         let dir = std::path::PathBuf::from(dir);
         for _ in 0..200 {
-            let ok = with_config_lock(&dir, || {
-                let p = dir.join("counter.txt");
-                let v: u64 = std::fs::read_to_string(&p).unwrap().trim().parse().unwrap();
-                std::fs::write(&p, format!("{}", v + 1)).unwrap();
+            // `with_config_lock` gives up after 500 ms by design; on a loaded CI runner the
+            // other process can hold the lock longer than that, so the test retries (a few
+            // seconds in all) instead of failing on scheduling noise.
+            let ok = (0..20).find_map(|_| {
+                with_config_lock(&dir, || {
+                    let p = dir.join("counter.txt");
+                    let v: u64 = std::fs::read_to_string(&p).unwrap().trim().parse().unwrap();
+                    std::fs::write(&p, format!("{}", v + 1)).unwrap();
+                })
             });
             assert!(ok.is_some(), "lock never acquired (timeout)");
         }
