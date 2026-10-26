@@ -520,7 +520,7 @@ mod tests {
     /// the pre-beta format with its checksum field: all entries load, and an append keeps them.
     #[test]
     fn reference_logs_load_and_accept_an_append() {
-        for version in ["pre-beta", "2.0.0-beta.1"] {
+        for version in ["pre-beta", "2.0.0-beta.1", "2.0.0-beta.2"] {
             let src = format!("{}/tests/fixtures/{version}/ladder.json", env!("CARGO_MANIFEST_DIR"));
             let p = test_path();
             std::fs::create_dir_all(p.parent().unwrap()).unwrap();

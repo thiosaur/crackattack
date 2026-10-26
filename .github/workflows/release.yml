@@ -161,19 +161,21 @@ jobs:
           </dict></plist>
           EOF
             cp LICENSE AUTHORS README.md THIRD-PARTY-LICENSES.html "dist/$name/"
+            # The disk image holds only the app: the licences travel inside it.
+            cp LICENSE AUTHORS THIRD-PARTY-LICENSES.html "$app/Contents/Resources/"
             # Ad-hoc signature (no Apple account): required for arm64, not a notarisation.
             codesign --force --deep --sign - "$app"
             # The game finds its data from the executable's location.
             test -f "$app/Contents/Resources/assets/textures/ui/logo.png"
             test -s "$app/Contents/Resources/AppIcon.icns"
             (cd dist && ditto -c -k --keepParent "$name" "$name.zip")
-            # Disk image: the app next to a link to Applications, to drag it there.
-            stage="$RUNNER_TEMP/dmg"
-            mkdir -p "$stage"
-            ditto "$app" "$stage/Crack Attack.app"
-            ln -s /Applications "$stage/Applications"
-            cp LICENSE README.md "$stage/"
-            hdiutil create -volname "Crack Attack" -srcfolder "$stage" -ov -format UDZO "dist/$name.dmg"
+            # Disk image: the app next to a link to Applications, on a background with an
+            # arrow. dmgbuild writes the window layout itself (no Finder scripting, which is
+            # unreliable on a runner); the version is pinned.
+            python3 -m venv "$RUNNER_TEMP/dmgvenv"
+            "$RUNNER_TEMP/dmgvenv/bin/pip" install --quiet dmgbuild==1.6.7
+            "$RUNNER_TEMP/dmgvenv/bin/dmgbuild" -s packaging/macos/dmg-settings.py \
+              -D app="$app" -D dir=packaging/macos "Crack Attack" "dist/$name.dmg"
           else
             mkdir -p "dist/$name"
             cp "target/release/${{ matrix.exe }}" "dist/$name/"
