@@ -235,14 +235,20 @@ pub fn bind_tcp_range(start: u16, count: u16) -> io::Result<(TcpListener, u16)> 
 /// Binds a **dual-stack** listener on `[::]:port` (`IPV6_V6ONLY=false`, so it accepts IPv6
 /// clients **and** IPv4 clients as v4-mapped). Falls back to IPv4 `0.0.0.0:port` if IPv6
 /// is unavailable.
-/// There is no `SO_REUSEADDR`: `AddrInUse` must be detected to move on to the next port,
-/// so that each local instance gets its own port.
+/// On Unix, `SO_REUSEADDR` is set: after a game the host's closed connection lingers in
+/// `TIME_WAIT` on the game port, and without the option the next bind fails with `AddrInUse`,
+/// so the game would move to the next port and the address saved in the ranking would go
+/// stale. A port with a live listener still reports `AddrInUse`, so each local instance
+/// keeps its own port. Not set on Windows: there it would allow sharing a live port, and
+/// `TIME_WAIT` does not block a bind.
 fn bind_dual_stack(port: u16) -> io::Result<TcpListener> {
     use socket2::{Domain, Socket, Type};
     use std::net::{IpAddr, Ipv6Addr};
     let try_v6 = || -> io::Result<TcpListener> {
         let sock = Socket::new(Domain::IPV6, Type::STREAM, None)?;
         sock.set_only_v6(false)?;
+        #[cfg(unix)]
+        sock.set_reuse_address(true)?;
         let addr = SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), port);
         sock.bind(&addr.into())?;
         sock.listen(128)?;
@@ -296,6 +302,28 @@ mod tests {
             RecvResult::Ok => assert_eq!(&buf, b"hello"),
             _ => panic!("expected Ok"),
         }
+    }
+
+    /// After a game closed by the host (its side lingers in `TIME_WAIT`), re-entering the
+    /// network zone binds the same port again; a live listener still blocks its port.
+    #[cfg(unix)]
+    #[test]
+    fn rebind_same_port_after_host_closed_first() {
+        let (first, port) = match bind_tcp_range(54100, 20) {
+            Ok(x) => x,
+            Err(e) => { eprintln!("Skipping rebind test (bind failed: {})", e); return; }
+        };
+        first.set_nonblocking(false).unwrap();
+        let client = std::net::TcpStream::connect(("127.0.0.1", port)).unwrap();
+        let (served, _) = first.accept().unwrap();
+        drop(served); // the host closes first: TIME_WAIT stays on its port
+        drop(client);
+        // A second instance cannot take the port while the first listener is alive...
+        assert!(bind_dual_stack(port).is_err(), "a live listener must keep its port");
+        drop(first);
+        // ...but once it is gone, the port is available again despite TIME_WAIT.
+        let again = bind_dual_stack(port).expect("rebind after TIME_WAIT");
+        assert_eq!(again.local_addr().unwrap().port(), port);
     }
 
     /// The dual-stack listener accepts **IPv4 (v4-mapped)** and **IPv6** clients on the same
