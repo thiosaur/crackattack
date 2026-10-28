@@ -107,9 +107,20 @@ const DANGER_PURPLE: [u8; 2] = [129, 54];
 const DANGER_RED: [u8; 2] = [196, 88];
 /// Space between each danger bar and the board.
 const DANGER_GAP: &str = "   ";
+/// Space between the right danger bar and the side panel.
+const PANEL_GAP: &str = "   ";
 
 /// Chain popup in the side panel.
 const CHAIN_COLOR: u8 = 220;
+
+/// The game's compact terminal logo (`logo.txt`): one block
+/// per `#`, the two words separated by a blank line. Shown in the side panel, between the
+/// game info and the key hints.
+const LOGO: &str = include_str!("logo.txt");
+/// Colors of the two words, as in `logo-terminal-compact.ansi`: red CRACK, purple ATTACK!.
+const LOGO_COLORS: [u8; 2] = [124, 127];
+/// Panel line where the logo starts: just below the chain popup.
+const LOGO_FIRST_LINE: usize = 7;
 
 /// Letter for each color of the game in text captures (`--capture`): capital letters for
 /// blocks, lowercase for their dark rising-row versions.
@@ -461,12 +472,33 @@ fn panel_line(i: usize, lines: usize, frame: &FrameData, hud: &Hud) -> Option<St
             _ => "Best   -".to_string(),
         }),
         6 => hud.chain.map(|n| format!("\x1b[1;38;5;{}mChain x{}!\x1b[22;39m", CHAIN_COLOR, n)),
+        _ if (LOGO_FIRST_LINE..LOGO_FIRST_LINE + logo_lines().len()).contains(&i) => {
+            Some(logo_lines()[i - LOGO_FIRST_LINE].clone())
+        }
         _ => {
             let first_hint = lines.checked_sub(KEY_HINTS.len())?;
             let (key, action) = KEY_HINTS.get(i.checked_sub(first_hint)?)?;
             Some(format!("\x1b[38;5;244m{:<7}{}\x1b[39m", key, action))
         }
     }
+}
+
+/// The logo, one string per terminal line.
+fn logo_lines() -> &'static [String] {
+    static LINES: std::sync::OnceLock<Vec<String>> = std::sync::OnceLock::new();
+    LINES.get_or_init(|| {
+        let mut word = 0;
+        LOGO.lines()
+            .map(|line| {
+                if line.trim().is_empty() {
+                    word = (word + 1).min(LOGO_COLORS.len() - 1);
+                    return String::new();
+                }
+                let blocks: String = line.chars().map(|c| if c == '#' { '█' } else { ' ' }).collect();
+                format!("\x1b[38;5;{}m{}\x1b[39m", LOGO_COLORS[word], blocks)
+            })
+            .collect()
+    })
 }
 
 /// One danger bar character for this line: the bar rises from the ground by eighths.
@@ -537,7 +569,7 @@ fn compose(frame: &FrameData, paused: bool, hud: &Hud) -> String {
 
         // Side panel: game info and keys.
         if let Some(text) = panel_line(i, lines, frame, hud) {
-            let _ = write!(out, "   {}", text);
+            let _ = write!(out, "{}{}", PANEL_GAP, text);
         }
         out.push_str("\x1b[K\r\n");
     }
@@ -941,13 +973,47 @@ mod tests {
     }
 
     #[test]
+    fn the_logo_shows_block_for_block_right_of_the_board() {
+        let mut game = GameState::new(7);
+        let frame = game.step(&InputSnapshot::new());
+        let mut screen = crate::screen::Screen::new();
+        screen.feed(&compose(&frame, false, &Hud::default()));
+        // The panel starts after the board, the right danger bar and its gap.
+        let panel = 2 * (1 + DANGER_GAP.len()) + FIELD_COLUMNS + PANEL_GAP.len();
+        let mut word = 0;
+        for (y, row) in LOGO.lines().enumerate() {
+            if row.trim().is_empty() {
+                word += 1;
+            }
+            for (x, c) in row.chars().enumerate() {
+                let cell = screen.cell(LOGO_FIRST_LINE + y, panel + x);
+                if c == '#' {
+                    assert_eq!((cell.ch, cell.ink), ('█', Some(LOGO_COLORS[word])), "({}, {})", x, y);
+                } else {
+                    assert_eq!(cell.ch, ' ', "({}, {})", x, y);
+                }
+            }
+        }
+        // Between the chain popup (line 6) and the key hints.
+        let lines = (TOP_UNIT / LINE_UNITS + LINES_BELOW_GROUND) as usize;
+        assert!(LOGO_FIRST_LINE > 6 && LOGO_FIRST_LINE + logo_lines().len() <= lines - KEY_HINTS.len());
+    }
+
+    #[test]
     fn the_pause_hides_the_board() {
         let mut game = GameState::new(7);
         let frame = game.step(&InputSnapshot::new());
         let text = compose(&frame, true, &Hud::default());
         assert!(text.contains("PAUSE"));
         assert!(text.contains("Q: quit"));
-        assert!(!text.contains('█'));
+        // No block left on the board (the logo in the side panel stays).
+        let mut screen = crate::screen::Screen::new();
+        screen.feed(&text);
+        let board = 1 + DANGER_GAP.len()..1 + DANGER_GAP.len() + FIELD_COLUMNS;
+        for line in screen.text() {
+            let field: String = line.chars().skip(board.start).take(board.len()).collect();
+            assert!(!field.contains(['█', '▇', '▅', '▂']), "{:?}", line);
+        }
         assert_eq!(text.matches("\r\n").count(), compose(&frame, false, &Hud::default()).matches("\r\n").count());
     }
 

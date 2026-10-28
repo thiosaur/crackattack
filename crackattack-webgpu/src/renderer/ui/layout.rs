@@ -63,7 +63,7 @@ pub const SCREEN: LayoutBox = LayoutBox::new(
 pub const LEFT_COL_X: f32 = -10.5;
 
 /// Logo Y position
-pub const LOGO_Y: f32 = 13.5;
+pub const LOGO_Y: f32 = 14.1;
 /// Logo half-width and half-height (869×740 = 1.17:1 aspect), 80% of the original 4.2.
 pub const LOGO_HW: f32 = 4.2 * 0.8; // 3.36
 pub const LOGO_HH: f32 = LOGO_HW * 740.0 / 869.0; // ≈ 2.86

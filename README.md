@@ -149,7 +149,7 @@ cargo run --release -p crackattack-terminal
 ```
 
 <p align="center">
-  <img src="media/terminal.png" alt="The terminal version: a game in progress" width="340">
+  <img src="media/terminal.png" alt="The terminal version: a game in progress" width="520">
 </p>
 
 It runs the same game engine as the graphical version (same rules, same 50 Hz tick). The
