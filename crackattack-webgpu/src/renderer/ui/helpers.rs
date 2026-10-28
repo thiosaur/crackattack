@@ -66,6 +66,20 @@ pub fn selectable_row(
     min_width: f32,
     add_contents: impl FnOnce(&mut egui::Ui, egui::Color32),
 ) -> egui::Response {
+    selectable_row_marked(ui, selected, enabled, gauge, min_width, None, add_contents)
+}
+
+/// [`selectable_row`] with an optional `marker` icon that replaces the chevron and is always
+/// shown (for a row that cannot take the focus, so it never shows the chevron).
+pub fn selectable_row_marked(
+    ui: &mut egui::Ui,
+    selected: bool,
+    enabled: bool,
+    gauge: RowGauge,
+    min_width: f32,
+    marker: Option<char>,
+    add_contents: impl FnOnce(&mut egui::Ui, egui::Color32),
+) -> egui::Response {
     use super::egui_theme::{row_frame, selected_row_frame, Palette};
     let frame = match (gauge, selected) {
         (RowGauge::ModalThin, true) => {
@@ -100,7 +114,11 @@ pub fn selectable_row(
                 ui.set_min_width(min_width);
             }
             ui.horizontal(|ui| {
-                ui.label(egui::RichText::new("\u{25b6}").color(chevron_color).size(14.0));
+                match marker {
+                    Some(icon) => ui.label(
+                        super::icons::icon(icon).color(Palette::TEXT_UNAVAILABLE).size(14.0)),
+                    None => ui.label(egui::RichText::new("\u{25b6}").color(chevron_color).size(14.0)),
+                };
                 add_contents(ui, text_color);
             });
         })

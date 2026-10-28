@@ -116,6 +116,9 @@ pub struct VsDisplay {
     /// Persistent identity of the opponent (received in the network handshake), used for the ladder.
     /// `None` = opponent without identity (local AI).
     pub opponent_uuid: Option<[u8; 16]>,
+    /// Last published picture of the opponent's board, for the HUD preview. `None` when the
+    /// opponent publishes none (network for now): the HUD then keeps its usual layout.
+    pub opponent_board: Option<crate::vs::board_view::OpponentBoardView>,
 }
 
 /// One-shot lifecycle event emitted by the session.

@@ -56,6 +56,18 @@ pub const TROPHY: char = '\u{E373}';
 pub const SKULL: char = '\u{E221}';
 /// `wifi`: quick reconnect to an opponent (Opponents page).
 pub const WIFI: char = '\u{E1AE}';
+/// `ban`: a LAN peer that cannot be played (another network version).
+pub const BAN: char = '\u{E051}';
+/// `refresh-cw`: check for updates / try again (Updates page).
+pub const REFRESH: char = '\u{E145}';
+/// `download`: download the new version (Updates page).
+pub const DOWNLOAD: char = '\u{E0B2}';
+/// `check-circle`: up to date (Updates page).
+pub const CHECK_CIRCLE: char = '\u{E07C}';
+/// `wifi-off`: the update check could not reach the server (Updates page).
+pub const WIFI_OFF: char = '\u{E1AF}';
+/// `store`: updates are handled by the app store (Updates page).
+pub const STORE: char = '\u{E3E4}';
 /// `medal`: record beaten (stats screens). One icon, one meaning: [`TROPHY`] is for
 /// victories, the medal is for records.
 pub const MEDAL: char = '\u{E36F}';

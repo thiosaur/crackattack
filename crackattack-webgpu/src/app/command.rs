@@ -77,9 +77,6 @@ pub enum AppCommand {
     /// Open a section of the Info screen (read-only menu overlay).
     OpenInfoScreen(crate::app::menu_tree::InfoSection),
     CloseInfoScreen,
-    /// Info/Updates page, "Skip this version": persists the refusal of the offered version
-    /// and clears the update notification.
-    IgnoreUpdateVersion(String),
     /// Info/Updates page, "Check for updates" checkbox: toggles and persists the daily
     /// automatic check.
     ToggleUpdateChecks,

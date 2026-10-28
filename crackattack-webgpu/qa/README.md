@@ -63,7 +63,7 @@ images and is git-ignored, like `qa/current/`.
 |---|---|---|
 | `cargo test` (naga tests, `.mini` parsing, layouts) | WGSL errors, entry points, broken scripts, ABI asserts | Shader/layout compatibility at runtime, and anything visual |
 | `--render-dump` (JSONL) | The render **commands** (draws, data hashes) | The **pixels**: two shaders that render differently give the same dump |
-| `--autoplay` alone | Smoke test: it runs and exits cleanly | Not deterministic with the normal clock, so useless for comparison |
+| `--autoplay` alone | Smoke test: it runs and exits cleanly. The AI itself is deterministic for a seed; what varies is the real-time waits of the app | Not deterministic with the normal clock, so useless for comparison |
 | **Miniscript + `capture`** (this folder) | The pixels, with a fixed step and seed: comparable byte for byte on the same machine and backend | Whatever the scenario does not reach |
 | Real launch | Actual pipeline creation (covers the limit of the naga tests) | — |
 

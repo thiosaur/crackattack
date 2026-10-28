@@ -113,7 +113,13 @@ pub fn render_egui_menu(
                     let aspect = tex.aspect_ratio();
                     let logo_width = 192.0;
                     let logo_height = logo_width / aspect;
-                    ui.image(egui::load::SizedTexture::new(tex.id(), egui::vec2(logo_width, logo_height)));
+                    // The layout keeps the logo's place; only the painting floats.
+                    let (rect, _) = ui.allocate_exact_size(
+                        egui::vec2(logo_width, logo_height), egui::Sense::hover());
+                    let (lift, tilt) = crate::renderer::ui::layout::logo_float(ctx.input(|i| i.time));
+                    egui::Image::new(egui::load::SizedTexture::new(tex.id(), rect.size()))
+                        .rotate(tilt, egui::Vec2::splat(0.5))
+                        .paint_at(ui, rect.translate(egui::vec2(0.0, lift * logo_width)));
                 }
             });
         });
@@ -337,3 +343,4 @@ fn render_ticker(ctx: &egui::Context, items: &[TickerItem]) {
             }
         });
 }
+

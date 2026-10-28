@@ -1493,7 +1493,7 @@ mod tests {
     /// folder of every released version.
     #[test]
     fn reference_state_files_load_and_round_trip() {
-        for version in ["pre-beta", "2.0.0-beta.1", "2.0.0-beta.2"] {
+        for version in ["pre-beta", "2.0.0-beta.1", "2.0.0-beta.2", "2.0.0-beta.3"] {
             let src = format!("{}/tests/fixtures/{version}/state.json", env!("CARGO_MANIFEST_DIR"));
             let dir = TempDir::new("fixture");
             std::fs::copy(&src, dir.state()).unwrap();

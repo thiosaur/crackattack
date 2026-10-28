@@ -37,6 +37,31 @@ pub const COUNTDOWN_HEIGHT_RATIO: f32 = 0.4;
 /// Placed below the nameplate, at a reduced clock scale.
 pub const SESSION_SCORE_OFFSET_Y: f32 = NAME_OFFSET_Y - NAME_SCALE / 2.0 - 1.5;
 pub const SESSION_SCORE_SCALE: f32 = 0.6;
+/// Session score position when the opponent board preview takes the space below the nameplate:
+/// between the preview and the clock.
+pub const SESSION_SCORE_WITH_BOARD_OFFSET_Y: f32 = -0.7;
+
+/// Gradient of the session score digits (same as the clock), as vertex colors: bottom left,
+/// bottom right, top left, top right.
+pub const SESSION_SCORE_GRADIENT: [[f32; 4]; 4] = [
+    [0.3, 0.3, 1.0, 1.0],
+    [0.5, 0.5, 1.0, 1.0],
+    [0.5, 0.5, 1.0, 1.0],
+    [1.0, 1.0, 1.0, 1.0],
+];
+
+/// Opponent board preview, below the nameplate: 6 × 13 cells.
+pub const OPPONENT_BOARD_CELL: f32 = 0.3;
+/// Top edge of the preview.
+pub const OPPONENT_BOARD_TOP_Y: f32 = 4.4;
+/// Frame around the preview.
+pub const OPPONENT_BOARD_FRAME: f32 = 0.05;
+/// Colors (sRGB): background, frame, garbage, and garbage that just appeared. Blocks take
+/// the gradient of the score digits (`SESSION_SCORE_GRADIENT`), stretched over the preview.
+pub const OPPONENT_BOARD_BACKGROUND: u32 = 0x0f1218;
+pub const OPPONENT_BOARD_FRAME_COLOR: u32 = 0x292e38;
+pub const OPPONENT_BOARD_GARBAGE: u32 = 0x825155;
+pub const OPPONENT_BOARD_GARBAGE_FLASH: u32 = 0xe8343f;
 
 /// Safe height (13 rows)
 pub const GC_SAFE_HEIGHT: i32 = 13;

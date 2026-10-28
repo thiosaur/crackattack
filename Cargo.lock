@@ -143,7 +143,7 @@ dependencies = [
 
 [[package]]
 name = "auto_qa"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 dependencies = [
  "crackattack-core",
 ]
@@ -421,14 +421,14 @@ dependencies = [
 
 [[package]]
 name = "crackattack-core"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 dependencies = [
  "bitflags 2.13.0",
 ]
 
 [[package]]
 name = "crackattack-net"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 dependencies = [
  "bytemuck",
  "crackattack-core",
@@ -439,7 +439,7 @@ dependencies = [
 
 [[package]]
 name = "crackattack-rating"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 dependencies = [
  "serde",
  "serde_json",
@@ -447,7 +447,7 @@ dependencies = [
 
 [[package]]
 name = "crackattack-terminal"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 dependencies = [
  "crackattack-core",
  "crossterm",
@@ -455,7 +455,7 @@ dependencies = [
 
 [[package]]
 name = "crackattack-webgpu"
-version = "2.0.0-beta.2"
+version = "2.0.0-beta.3"
 dependencies = [
  "ab_glyph",
  "bytemuck",

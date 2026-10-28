@@ -20,7 +20,7 @@ pub mod game_state;
 pub mod fingerprint;
 pub mod gameplay_event;
 pub mod ai;
-pub mod virtual_player;
+pub mod ai_difficulty;
 pub mod vs;
 pub mod stats;
 

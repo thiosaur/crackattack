@@ -175,7 +175,7 @@ jobs:
             python3 -m venv "$RUNNER_TEMP/dmgvenv"
             "$RUNNER_TEMP/dmgvenv/bin/pip" install --quiet dmgbuild==1.6.7
             "$RUNNER_TEMP/dmgvenv/bin/dmgbuild" -s packaging/macos/dmg-settings.py \
-              -D app="$app" -D dir=packaging/macos "Crack Attack" "dist/$name.dmg"
+              -D app="$app" -D dir=packaging/macos "Crack Attack" "dist/$name-installer.dmg"
           else
             mkdir -p "dist/$name"
             cp "target/release/${{ matrix.exe }}" "dist/$name/"
@@ -183,9 +183,9 @@ jobs:
             cp LICENSE AUTHORS README.md THIRD-PARTY-LICENSES.html "dist/$name/"
             test -f "dist/$name/assets/textures/ui/logo.png"
             if [ "$RUNNER_OS" = "Windows" ]; then
-              (cd dist && 7z a -tzip "$name.zip" "$name" > /dev/null)
+              (cd dist && 7z a -tzip "$name-portable.zip" "$name" > /dev/null)
             else
-              tar -C dist -czf "dist/$name.tar.gz" "$name"
+              tar -C dist -czf "dist/$name-portable.tar.gz" "$name"
               # AppImage: one executable file. The game reads its data next to its binary.
               appdir="$RUNNER_TEMP/CrackAttack.AppDir"
               mkdir -p "$appdir/usr/lib/crackattack"
@@ -210,7 +210,7 @@ jobs:
         run: |
           $name = "crackattack-$env:VERSION-${{ matrix.platform }}"
           magick crackattack-webgpu/assets/textures/ui/app_icon.png -define icon:auto-resize=256,128,64,48,32,16 "dist/$name/AppIcon.ico"
-          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /Q "/DAppVersion=$env:VERSION" "/DSourceDir=$PWD\dist\$name" "/DOutputDir=$PWD\dist" "/DOutputBase=$name-setup" packaging\windows\crackattack.iss
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /Q "/DAppVersion=$env:VERSION" "/DSourceDir=$PWD\dist\$name" "/DOutputDir=$PWD\dist" "/DOutputBase=$name-installer" packaging\windows\crackattack.iss
           if ($LASTEXITCODE -ne 0) { exit 1 }
           Get-ChildItem dist
 
@@ -222,7 +222,7 @@ jobs:
             dist/*.tar.gz
             dist/*.dmg
             dist/*.AppImage
-            dist/*-setup.exe
+            dist/*-installer.exe
           retention-days: 7
 
   draft:
@@ -245,11 +245,11 @@ jobs:
           cat > notes.md <<'EOF'
           ## Downloads
 
-          | System | Installer | Archive |
+          | System | Guided install | Portable (no install) |
           |---|---|---|
-          | Windows (x86_64) | `crackattack-VERSION-windows-x86_64-setup.exe` | `crackattack-VERSION-windows-x86_64.zip` |
-          | macOS (Apple Silicon) | `crackattack-VERSION-macos-arm64.dmg` | `crackattack-VERSION-macos-arm64.zip` |
-          | Linux (x86_64) | `crackattack-VERSION-linux-x86_64.AppImage` | `crackattack-VERSION-linux-x86_64.tar.gz` |
+          | Windows (x86_64) | `crackattack-VERSION-windows-x86_64-installer.exe` | `crackattack-VERSION-windows-x86_64-portable.zip` |
+          | macOS (Apple Silicon) | `crackattack-VERSION-macos-arm64-installer.dmg` | `crackattack-VERSION-macos-arm64-portable.zip` |
+          | Linux (x86_64) | `crackattack-VERSION-linux-x86_64.AppImage` (single file, nothing to install) | `crackattack-VERSION-linux-x86_64-portable.tar.gz` |
 
           The Windows installer needs no administrator rights; the macOS disk image holds the
           app, to drag into Applications; the AppImage runs as is (make it executable first).

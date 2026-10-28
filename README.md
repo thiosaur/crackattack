@@ -42,16 +42,18 @@ WebGPU renderer and SDL3. During a game, the music adapts to the pressure on you
 ## Download
 
 Ready-to-run packages for Windows, macOS and Linux are on the
-[Releases](../../releases) page, each as an installer and as a plain archive (unpack it
-anywhere and run it). Both contain the game and all its data.
+[Releases](../../releases) page. A file named `-installer` guides you through the
+installation; a file named `-portable` needs none: unpack it anywhere and run it. Both contain
+the game and all its data. (Linux has no installer: the AppImage is a single file that runs
+as is.)
 
-- **Windows** — `crackattack-<version>-windows-x86_64-setup.exe` installs the game for your user
+- **Windows** — `crackattack-<version>-windows-x86_64-installer.exe` installs the game for your user
   (no administrator rights), with a Start menu entry and an uninstaller; or unpack
-  `crackattack-<version>-windows-x86_64.zip` and run `crackattack.exe`. Requires a graphics card
+  `crackattack-<version>-windows-x86_64-portable.zip` and run `crackattack.exe`. Requires a graphics card
   and driver that support DirectX 12 or Vulkan. Windows SmartScreen may warn the first time,
   as the program is not signed: click **More info**, then **Run anyway**.
-- **macOS** — `crackattack-<version>-macos-arm64.dmg`: open it and drag *Crack Attack* into
-  *Applications* (or unpack the `.zip`), or install it with [Homebrew](https://brew.sh):
+- **macOS** — `crackattack-<version>-macos-arm64-installer.dmg`: open it and drag *Crack Attack* into
+  *Applications* (or unpack the `-portable.zip`), or install it with [Homebrew](https://brew.sh):
   `brew install --cask thiosaur/tap/crackattack`. Apple Silicon, macOS 11 or later. The
   application is not signed by Apple, so macOS blocks it the first time:
   - macOS 15 or later: open *Crack Attack.app* once, then go to *System Settings → Privacy &
@@ -64,7 +66,7 @@ anywhere and run it). Both contain the game and all its data.
   Afterwards it opens normally.
 - **Linux** — `crackattack-<version>-linux-x86_64.AppImage`: make it executable
   (`chmod +x`, or in the file properties) and run it; or unpack
-  `crackattack-<version>-linux-x86_64.tar.gz` and run `./crackattack`. Uses the usual desktop
+  `crackattack-<version>-linux-x86_64-portable.tar.gz` and run `./crackattack`. Uses the usual desktop
   libraries (ALSA, X11 or Wayland) already present on most distributions.
 
 To update, just download the new package: your settings, scores and network ranking live in
@@ -136,8 +138,38 @@ Run it from the repository root (or next to an `assets/` folder) so that the gam
 data. `cargo test --workspace` runs the test suite. To build without the update check:
 `cargo build --release -p crackattack-webgpu --no-default-features --features native`.
 
-The workspace also contains `crackattack-terminal`, a text renderer that plays in a
-terminal (`cargo run -p crackattack-terminal`).
+## Terminal version
+
+The workspace also contains `crackattack-terminal`, a small text version of the game that
+runs in any terminal with ANSI colors and UTF-8 symbols. It is not part of the downloadable
+packages: build it from source (see above, no graphics libraries needed).
+
+```sh
+cargo run --release -p crackattack-terminal
+```
+
+<p align="center">
+  <img src="media/terminal.png" alt="The terminal version: a game in progress" width="340">
+</p>
+
+It runs the same game engine as the graphical version (same rules, same 50 Hz tick). The
+board is drawn with 256 colors and Unicode block characters, so the stack rises smoothly
+and falling blocks move finely; the danger bars of the final countdown are there too. It is
+a solo game only: no menus, no sound, no computer opponent and no network play. Use a
+terminal that supports 256 colors and UTF-8, and large enough to show the whole board.
+
+| Key | Action |
+|---|---|
+| Arrow keys or **WASD** | Move the cursor |
+| **Space** | Swap the two blocks under the cursor |
+| **Enter** | Raise the stack faster |
+| **P** | Pause / resume |
+| **Q** or **Escape** | Quit |
+
+Each game deals a new board; a summary with the seed is printed when the game ends, and
+`--seed N` replays the same one. Other options: `--frames N` stops after N frames, `--debug`
+shows the state of the cells under the cursor, `--help` lists them. The terminal is
+restored when the game ends or quits.
 
 ## Feedback
 

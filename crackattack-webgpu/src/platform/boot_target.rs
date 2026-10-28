@@ -10,7 +10,7 @@
 //! - `screen:` a screen or overlay opened directly (`screen:lan`);
 //! - `flow:`   a product scenario (`flow:play/vs-computer`, `flow:network/host`).
 
-use crackattack_core::virtual_player::AIDifficulty;
+use crackattack_core::ai_difficulty::AIDifficulty;
 use std::net::IpAddr;
 
 use crate::app::command::AppCommand;

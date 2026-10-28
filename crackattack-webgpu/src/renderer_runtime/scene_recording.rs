@@ -37,6 +37,8 @@ impl RendererRuntime {
     /// Record all draw commands into the command buffer. Returns a
     /// `RecordedFrame` with the instance data for the submit phase.
     pub(super) fn record_scene(&mut self, plan: &FramePlan, frame: &FrameData, gpu: &GpuContext, session: &SessionState, scheduling: &SchedulingState, render_dt: f32, debug: &mut DebugState) -> RecordedFrame {
+        // The menu shows its drifting blocks in place of the game.
+        let draw_menu_backdrop = plan.flow_state.is_menu();
         let draw_3d_scene = plan.in_game && plan.game_exists;
 
         self.render_groups.sync_from_state(
@@ -58,10 +60,16 @@ impl RendererRuntime {
 
         self.process_frame_events(plan, frame, render_dt, debug);
 
-        let instances = crate::renderer::scene::game_renderer::generate_frame_instances(
-            frame,
-            &self.scene.block_impact_phases,
-        );
+        let instances = if draw_menu_backdrop {
+            self.scene.menu_backdrop.step(render_dt);
+            let aspect = gpu.viewport_width as f32 / gpu.viewport_height.max(1) as f32;
+            self.scene.menu_backdrop.instances(aspect)
+        } else {
+            crate::renderer::scene::game_renderer::generate_frame_instances(
+                frame,
+                &self.scene.block_impact_phases,
+            )
+        };
 
         let block_count = instances.len() as u32;
         if block_count > 0 {
@@ -72,7 +80,7 @@ impl RendererRuntime {
             );
         }
 
-        if draw_game && block_count > 0 {
+        if (draw_game || draw_menu_backdrop) && block_count > 0 {
             self.scene.command_buffer.draw_instanced(block_count);
         }
 
@@ -173,8 +181,12 @@ impl RendererRuntime {
     }
 
     /// Process gameplay events: update animators, track block impacts.
-    fn process_frame_events(&mut self, plan: &FramePlan, frame: &FrameData, _render_dt: f32, debug: &mut DebugState) {
+    fn process_frame_events(&mut self, plan: &FramePlan, frame: &FrameData, render_dt: f32, debug: &mut DebugState) {
         self.scene.danger_bar_animator.time_step(frame.ui.creep_freeze, frame.ui.loss_countdown);
+        let opponent_board = plan.snapshot.as_ref()
+            .and_then(|snap| snap.vs_display.as_ref())
+            .and_then(|vs| vs.opponent_board.as_ref());
+        self.scene.opponent_board_animator.time_step(opponent_board, render_dt);
         let is_countdown = plan.snapshot.as_ref()
             .map_or(false, |snap| snap.countdown.is_some());
         if is_countdown && self.scene.level_light_animator.slide_out_progress > 0.0 {
@@ -187,6 +199,10 @@ impl RendererRuntime {
         } else if frame.ui.phase == crackattack_core::GamePhase::Finished {
             self.scene.level_light_animator.slide_out_step();
         }
+
+        // Logo tremor: started by `shake_logo_on_garbage_landing` (the render frame
+        // carries no events), advanced here.
+        self.scene.logo_shake_animator.time_step(render_dt);
 
         let _ = debug;
     }

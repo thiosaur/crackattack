@@ -353,3 +353,27 @@ fn test_finished_game_continues_post_game_timing() {
     let frame2 = game.step(&empty);
     assert_eq!(frame2.ui.ticks_since_finished, 2);
 }
+
+/// A garbage dropped from the top reports its first landing as `initial`.
+#[test]
+fn dropped_garbage_first_landing_is_initial() {
+    use crate::gameplay_event::GameplayEvent;
+    let mut game = GameState::new(42);
+    let empty = InputSnapshot::new();
+    for _ in 0..10 {
+        game.step(&empty);
+    }
+    game.send_garbage(1, 6, 0);
+    let mut landings = Vec::new();
+    for _ in 0..2000 {
+        let frame = game.step(&empty);
+        landings.extend(frame.gameplay_events.iter().filter_map(|e| match e {
+            GameplayEvent::GarbageLanded(g) => Some(g.initial),
+            _ => None,
+        }));
+        if !landings.is_empty() {
+            break;
+        }
+    }
+    assert_eq!(landings, vec![true]);
+}

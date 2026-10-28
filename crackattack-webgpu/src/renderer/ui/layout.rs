@@ -64,9 +64,27 @@ pub const LEFT_COL_X: f32 = -10.5;
 
 /// Logo Y position
 pub const LOGO_Y: f32 = 13.5;
-/// Logo half-width and half-height (869×740 = 1.17:1 aspect).
-pub const LOGO_HW: f32 = 4.2;
-pub const LOGO_HH: f32 = 4.2 * 740.0 / 869.0; // ≈ 3.58
+/// Logo half-width and half-height (869×740 = 1.17:1 aspect), 80% of the original 4.2.
+pub const LOGO_HW: f32 = 4.2 * 0.8; // 3.36
+pub const LOGO_HH: f32 = LOGO_HW * 740.0 / 869.0; // ≈ 2.86
+
+/// Logo float (menu and in-game logo), after the web page's but half as wide: a 6 s
+/// loop that lifts the logo by about 1% of its width and tilts it by 0.3° to the left
+/// halfway, eased in and out.
+pub const LOGO_FLOAT_PERIOD: f64 = 6.0;
+pub const LOGO_FLOAT_LIFT: f32 = 4.5 / 420.0;
+pub const LOGO_FLOAT_TILT_DEG: f32 = -0.3;
+
+/// Logo float at `time` (seconds), in screen convention: (vertical offset as a fraction
+/// of the logo width, negative = up; rotation in radians, negative = to the left).
+pub fn logo_float(time: f64) -> (f32, f32) {
+    let phase = (time.rem_euclid(LOGO_FLOAT_PERIOD) / LOGO_FLOAT_PERIOD) as f32;
+    // Up during the first half, down during the second, each eased (smoothstep, close to
+    // CSS `ease-in-out`).
+    let t = if phase < 0.5 { phase * 2.0 } else { (1.0 - phase) * 2.0 };
+    let s = t * t * (3.0 - 2.0 * t);
+    (-LOGO_FLOAT_LIFT * s, LOGO_FLOAT_TILT_DEG.to_radians() * s)
+}
 
 /// Nameplate Y position
 pub const NAME_Y: f32 = 7.0;
@@ -78,6 +96,26 @@ pub const NAME_HH: f32 = 2.2;
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn logo_rests_at_the_loop_ends_and_peaks_halfway() {
+        assert_eq!(logo_float(0.0), (0.0, 0.0));
+        assert_eq!(logo_float(LOGO_FLOAT_PERIOD), (0.0, 0.0));
+        let (lift, tilt) = logo_float(LOGO_FLOAT_PERIOD / 2.0);
+        assert!((lift + LOGO_FLOAT_LIFT).abs() < 1e-6);
+        assert!((tilt - LOGO_FLOAT_TILT_DEG.to_radians()).abs() < 1e-6);
+    }
+
+    #[test]
+    fn logo_float_is_symmetric_and_bounded() {
+        for i in 0..60 {
+            let t = i as f64 * 0.1;
+            let (a, _) = logo_float(t);
+            let (b, _) = logo_float(LOGO_FLOAT_PERIOD - t);
+            assert!((a - b).abs() < 1e-5);
+            assert!((-LOGO_FLOAT_LIFT..=0.0).contains(&a));
+        }
+    }
 
     #[test]
     fn test_screen_dimensions() {

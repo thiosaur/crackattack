@@ -12,6 +12,7 @@ use crate::game_state::{GameState, GameStatus};
 use crate::frame_data::{FrameData, CountdownDigit, CountdownInfo};
 use crate::input::InputSnapshot;
 use crate::score::ScoringMode;
+use super::board_view::BoardViewPublisher;
 use super::opponent::Opponent;
 use super::round::{RoundOutcome, SessionPhase, RESOLVING_DURATION_TICKS, CELEBRATING_ROUND_TICKS};
 use super::game_session::{COUNTDOWN_TOTAL_TICKS, TICKS_PER_DIGIT};
@@ -51,6 +52,11 @@ pub struct VsSession<O: Opponent> {
     /// When true, the session does NOT determine round outcome on loss.
     /// Instead it enters AwaitingVerdict and the network wrapper handles it.
     pub defer_round_outcome: bool,
+    /// Whether the local player's board is published to the opponent (network preview). Off by
+    /// default: the computer opponent has no use for it.
+    share_local_board: bool,
+    /// Decides when a new picture of the local player's board goes out.
+    local_board_publisher: BoardViewPublisher,
 }
 
 impl<O: Opponent> VsSession<O> {
@@ -77,6 +83,8 @@ impl<O: Opponent> VsSession<O> {
             pending_events: Vec::new(),
             countdown_remaining: COUNTDOWN_TOTAL_TICKS,
             defer_round_outcome: false,
+            share_local_board: false,
+            local_board_publisher: BoardViewPublisher::new(),
         };
         // Prepare round 1 immediately so the grid visible during
         // ReadyPrompt is the real grid (same seed as will be played).
@@ -87,6 +95,30 @@ impl<O: Opponent> VsSession<O> {
         // timestamps), the clock does not. See `GameState::clock_base`.
         s.player_game.clock_base = s.player_game.time_step + COUNTDOWN_TOTAL_TICKS;
         s
+    }
+
+    /// Share the local player's board with the opponent (network preview). The choice is
+    /// announced at once and again at each round, followed by the starting board when shared.
+    pub fn set_share_local_board(&mut self, share: bool) {
+        self.share_local_board = share;
+        self.announce_local_board();
+    }
+
+    /// Suspends publishing the local board while the link is in trouble. Nothing is queued;
+    /// the first played tick after resuming sends a fresh picture.
+    pub fn set_local_board_suspended(&mut self, suspended: bool) {
+        self.local_board_publisher.set_suspended(suspended);
+    }
+
+    /// Announces the sharing choice, then the starting board of the round when shared.
+    fn announce_local_board(&mut self) {
+        self.opponent.announce_board_sharing(self.share_local_board);
+        if self.share_local_board {
+            let view = self.local_board_publisher.start(&self.player_game);
+            if !self.local_board_publisher.is_suspended() {
+                self.opponent.publish_local_board(&view);
+            }
+        }
     }
 
     /// Disable auto-start in WaitingRemote (for network sync).
@@ -129,7 +161,7 @@ impl<O: Opponent> VsSession<O> {
 
         match self.phase {
             SessionPhase::Countdown => {
-                self.opponent.time_step();
+                self.opponent.countdown_step();
 
                 // Emit event on first tick of each digit (including very first tick)
                 let remaining_before = self.countdown_remaining;
@@ -158,13 +190,20 @@ impl<O: Opponent> VsSession<O> {
                 // 1. Step the player game
                 let frame = self.player_game.step(input);
 
+                // Picture of the player's board for the opponent's preview, when it is due.
+                if self.share_local_board {
+                    if let Some(view) = self.local_board_publisher.step(&self.player_game) {
+                        self.opponent.publish_local_board(&view);
+                    }
+                }
+
                 // 2. Route player's outgoing garbage to opponent
                 for (h, w, f) in self.player_game.outgoing_garbage.drain(..) {
                     self.opponent.send_garbage(h, w, f);
                 }
 
                 // 3. Step the opponent
-                self.opponent.time_step();
+                self.opponent.play_step();
 
                 // 4. Route opponent's garbage to player
                 for (h, w, f) in self.opponent.recv_garbage() {
@@ -335,6 +374,9 @@ impl<O: Opponent> VsSession<O> {
         self.player_game = GameState::with_scoring(new_seed, ScoringMode::Classic);
         self.player_game.vs_mode = true;
         self.opponent.game_start();
+        if self.share_local_board {
+            self.announce_local_board();
+        }
         self.round_outcome = None;
         self.resolving_start_tick = None;
         self.pending_events.push(crate::frame_data::SessionEvent::RoundPrepared {
@@ -423,14 +465,119 @@ impl<O: Opponent> VsSession<O> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::vs::computer::ComputerOpponent;
-    use crate::virtual_player::AIDifficulty;
+    use crate::ai_difficulty::AIDifficulty;
     use crate::input::Input;
+
+    /// An opponent that records what the session publishes of the player's board.
+    struct RecordingOpponent {
+        inner: crate::vs::grid_opponent::GridOpponent,
+        /// `(session tick, view)` for each published picture.
+        views: Vec<(i32, super::super::board_view::OpponentBoardView)>,
+        announcements: Vec<bool>,
+        tick: i32,
+    }
+
+    impl RecordingOpponent {
+        fn new() -> Self {
+            Self { inner: crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Easy, 42), views: Vec::new(), announcements: Vec::new(), tick: 0 }
+        }
+    }
+
+    impl Opponent for RecordingOpponent {
+        fn game_start(&mut self) { self.inner.game_start() }
+        fn time_step(&mut self) { self.tick += 1; self.inner.time_step() }
+        fn send_garbage(&mut self, h: i32, w: i32, f: i32) { self.inner.send_garbage(h, w, f) }
+        // No garbage back: the player's board only changes by its own play.
+        fn recv_garbage(&mut self) -> Vec<(i32, i32, i32)> { Vec::new() }
+        fn grid_level(&mut self) -> i32 { 0 }
+        fn has_opponent_lost(&self) -> bool { false }
+        fn opponent_name(&self) -> &str { "Recorder" }
+        fn publish_local_board(&mut self, view: &super::super::board_view::OpponentBoardView) {
+            self.views.push((self.tick, view.clone()));
+        }
+        fn announce_board_sharing(&mut self, shares: bool) { self.announcements.push(shares) }
+    }
+
+    /// Input that raises the stack on the first ticks of every 100, so the board keeps changing.
+    fn raising_input(input: &mut Input, tick: i32) -> crate::input::InputSnapshot {
+        input.set_key(crate::input::INPUT_ADVANCE, tick % 100 < 20);
+        let snap = input.snapshot();
+        input.end_frame();
+        snap
+    }
+
+    #[test]
+    fn local_board_is_not_published_unless_shared() {
+        let mut session = VsSession::new(42, RecordingOpponent::new());
+        let snap = Input::new().snapshot();
+        for _ in 0..800 {
+            session.time_step(&snap);
+        }
+        assert!(session.opponent.views.is_empty());
+        assert!(session.opponent.announcements.is_empty());
+    }
+
+    #[test]
+    fn shared_local_board_follows_the_publishing_rule() {
+        use super::super::board_view::{BOARD_VIEW_MIN_GAP, BOARD_VIEW_PERIOD, OpponentBoardView};
+        let mut session = VsSession::new(42, RecordingOpponent::new());
+        session.set_share_local_board(true);
+        // Announced at once, followed by the starting board.
+        assert_eq!(session.opponent.announcements, vec![true]);
+        assert_eq!(session.opponent.views.len(), 1);
+        assert_eq!(session.opponent.views[0].1, OpponentBoardView::from_game(&session.player_game));
+
+        // The countdown publishes nothing: the board does not move.
+        let snap = Input::new().snapshot();
+        for _ in 0..200 {
+            session.time_step(&snap);
+        }
+        assert_eq!(session.phase(), SessionPhase::Playing);
+        assert_eq!(session.opponent.views.len(), 1);
+
+        // Playing: never more than one view per gap, never more than a period without one while
+        // the board changes (the creep raises it), each view the board of its tick.
+        let start = session.opponent.tick;
+        let mut input = Input::new();
+        for tick in 0..600 {
+            session.time_step(&raising_input(&mut input, tick));
+            if let Some((t, view)) = session.opponent.views.last() {
+                if *t == session.opponent.tick - 1 {
+                    assert_eq!(view, &OpponentBoardView::from_game(&session.player_game));
+                }
+            }
+        }
+        let ticks: Vec<i32> = session.opponent.views[1..].iter().map(|(t, _)| *t).collect();
+        assert!(!ticks.is_empty(), "nothing published while playing");
+        assert!(ticks.windows(2).all(|w| w[1] - w[0] >= BOARD_VIEW_MIN_GAP));
+        assert!(ticks[0] - start <= BOARD_VIEW_PERIOD);
+    }
+
+    #[test]
+    fn suspended_local_board_resumes_with_a_fresh_view() {
+        let mut session = VsSession::new(42, RecordingOpponent::new());
+        session.set_share_local_board(true);
+        let snap = Input::new().snapshot();
+        for _ in 0..200 {
+            session.time_step(&snap);
+        }
+        session.set_local_board_suspended(true);
+        let before = session.opponent.views.len();
+        let mut input = Input::new();
+        for tick in 0..200 {
+            session.time_step(&raising_input(&mut input, tick));
+        }
+        assert_eq!(session.opponent.views.len(), before, "published while suspended");
+        // The board changed meanwhile: the first tick after resuming sends it.
+        session.set_local_board_suspended(false);
+        session.time_step(&snap);
+        assert_eq!(session.opponent.views.len(), before + 1, "no fresh view after resuming");
+    }
 
     #[test]
     fn session_creation_no_ready_prompt() {
         // Default: needs_ready_prompt = false → starts in Countdown.
-        let session = VsSession::new(42, ComputerOpponent::new(AIDifficulty::Medium));
+        let session = VsSession::new(42, crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Medium, 42));
         assert!(session.player_game.vs_mode);
         assert_eq!(session.opponent_name(), "Sigma");
         assert_eq!(session.phase(), SessionPhase::Countdown);
@@ -441,7 +588,7 @@ mod tests {
     #[test]
     fn session_creation_with_ready_prompt() {
         // Network-style: needs_ready_prompt = true → starts in WaitingBothReady.
-        let mut session = VsSession::new(42, ComputerOpponent::new(AIDifficulty::Medium));
+        let mut session = VsSession::new(42, crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Medium, 42));
         session.set_needs_ready_prompt(true);
         assert_eq!(session.phase(), SessionPhase::WaitingBothReady);
     }
@@ -451,14 +598,14 @@ mod tests {
         // `set_ready_prompt_between_rounds` alone enables the between-round prompt without
         // changing the phase, so round 1 starts directly (Countdown). Production VS Computer
         // also calls `set_needs_ready_prompt(true)`, which adds a prompt before round 1.
-        let mut session = VsSession::new(42, ComputerOpponent::new(AIDifficulty::Medium));
+        let mut session = VsSession::new(42, crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Medium, 42));
         session.set_ready_prompt_between_rounds(true);
         assert_eq!(session.phase(), SessionPhase::Countdown);
     }
 
     #[test]
     fn session_step_runs() {
-        let mut session = VsSession::new(42, ComputerOpponent::new(AIDifficulty::Easy));
+        let mut session = VsSession::new(42, crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Easy, 42));
         let input = Input::new();
         let snap = input.snapshot();
 
@@ -481,7 +628,7 @@ mod tests {
     #[test]
     fn round_transition_with_signal_local_ready() {
         // With needs_ready_prompt, test the WaitingBothReady → Countdown transition.
-        let mut session = VsSession::new(42, ComputerOpponent::new(AIDifficulty::Easy));
+        let mut session = VsSession::new(42, crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Easy, 42));
         session.set_needs_ready_prompt(true);
 
         assert_eq!(session.phase(), SessionPhase::WaitingBothReady);
@@ -505,7 +652,7 @@ mod tests {
         use crate::vs::game_session::GameSession;
         use crate::frame_data::*;
 
-        let mut session = VsComputerGameSession::new(42, ComputerOpponent::new(AIDifficulty::Easy));
+        let mut session = VsComputerGameSession::new(42, crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Easy, 42));
         // Run through countdown (200 ticks)
         let input = Input::new();
         let snap_input = input.snapshot();
@@ -526,7 +673,7 @@ mod tests {
         use crate::vs::game_session::GameSession;
         use crate::frame_data::*;
 
-        let mut session = VsComputerGameSession::new(42, ComputerOpponent::new(AIDifficulty::Easy));
+        let mut session = VsComputerGameSession::new(42, crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Easy, 42));
         // No signal_local_ready needed — VsComputer starts in Playing.
         session.request_pause();
 
@@ -541,7 +688,7 @@ mod tests {
         // is emitted by VsSession when signal_local_ready fires from a prompt.
         use crate::frame_data::*;
 
-        let mut session = VsSession::new(42, ComputerOpponent::new(AIDifficulty::Easy));
+        let mut session = VsSession::new(42, crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Easy, 42));
         session.set_needs_ready_prompt(true);
         session.signal_local_ready();
 
@@ -571,7 +718,7 @@ mod tests {
         use crate::vs::game_session::GameSession;
         use crate::frame_data::*;
 
-        let mut session = VsComputerGameSession::new(42, ComputerOpponent::new(AIDifficulty::Easy));
+        let mut session = VsComputerGameSession::new(42, crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Easy, 42));
         run_until_show_result(&mut session);
 
         let events = session.drain_events();
@@ -584,7 +731,7 @@ mod tests {
         // The heart of the open series: after ShowResult completes, the
         // session records the tally, increments round_number, prepares the
         // next round and waits for consent — it never "finishes".
-        let mut vs = VsSession::new(42, ComputerOpponent::new(AIDifficulty::Easy));
+        let mut vs = VsSession::new(42, crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Easy, 42));
         vs.set_ready_prompt_between_rounds(true);
         let input = Input::new();
         let snap = input.snapshot();
@@ -613,7 +760,7 @@ mod tests {
     #[test]
     fn open_cycle_chains_many_rounds() {
         // No upper bound: the tally accumulates and round_number keeps growing.
-        let mut vs = VsSession::new(42, ComputerOpponent::new(AIDifficulty::Easy));
+        let mut vs = VsSession::new(42, crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Easy, 42));
         vs.set_ready_prompt_between_rounds(true);
         let input = Input::new();
         let snap = input.snapshot();
@@ -640,7 +787,7 @@ mod tests {
     /// but the clock is decoupled and only starts at GO.
     #[test]
     fn clock_starts_at_go_not_during_countdown() {
-        let mut session = VsSession::new(42, ComputerOpponent::new(AIDifficulty::Easy));
+        let mut session = VsSession::new(42, crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Easy, 42));
         let input = Input::new();
         let snap = input.snapshot();
 
@@ -663,7 +810,7 @@ mod tests {
     fn event_round_started_emitted_once() {
         use crate::frame_data::*;
 
-        let mut session = VsSession::new(42, ComputerOpponent::new(AIDifficulty::Easy));
+        let mut session = VsSession::new(42, crate::vs::grid_opponent::GridOpponent::new(AIDifficulty::Easy, 42));
         session.set_needs_ready_prompt(true);
 
         // signal_local_ready → RoundStarted

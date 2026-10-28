@@ -57,6 +57,9 @@ pub struct UIRenderer {
 
     /// Wall-clock seconds (advances even during pause)
     pub wall_clock: f32,
+    /// Logo tremor (x, y offsets in world units, tilt in radians counterclockwise),
+    /// from `LogoShakeAnimator`.
+    pub logo_shake: (f32, f32, f32),
     /// Reflow offsets set on resize (see `init::reflow_offsets`). All are 0 for a square window.
     /// Info column: horizontal offset (negative, toward the left).
     pub reflow_info_dx: f32,
@@ -97,6 +100,7 @@ impl UIRenderer {
             message_textures,
             countdown_textures,
             wall_clock: 0.0,
+            logo_shake: (0.0, 0.0, 0.0),
             reflow_info_dx: 0.0,
             reflow_light_dx: 0.0,
             reflow_edge_dx: 0.0,
@@ -118,6 +122,7 @@ impl UIRenderer {
         vs_display: Option<&crackattack_core::frame_data::VsDisplay>,
         is_game_over_wait: bool,
         danger_bar: &crate::renderer::effects::game_animators::DangerBarSnapshot,
+        opponent_board: &crate::renderer::effects::game_animators::OpponentBoardAnimator,
         panic_pulse: f32,
         curtain_alpha: f32,
     ) -> Vec<UIBatch> {
@@ -147,6 +152,9 @@ impl UIRenderer {
         if has_opponent {
             batches.extend(self.generate_clock_batches(&frame.ui));
             batches.extend(self.generate_session_score_batches(vs_display));
+            if let Some(view) = opponent_board.view() {
+                batches.push(self.generate_opponent_board_batch(view, opponent_board));
+            }
         } else {
             batches.extend(self.generate_score_digit_batches(&frame.ui));
         }
@@ -341,24 +349,26 @@ impl UIRenderer {
         verts
     }
 
-    /// Create a white textured quad batch centered at (x, y, z) with given half-extents.
-    pub fn textured_quad_batch(texture: &'static str, tex_mode: UITextureMode, x: f32, y: f32, z: f32, hw: f32, hh: f32) -> UIBatch {
-        let mut batch = UIBatch::with_texture_mode(Some(std::borrow::Cow::Borrowed(texture)), tex_mode, UIBlendMode::Alpha);
-        let v = |vx: f32, vy: f32, tu: f32, tv: f32| -> UIVertex {
-            UIVertex { x: vx, y: vy, z, u: tu, v: tv, r: 1.0, g: 1.0, b: 1.0, a: 1.0 }
+    /// Generate logo batch. The logo floats like the menu one (`logo_float`).
+    pub fn generate_logo_batch(&self) -> UIBatch {
+        use crate::renderer::ui::layout::{logo_float, UI_Z, LEFT_COL_X, LOGO_Y, LOGO_HW, LOGO_HH};
+        let (lift, tilt) = logo_float(self.wall_clock as f64);
+        // World Y points up and a positive angle turns counterclockwise: both signs flip
+        // compared with the screen convention of `logo_float`.
+        let (shake_x, shake_y, shake_tilt) = self.logo_shake;
+        let (cx, cy) = (LEFT_COL_X + self.info_dx() + shake_x, LOGO_Y - lift * 2.0 * LOGO_HW + shake_y);
+        let (sin, cos) = (shake_tilt - tilt).sin_cos();
+        let mut batch = UIBatch::with_texture_mode(
+            Some(std::borrow::Cow::Borrowed(self.logo_texture)), UITextureMode::Modulate, UIBlendMode::Alpha);
+        let v = |dx: f32, dy: f32, tu: f32, tv: f32| UIVertex {
+            x: cx + dx * cos - dy * sin, y: cy + dx * sin + dy * cos, z: UI_Z,
+            u: tu, v: tv, r: 1.0, g: 1.0, b: 1.0, a: 1.0,
         };
         batch.push_quad(
-            v(x - hw, y - hh, 0.0, 1.0), v(x + hw, y - hh, 1.0, 1.0),
-            v(x - hw, y + hh, 0.0, 0.0), v(x + hw, y + hh, 1.0, 0.0),
+            v(-LOGO_HW, -LOGO_HH, 0.0, 1.0), v(LOGO_HW, -LOGO_HH, 1.0, 1.0),
+            v(-LOGO_HW, LOGO_HH, 0.0, 0.0), v(LOGO_HW, LOGO_HH, 1.0, 0.0),
         );
         batch
-    }
-
-
-    /// Generate logo batch
-    pub fn generate_logo_batch(&self) -> UIBatch {
-        use crate::renderer::ui::layout::{UI_Z, LEFT_COL_X, LOGO_Y, LOGO_HW, LOGO_HH};
-        Self::textured_quad_batch(self.logo_texture, UITextureMode::Modulate, LEFT_COL_X + self.info_dx(), LOGO_Y, UI_Z, LOGO_HW, LOGO_HH)
     }
 
     /// Generate nameplate batch with a specific texture name (may be dynamic for VS mode).
@@ -600,14 +610,12 @@ impl UIRenderer {
         let z = EXTERNAL_OFFSET_Z;
         let l = CLOCK_DIGIT_LENGTH * SESSION_SCORE_SCALE;
         let step = CLOCK_DIGIT_OFFSET * SESSION_SCORE_SCALE;
-        let base_y = SESSION_SCORE_OFFSET_Y;
+        // The opponent board preview, when there is one, takes the place below the nameplate.
+        let base_y = if vs.opponent_board.is_some() { SESSION_SCORE_WITH_BOARD_OFFSET_Y } else { SESSION_SCORE_OFFSET_Y };
         let center_x = LEFT_EXTERNAL_CENTER + self.info_dx();
 
         // Same gradient as the clock, for a consistent info column.
-        let color_bl = [0.3, 0.3, 1.0, 1.0];
-        let color_br = [0.5, 0.5, 1.0, 1.0];
-        let color_tl = [0.5, 0.5, 1.0, 1.0];
-        let color_tr = [1.0, 1.0, 1.0, 1.0];
+        let [color_bl, color_br, color_tl, color_tr] = SESSION_SCORE_GRADIENT;
         let vertex = |vx: f32, vy: f32, tu: f32, tv: f32, color: [f32; 4]| -> UIVertex {
             UIVertex {
                 x: vx, y: vy, z,
@@ -659,6 +667,74 @@ impl UIRenderer {
         }
 
         batches
+    }
+
+    /// Opponent board preview below the nameplate: blocks as one grey mass, garbage as a
+    /// red-brown mass, cells drawn edge to edge. A slab that just appeared is bright red and fades
+    /// (see `OpponentBoardAnimator`).
+    fn generate_opponent_board_batch(
+        &self,
+        view: &crackattack_core::vs::OpponentBoardView,
+        anim: &crate::renderer::effects::game_animators::OpponentBoardAnimator,
+    ) -> UIBatch {
+        use crackattack_core::constants::PLAY_WIDTH;
+        use crackattack_core::vs::board_view::BOARD_VIEW_ROWS;
+        use crackattack_core::vs::BoardCell;
+
+        let z = EXTERNAL_OFFSET_Z;
+        let c = OPPONENT_BOARD_CELL;
+        let left = LEFT_EXTERNAL_CENTER + self.info_dx() - c * PLAY_WIDTH as f32 / 2.0;
+        let top = OPPONENT_BOARD_TOP_Y;
+        let bottom = top - c * BOARD_VIEW_ROWS as f32;
+        let right = left + c * PLAY_WIDTH as f32;
+
+        let mut batch = UIBatch::new(None, UIBlendMode::Alpha);
+        // `color` gives each vertex its color from its position.
+        let mut rect = |x0: f32, y0: f32, x1: f32, y1: f32, color: &dyn Fn(f32, f32) -> [f32; 4]| {
+            let v = |x: f32, y: f32| {
+                let [r, g, b, a] = color(x, y);
+                UIVertex { x, y, z, u: 0.0, v: 0.0, r, g, b, a }
+            };
+            batch.push_quad(v(x0, y0), v(x1, y0), v(x0, y1), v(x1, y1));
+        };
+
+        let f = OPPONENT_BOARD_FRAME;
+        let frame_color = srgb(OPPONENT_BOARD_FRAME_COLOR);
+        let background = srgb(OPPONENT_BOARD_BACKGROUND);
+        rect(left - f, bottom - f, right + f, top + f, &|_, _| frame_color);
+        rect(left, bottom, right, top, &|_, _| background);
+
+        // Blocks: the score digits' gradient, interpolated over the whole preview so the
+        // masses read as one surface.
+        let [bl, br, tl, tr] = SESSION_SCORE_GRADIENT;
+        let block = |x: f32, y: f32| -> [f32; 4] {
+            let u = (x - left) / (right - left);
+            let v = (y - bottom) / (top - bottom);
+            std::array::from_fn(|i| {
+                let lower = bl[i] + (br[i] - bl[i]) * u;
+                let upper = tl[i] + (tr[i] - tl[i]) * u;
+                lower + (upper - lower) * v
+            })
+        };
+        let garbage = srgb(OPPONENT_BOARD_GARBAGE);
+        let flash = srgb(OPPONENT_BOARD_GARBAGE_FLASH);
+        for row in 0..BOARD_VIEW_ROWS {
+            let y0 = bottom + c * row as f32;
+            for x in 0..PLAY_WIDTH {
+                let x0 = left + c * x as f32;
+                match view.cell(x, row) {
+                    BoardCell::Empty => {}
+                    BoardCell::Block => rect(x0, y0, x0 + c, y0 + c, &block),
+                    BoardCell::Garbage(id) => {
+                        let t = anim.flash(id);
+                        let color: [f32; 4] =
+                            std::array::from_fn(|i| garbage[i] + (flash[i] - garbage[i]) * t);
+                        rect(x0, y0, x0 + c, y0 + c, &|_, _| color);
+                    }
+                }
+            }
+        }
+        batch
     }
 
     /// Convert a number to individual digits
@@ -727,4 +803,13 @@ mod tests {
         assert!(renderer.message_textures.contains_key(&ResultVisual::GameOver));
         assert!(renderer.countdown_textures.contains_key(&CountdownDigit::Go));
     }
+}
+
+/// An sRGB `0xRRGGBB` color as the linear RGBA the UI vertices take (the surface is sRGB).
+fn srgb(hex: u32) -> [f32; 4] {
+    let channel = |shift: u32| {
+        let c = ((hex >> shift) & 0xff) as f32 / 255.0;
+        if c <= 0.04045 { c / 12.92 } else { ((c + 0.055) / 1.055).powf(2.4) }
+    };
+    [channel(16), channel(8), channel(0), 1.0]
 }

@@ -1,6 +1,6 @@
 //! Opponent trait — unified interface for AI and network opponents.
 //!
-//! Both ComputerOpponent and NetworkOpponent implement this trait.
+//! Both GridOpponent and NetworkOpponent implement this trait.
 //! The VS session code never knows which kind of opponent it is
 //! talking to.
 //!
@@ -18,6 +18,18 @@ pub trait Opponent {
 
     /// Advance one tick of opponent logic.
     fn time_step(&mut self);
+
+    /// One tick of the round's countdown. Defaults to [`Opponent::time_step`]; an opponent that
+    /// owns a real game uses it to follow the player's countdown bookkeeping.
+    fn countdown_step(&mut self) {
+        self.time_step();
+    }
+
+    /// One tick while the round is being played. Defaults to [`Opponent::time_step`]; an
+    /// opponent that owns a real game advances it here, and only here.
+    fn play_step(&mut self) {
+        self.time_step();
+    }
 
     /// Queue garbage from the local player to the opponent.
     fn send_garbage(&mut self, height: i32, width: i32, flavor: i32);
@@ -49,8 +61,25 @@ pub trait Opponent {
     /// Opponent's display name.
     fn opponent_name(&self) -> &str;
 
+    /// Last published picture of the opponent's board, for the HUD preview. `None` when the
+    /// opponent publishes none (gridless AI, network peer that does not share).
+    fn board_view(&self) -> Option<&super::board_view::OpponentBoardView> { None }
+
+    /// Hand over a picture of the local player's board, for the opponent's preview. Only a
+    /// network opponent sends it on; the default ignores it.
+    fn publish_local_board(&mut self, _view: &super::board_view::OpponentBoardView) {}
+
+    /// Tell the opponent whether the local player shares their board. The default ignores it.
+    fn announce_board_sharing(&mut self, _shares: bool) {}
+
     /// Set local player's round-ready signal (round number they're ready for).
     fn set_local_round_ready(&mut self, _round: u32) {}
+
+    /// The opponent's stats for the round that just ended, for the post-round panel. A network
+    /// opponent reports its own (`NetworkOpponent::opponent_stats`, received after the round);
+    /// an opponent that plays a real game hands over the stats of its game, which stops
+    /// counting when the round does. `None` when there is nothing to report (the gridless AI).
+    fn final_stats(&self) -> Option<&crate::stats::GameStats> { None }
 
     /// Get opponent's round-ready signal (0 = not ready).
     fn opponent_round_ready(&self) -> u32 { 0 }

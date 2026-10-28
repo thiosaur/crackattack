@@ -257,11 +257,20 @@ pub struct VsNetworkGameSession {
     awaiting_verdict_since: i32,
 }
 
+/// Board sharing until there is a setting for it: on.
+const SHARE_BOARD_DEFAULT: bool = true;
+
 impl VsNetworkGameSession {
     /// Forces the "ready?" prompt to show on resume (reconnection). This is the
     /// only external access to the inner session.
     pub fn set_needs_ready_prompt(&mut self, v: bool) {
         self.inner.set_needs_ready_prompt(v);
+    }
+
+    /// Whether the local player shares their board with the opponent (preview). There is no
+    /// setting yet; the choice is announced to the peer at each round.
+    pub fn set_share_board(&mut self, share: bool) {
+        self.inner.set_share_local_board(share);
     }
 
     pub fn new(mut session: VsSession<NetworkOpponent>) -> Self {
@@ -270,6 +279,7 @@ impl VsNetworkGameSession {
         session.set_needs_ready_prompt(true);
         // Network mode: defer round outcome to the arbitration system.
         session.defer_round_outcome = true;
+        session.set_share_local_board(SHARE_BOARD_DEFAULT);
         Self {
             inner: session,
             forfeit_signaled: false,
@@ -454,6 +464,9 @@ impl GameSession for VsNetworkGameSession {
                 self.lag_started_tick = net_tick;
             }
         }
+        // The board preview is not published while the link is in trouble; nothing is queued,
+        // and the first played tick after it sends a fresh picture.
+        self.inner.set_local_board_suspended(self.pause.lag_paused);
         // Arbitration timeout. If the opponent keeps sending traffic but never sends
         // its `RoundLifeReport`, we would stay in `AwaitingVerdict` (lag detection does
         // not fire). Escalate to a disconnect (engaged round: forfeit).
@@ -833,6 +846,7 @@ impl GameSession for VsNetworkGameSession {
             session_losses: self.inner.session_losses,
             opponent_stats: self.inner.opponent.opponent_stats().cloned(),
             opponent_uuid: Some(self.inner.opponent.opponent_uuid()),
+            opponent_board: crackattack_core::vs::Opponent::board_view(&self.inner.opponent).cloned(),
         });
 
         SessionSnapshot {

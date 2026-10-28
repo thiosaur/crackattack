@@ -3,7 +3,7 @@
 use crackattack_core::{GameState, ScoringMode, FrameData};
 use crackattack_core::input::Input;
 use crackattack_core::vs::{
-    GameSession, SoloSession, VsComputerGameSession, ComputerOpponent,
+    GameSession, SoloSession, VsComputerGameSession, GridOpponent,
 };
 
 use crate::app::command::{AppCommand, AppMusic};
@@ -51,6 +51,8 @@ impl SuspensionTimer {
 pub(crate) struct SessionConfig {
     pub seed: u32,
     pub autoplay: bool,
+    /// Grid AI level driving the autoplay (`None` = the classic autoplay).
+    pub autoplay_ai: Option<crackattack_core::ai_difficulty::AIDifficulty>,
     /// E2E bound: autoplay quits at the prompt after N rounds played (`None` = unlimited).
     pub autoplay_max_rounds: Option<u32>,
     pub vs_mode: bool,
@@ -84,6 +86,9 @@ pub(crate) struct SessionState {
     pub(crate) negotiation: NegotiationState,
     pub(crate) input: Input,
     pub(crate) ai_controller: crackattack_core::AIController,
+    /// Grid AI replacing `ai_controller` under `--autoplay-ai easy|medium|hard`; built on first use.
+    pub(crate) autoplay_grid_level: Option<crackattack_core::ai_difficulty::AIDifficulty>,
+    pub(crate) autoplay_grid: Option<crackattack_core::vs::GridAutoplay>,
     pub(crate) flow_state: FlowState,
     pub(crate) game_seed: u32,
     pub(crate) menu_state: MenuState,
@@ -197,13 +202,32 @@ fn unix_now() -> u64 {
         .unwrap_or(0)
 }
 
-/// Localized status line of the update check (Info page), derived from the persisted state
-/// and the attempt in progress.
+/// One Up/Down step on an Info page with actions. `selected` is 1-based (0 = the text, no
+/// action focused). Credits is text plus an action, so the step stops at its ends. The
+/// Updates page is only actions: its focus loops, like every other list screen (from the
+/// last action back to the first, and from the first to the last).
+fn info_action_step(selected: usize, count: usize, delta: i32, loops: bool) -> usize {
+    if loops && count > 0 {
+        return match (selected, delta > 0) {
+            (0, true) => 1,
+            (0, false) => count,
+            _ => crate::app::focus::ring_move(selected.min(count) - 1, count, delta) + 1,
+        };
+    }
+    // [text, actions...]: 0 = no action.
+    crate::app::focus::clamp_move(selected, count + 1, delta)
+}
+
+/// State of the Updates page, derived from the persisted state and the attempt in progress.
+/// A version the player once ignored still counts as available here: the page is opened on
+/// purpose, so it always offers the download.
 #[cfg(feature = "update-check")]
-fn update_status_line(session: &SessionState) -> String {
+fn update_view(session: &SessionState, source: &crate::update::UpdateSource)
+    -> crate::renderer::ui::info_modal::UpdateView
+{
     use crate::platform::persist::date_string;
+    use crate::renderer::ui::info_modal::UpdateView;
     use crate::update::{update_status, UpdateStatus};
-    let t = crate::app::locale::t();
     let cfg = &session.user_config;
     match update_status(
         session.update_check.checking(),
@@ -212,17 +236,16 @@ fn update_status_line(session: &SessionState) -> String {
         &cfg.available_update_version,
         &cfg.ignored_update_version,
     ) {
-        UpdateStatus::Checking => t.update_status_checking.to_string(),
-        UpdateStatus::Never => t.update_status_never.to_string(),
-        UpdateStatus::Failed { last_success: None } => t.update_status_failed.to_string(),
-        UpdateStatus::Failed { last_success: Some(at) } => {
-            t.update_status_failed_since_fmt.replace("{}", &date_string(at))
-        }
-        UpdateStatus::Available(v) => t.update_status_available_fmt.replace("{}", &v),
-        UpdateStatus::Ignored(v) => t.update_status_ignored_fmt.replace("{}", &v),
-        UpdateStatus::UpToDate { checked_at } => {
-            t.update_status_up_to_date_fmt.replace("{}", &date_string(checked_at))
-        }
+        UpdateStatus::Checking => UpdateView::Checking,
+        UpdateStatus::Never => UpdateView::NeverChecked,
+        UpdateStatus::Failed { last_success } => UpdateView::Failed {
+            last_success: last_success.map(date_string),
+        },
+        UpdateStatus::Available(version) | UpdateStatus::Ignored(version) => UpdateView::Available {
+            version,
+            url: source.open_url.clone(),
+        },
+        UpdateStatus::UpToDate { checked_at } => UpdateView::UpToDate { checked: date_string(checked_at) },
     }
 }
 
@@ -243,6 +266,20 @@ impl SessionState {
         profile.managed_info().map(LanErrorHint::ManagedBy)
     }
 
+    /// Updates page state: from the check when this binary has an update source, otherwise the
+    /// store / distribution note if there is one, otherwise "unavailable".
+    fn update_view(&self, managed: Option<&'static str>) -> crate::renderer::ui::info_modal::UpdateView {
+        use crate::renderer::ui::info_modal::UpdateView;
+        #[cfg(feature = "update-check")]
+        if let Some(source) = &self.update_check.source {
+            return update_view(self, source);
+        }
+        match managed {
+            Some(note) => UpdateView::Managed(note),
+            None => UpdateView::Unavailable,
+        }
+    }
+
     /// Surfaces of the Credits page, resolved from the profile, the public identity and the
     /// update check state. Shared by the renderer and the router, so every action reachable
     /// with the mouse is also reachable with keyboard and gamepad.
@@ -252,19 +289,10 @@ impl SessionState {
         let t = crate::app::locale::t();
         crate::renderer::ui::info_modal::InfoExtras {
             contribute_url: profile.contribute_url(PUBLIC_PROJECT.as_ref()),
-            #[cfg(feature = "update-check")]
-            update: self.update_check.available.as_ref()
-                .map(|u| (u.version.clone(), u.open_url.clone())),
-            #[cfg(not(feature = "update-check"))]
-            update: None,
-            #[cfg(feature = "update-check")]
-            update_status: self.update_check.source.as_ref().map(|_| update_status_line(self)),
-            #[cfg(not(feature = "update-check"))]
-            update_status: None,
-            managed_info: profile.managed_info().map(|m| match m {
+            update_view: self.update_view(profile.managed_info().map(|m| match m {
                 ManagedBy::Store => t.update_managed_by_store,
                 ManagedBy::Distro => t.update_managed_by_distro,
-            }),
+            })),
             #[cfg(feature = "update-check")]
             update_checks: self.update_check.source.as_ref()
                 .map(|_| self.user_config.update_checks_enabled),
@@ -313,9 +341,9 @@ impl SessionRuntime {
         // the menu: no special boot path, no side effects.
         use crate::platform::boot_target::{BootContext, BootTarget};
         let ai_diff = match config.ai_difficulty {
-            0 => crackattack_core::virtual_player::AIDifficulty::Easy,
-            2 => crackattack_core::virtual_player::AIDifficulty::Hard,
-            _ => crackattack_core::virtual_player::AIDifficulty::Medium,
+            0 => crackattack_core::ai_difficulty::AIDifficulty::Easy,
+            2 => crackattack_core::ai_difficulty::AIDifficulty::Hard,
+            _ => crackattack_core::ai_difficulty::AIDifficulty::Medium,
         };
         let entry = user_config.ranking_entry_score();
         let ranking_entry = if entry > 0 { entry } else { 1 };
@@ -403,6 +431,8 @@ impl SessionRuntime {
                 negotiation: NegotiationState::new(),
                 input: Input::new(),
                 ai_controller: crackattack_core::AIController::new(),
+                autoplay_grid_level: config.autoplay_ai,
+                autoplay_grid: None,
                 flow_state,
                 game_seed,
                 menu_state: MenuState::new(),
@@ -510,7 +540,11 @@ impl SessionRuntime {
             OpenInfoScreen(section) => {
                 self.session.menu_state.info_section = Some(section);
                 self.session.menu_state.rank_selected = 0;
-                self.session.menu_state.info_action_selected = 0;
+                // The Updates page opens with its first action focused (the main button), so one
+                // press of Confirm does the obvious thing; the other pages open with none.
+                let first_action = matches!(section, crate::app::menu_tree::InfoSection::Updates)
+                    && !self.session.info_actions().is_empty();
+                self.session.menu_state.info_action_selected = usize::from(first_action);
                 self.session.menu_state.info_focus_back = false; // content focused by default
                 self.session.menu_state.info_scroll_delta = 0.0;
             }
@@ -520,22 +554,12 @@ impl SessionRuntime {
                 cfg.update_checks_enabled = !cfg.update_checks_enabled;
                 cfg.save();
             }
-            IgnoreUpdateVersion(version) => {
-                self.session.user_config.ignored_update_version = version;
-                self.session.user_config.save();
-                #[cfg(feature = "update-check")]
-                self.refresh_update_notification();
-                // The notification's two actions disappear: clamp the selection.
-                let count = self.session.info_actions().len();
-                let sel = &mut self.session.menu_state.info_action_selected;
-                *sel = (*sel).min(count);
-            }
             InfoActionSelectMove(delta) => {
                 let count = self.session.info_actions().len();
-                // [text, actions...]: 0 = no action. Vertical movement stops at the ends
-                // (scrollable list).
-                let n = crate::app::focus::clamp_move(
-                    self.session.menu_state.info_action_selected, count + 1, delta);
+                let loops = matches!(self.session.menu_state.info_section,
+                    Some(crate::app::menu_tree::InfoSection::Updates));
+                let n = info_action_step(
+                    self.session.menu_state.info_action_selected, count, delta, loops);
                 if n != self.session.menu_state.info_action_selected {
                     self.session.menu_state.info_action_selected = n;
                     self.session.menu_state.info_action_scroll_pending.set(true);
@@ -871,7 +895,7 @@ impl SessionRuntime {
                         ..LanScreenState::new(port)
                     });
                     if let Some(ref mut screen) = self.session.menu_state.lan_screen {
-                        screen.peers = self.session.negotiation.net_peers.clone();
+                        screen.set_peers(self.session.negotiation.lan_list());
                     }
                     log::info!("LAN screen opened on zone services (TCP port {port}, manual={manual})");
                     return None;
@@ -1214,12 +1238,12 @@ impl SessionRuntime {
     }
 
     /// Records a refereed round in the log, one entry per round. Only for VS network with
-    /// the peer's identity (the local AI has no uuid and is never rated). A forfeit caused by
+    /// the peer's identity (the local AI has no uuid and is never rated). A game played by the autoplay is not rated either. A forfeit caused by
     /// the opponent disconnecting is not rated: no refereed round, so no free win on a crash.
     /// After the append the ranking is recomputed from the log (never stored).
     fn record_rated_round(&mut self, won: bool) {
         use crackattack_rating::{MatchResult, Outcome, PlayerId};
-        if !self.session.selected_mode.is_network() {
+        if !self.session.selected_mode.is_network() || self.session.autoplay_enabled {
             return;
         }
         let Some(snap) = self.session.game.as_ref().map(|s| s.snapshot()) else { return };
@@ -1380,7 +1404,7 @@ impl SessionRuntime {
                         Box::new(SoloSession::new(g))
                     }
                     GameMode::VsComputer(diff) => {
-                        let mut vs = VsComputerGameSession::new(seed, ComputerOpponent::new(diff));
+                        let mut vs = VsComputerGameSession::new(seed, GridOpponent::new(diff, seed));
                         vs.set_needs_ready_prompt(true);
                         Box::new(vs)
                     }
@@ -1449,7 +1473,7 @@ impl SessionRuntime {
     fn poll_lan_discovery(&mut self) {
         if self.session.negotiation.poll_discovery_events() {
             if let Some(ref mut screen) = self.session.menu_state.lan_screen {
-                screen.peers = self.session.negotiation.net_peers.clone();
+                screen.set_peers(self.session.negotiation.lan_list());
             }
         }
     }
@@ -1468,6 +1492,18 @@ impl SessionRuntime {
                 .and_then(|m| m.last_announced_rt)
         };
         self.session.negotiation.poll_invite_reads(in_scope, &stored_rt);
+        // An instance driven by the autoplay has nobody to click "Accept": it takes its
+        // invites as soon as they arrive (E2E runs between two autoplay instances).
+        let awaiting_answer = self.session.negotiation.pending_invite_info.as_ref()
+            .is_some_and(|info| !info.connecting);
+        if self.session.autoplay_enabled && awaiting_answer {
+            log::info!("Autoplay: accepting the invite");
+            self.session.negotiation.accept_pending_invite(
+                self.session.player_name.clone(),
+                self.session.user_config.player_uuid_bytes(),
+                self.session.game_seed,
+            );
+        }
     }
 
     /// Drives the Reconnecting screen: while that phase is open, the invite is retried at a
@@ -1605,7 +1641,9 @@ impl SessionRuntime {
                 // connection/handshake error is shown.
                 log::info!("Returning to LAN screen: {}", failure);
                 let error = failure.to_lan_error();
-                let hint = matches!(error, crate::app::meta_state::LanError::VersionMismatch)
+                // Only the player whose game is the older one is pointed to the download.
+                let hint = matches!(error, crate::app::meta_state::LanError::VersionMismatch(
+                    crate::app::meta_state::OlderGame::Ours))
                     .then(|| self.session.version_mismatch_hint())
                     .flatten();
                 if let Some(ref mut screen) = self.session.menu_state.lan_screen {
@@ -1636,7 +1674,11 @@ impl SessionRuntime {
             match rx.try_recv() {
                 Ok(outcome) => {
                     self.session.update_check.rx = None;
+                    // The result can remove the download button: the focused action must stay
+                    // the same one, not the one that takes its index.
+                    let before = self.session.info_actions();
                     self.apply_update_outcome(outcome);
+                    self.keep_info_selection(&before);
                     deferred.push(AppCommand::RequestRedraw);
                 }
                 Err(std::sync::mpsc::TryRecvError::Empty) => {}
@@ -1729,6 +1771,22 @@ impl SessionRuntime {
         };
     }
 
+    /// Keeps the focused action of the open Info page on the same action when the list of
+    /// actions changes under it (an update check that removes the download button). If the
+    /// action is gone, the focus goes to the last one at most.
+    #[cfg(feature = "update-check")]
+    fn keep_info_selection(&mut self, before: &[crate::renderer::ui::info_modal::InfoAction]) {
+        let selected = self.session.menu_state.info_action_selected;
+        if selected == 0 {
+            return;
+        }
+        let after = self.session.info_actions();
+        self.session.menu_state.info_action_selected = before.get(selected - 1)
+            .and_then(|a| after.iter().position(|x| x == a))
+            .map(|i| i + 1)
+            .unwrap_or_else(|| selected.min(after.len()));
+    }
+
     /// Runs one tick of session logic: game step, AI, sound events, post-game effects.
     /// `freeze` is the dev-only simulation freeze.
     pub(crate) fn tick_session(&mut self, freeze: bool) -> Vec<AppCommand> {
@@ -1808,10 +1866,22 @@ impl SessionRuntime {
                     if ai_can_play {
                         if let Some(game) = session.game_state_mut() {
                             use crackattack_core::input::*;
-                            let mut ai = self.session.ai_controller.update(game);
-                            if crackattack_core::AIController::should_fast_forward(game) {
-                                ai |= INPUT_ADVANCE;
-                            }
+                            let ai = match self.session.autoplay_grid_level {
+                                Some(level) => {
+                                    let seed = self.session.game_seed;
+                                    self.session
+                                        .autoplay_grid
+                                        .get_or_insert_with(|| crackattack_core::vs::GridAutoplay::new(level, seed))
+                                        .update(game)
+                                }
+                                None => {
+                                    let mut flags = self.session.ai_controller.update(game);
+                                    if crackattack_core::AIController::should_fast_forward(game) {
+                                        flags |= INPUT_ADVANCE;
+                                    }
+                                    flags
+                                }
+                            };
                             for flag in [INPUT_LEFT, INPUT_RIGHT, INPUT_UP, INPUT_DOWN, INPUT_SWAP, INPUT_ADVANCE] {
                                 self.session.input.set_key(flag, ai & flag != 0);
                             }
@@ -2014,6 +2084,10 @@ impl SessionRuntime {
     ) -> Vec<crate::platform::persist::RecordKey> {
         use crate::platform::persist::RecordKey;
         let mut beaten = Vec::new();
+        // The autoplay is a test driver, not the player: it leaves no record.
+        if self.session.autoplay_enabled {
+            return beaten;
+        }
         let name = self.session.player_name.clone();
         if self.session.user_config.submit_record(RecordKey::BestChain, stats.max_chain_level as i32, &name) {
             beaten.push(RecordKey::BestChain);
@@ -2047,7 +2121,7 @@ impl SessionRuntime {
             let stats_copy = frame.stats.clone();
             let mut beaten = self.submit_universal_records(&stats_copy);
 
-            if self.session.selected_mode.uses_score() {
+            if self.session.selected_mode.uses_score() && !self.session.autoplay_enabled {
                 let rank = self.session.user_config.submit_score(
                     &self.session.player_name, frame.ui.score,
                 );
@@ -2139,6 +2213,23 @@ impl SessionRuntime {
 
 #[cfg(test)]
 mod tests {
+    /// The Updates page loops its focus; the Credits page (text plus one action) stops at its
+    /// ends. 0 is "no action focused" (the text).
+    #[test]
+    fn info_action_step_loops_on_updates_and_stops_elsewhere() {
+        // 3 actions: Download, Check, Toggle.
+        assert_eq!(info_action_step(1, 3, 1, true), 2);
+        assert_eq!(info_action_step(3, 3, 1, true), 1, "bottom -> top");
+        assert_eq!(info_action_step(1, 3, -1, true), 3, "top -> bottom");
+        assert_eq!(info_action_step(0, 3, 1, true), 1);
+        assert_eq!(info_action_step(0, 3, -1, true), 3);
+        assert_eq!(info_action_step(1, 1, 1, true), 1, "a single action stays put");
+        // Credits: [text, Contribute], stops at the ends.
+        assert_eq!(info_action_step(1, 1, 1, false), 1);
+        assert_eq!(info_action_step(0, 1, -1, false), 0);
+        assert_eq!(info_action_step(0, 1, 1, false), 1);
+    }
+
     use super::*;
     use crate::app::meta_state::FlowState;
     use crate::app::post_game::PostGamePhase;
@@ -2147,6 +2238,7 @@ mod tests {
         let config = SessionConfig {
             seed: 42,
             autoplay: false,
+            autoplay_ai: None,
             autoplay_max_rounds: None,
             vs_mode: false,
             ai_difficulty: 1,
@@ -2173,7 +2265,7 @@ mod tests {
     #[test]
     fn new_vs_queues_menu_launch() {
         let config = SessionConfig {
-            seed: 42, autoplay: false, autoplay_max_rounds: None, vs_mode: true, ai_difficulty: 1,
+            seed: 42, autoplay: false, autoplay_ai: None, autoplay_max_rounds: None, vs_mode: true, ai_difficulty: 1,
             network: None, open_targets: Vec::new(), set_overrides: Vec::new(), sounds_dir: None, music_dir: None, rungs_dir: None, music_debug: false,
         };
         let rt = SessionRuntime::new(
@@ -2191,7 +2283,7 @@ mod tests {
     #[test]
     fn new_autoplay_queues_solo_launch() {
         let config = SessionConfig {
-            seed: 42, autoplay: true, autoplay_max_rounds: None, vs_mode: false, ai_difficulty: 1,
+            seed: 42, autoplay: true, autoplay_ai: None, autoplay_max_rounds: None, vs_mode: false, ai_difficulty: 1,
             network: None, open_targets: Vec::new(), set_overrides: Vec::new(), sounds_dir: None, music_dir: None, rungs_dir: None, music_debug: false,
         };
         let rt = SessionRuntime::new(
@@ -2210,7 +2302,7 @@ mod tests {
     #[test]
     fn new_network_join_queues_menu_flow() {
         let config = SessionConfig {
-            seed: 42, autoplay: false, autoplay_max_rounds: None, vs_mode: false, ai_difficulty: 1,
+            seed: 42, autoplay: false, autoplay_ai: None, autoplay_max_rounds: None, vs_mode: false, ai_difficulty: 1,
             network: Some(crate::platform::cli::NetworkMode::Join {
                 host: "127.0.0.1".into(), port: 45690,
             }),
@@ -2234,7 +2326,7 @@ mod tests {
     #[test]
     fn new_network_create_sets_requested_port() {
         let config = SessionConfig {
-            seed: 42, autoplay: false, autoplay_max_rounds: None, vs_mode: false, ai_difficulty: 1,
+            seed: 42, autoplay: false, autoplay_ai: None, autoplay_max_rounds: None, vs_mode: false, ai_difficulty: 1,
             network: Some(crate::platform::cli::NetworkMode::Create { port: 45691 }),
             open_targets: Vec::new(),
             set_overrides: Vec::new(),
@@ -2273,7 +2365,7 @@ mod tests {
     fn quit_to_menu_is_applied_once_until_the_game_is_cleared() {
         let mut rt = test_runtime();
         let create = || AppCommand::CreateGame {
-            mode: GameMode::VsComputer(crackattack_core::virtual_player::AIDifficulty::Easy),
+            mode: GameMode::VsComputer(crackattack_core::ai_difficulty::AIDifficulty::Easy),
             seed: 1,
             ranking_entry_score: 0,
         };
@@ -2299,10 +2391,27 @@ mod tests {
         assert!(snap.vs_display.is_none(), "Solo should not have VsDisplay");
     }
 
+    /// The autoplay is a test driver: a finished game leaves no score and no record, and
+    /// nothing is written to the state file.
+    #[test]
+    fn autoplay_games_leave_no_score_and_no_record() {
+        let mut rt = test_runtime();
+        rt.session.autoplay_enabled = true;
+        rt.session.user_config.scores.clear();
+        rt.apply_app_command(AppCommand::CreateGame {
+            mode: GameMode::Solo, seed: 5, ranking_entry_score: 1,
+        });
+        rt.session.selected_mode = GameMode::Solo;
+        rt.capture_post_game(false);
+        assert!(rt.session.user_config.scores.is_empty(), "the autoplay entered the score table");
+        assert!(rt.session.user_config.records.is_empty(), "the autoplay set a record");
+        assert!(rt.session.game_over_rank.is_none());
+    }
+
     #[test]
     fn create_game_vs_computer() {
         let mut rt = test_runtime();
-        let diff = crackattack_core::virtual_player::AIDifficulty::Hard;
+        let diff = crackattack_core::ai_difficulty::AIDifficulty::Hard;
         rt.apply_app_command(AppCommand::CreateGame {
             mode: GameMode::VsComputer(diff),
             seed: 456,

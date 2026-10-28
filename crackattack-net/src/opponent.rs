@@ -13,7 +13,7 @@ use std::thread;
 use std::collections::VecDeque;
 use std::time::{Duration, Instant};
 
-use crackattack_core::vs::Opponent;
+use crackattack_core::vs::{Opponent, OpponentBoardView};
 use crate::connection::NetConnection;
 use crate::protocol::*;
 use crate::communicator;
@@ -77,6 +77,11 @@ pub struct NetworkOpponent {
     rtt_ticks: i32,
     received_life_report: Option<(RoundLifeStatus, u32)>,
     received_verdict: Option<(PeerRole, VerdictReason)>,
+    /// Last picture of the opponent's board, for the HUD preview. Kept across rounds so the HUD
+    /// does not jump while the next starting board is on its way.
+    opponent_board: Option<OpponentBoardView>,
+    /// Whether the opponent announced it shares its board (`None` until it says).
+    opponent_shares_board: Option<bool>,
     _thread: Option<thread::JoinHandle<()>>,
 }
 
@@ -127,6 +132,8 @@ impl NetworkOpponent {
             rtt_ticks: COMMUNICATION_PERIOD, // Until measured, assume one communication cycle.
             received_life_report: None,
             received_verdict: None,
+            opponent_board: None,
+            opponent_shares_board: None,
             _thread: Some(handle),
         }
     }
@@ -287,6 +294,22 @@ impl NetworkOpponent {
                 self.received_verdict = Some((winner, reason));
                 log::info!("Received RoundVerdict: round={} winner={:?} reason={:?}", round_id, winner, reason);
             }
+            ControlMessage::BoardView(view) => {
+                // A view after "I do not share" is a sender bug: ignored, never shown.
+                if self.opponent_shares_board != Some(false) {
+                    self.opponent_board = Some(view);
+                }
+            }
+            ControlMessage::BoardSharing(shares) => {
+                self.opponent_shares_board = Some(shares);
+                if !shares {
+                    self.opponent_board = None;
+                }
+                log::info!("Opponent board sharing: {}", shares);
+            }
+            ControlMessage::UnknownExtension(ext) => {
+                log::debug!("Skipped unknown control extension 0x{:02X}", ext);
+            }
             ControlMessage::EndPlay => {
                 log::info!("Round ended (control)");
             }
@@ -417,6 +440,18 @@ impl Opponent for NetworkOpponent {
 
     fn is_connected(&self) -> bool { self.connected }
     fn opponent_name(&self) -> &str { &self.name }
+
+    fn board_view(&self) -> Option<&OpponentBoardView> {
+        self.opponent_board.as_ref()
+    }
+
+    fn publish_local_board(&mut self, view: &OpponentBoardView) {
+        self.send_control(ControlMessage::BoardView(view.clone()));
+    }
+
+    fn announce_board_sharing(&mut self, shares: bool) {
+        self.send_control(ControlMessage::BoardSharing(shares));
+    }
 
     fn set_local_round_ready(&mut self, round: u32) {
         self.local_round_ready = round;
@@ -559,5 +594,74 @@ fn network_thread_main(
 
         // 3. Sleep briefly to avoid spinning.
         thread::sleep(Duration::from_millis(THREAD_POLL_MS));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::connection::Role;
+    use crackattack_core::{GameState, ScoringMode};
+    use std::net::TcpListener;
+
+    /// Two network opponents connected over loopback, or `None` in a sandbox without network.
+    fn opponent_pair() -> Option<(NetworkOpponent, NetworkOpponent)> {
+        let listener = match TcpListener::bind("127.0.0.1:0") {
+            Ok(l) => l,
+            Err(e) => {
+                if std::env::var_os("CI_NET").is_some() {
+                    panic!("CI_NET=1: loopback bind required, failed: {e}");
+                }
+                eprintln!("Skipping net test (bind failed: {})", e);
+                return None;
+            }
+        };
+        let port = listener.local_addr().unwrap().port();
+        let client = thread::spawn(move || NetConnection::connect("127.0.0.1", port).unwrap());
+        let (stream, addr) = listener.accept().unwrap();
+        let server = NetConnection::from_stream(stream, addr);
+        let client = client.join().unwrap();
+        Some((
+            NetworkOpponent::new(server, Role::Server, "B".into(), [2; 16]),
+            NetworkOpponent::new(client, Role::Client, "A".into(), [1; 16]),
+        ))
+    }
+
+    /// Steps `receiver` until `done` holds (at most ~2 s).
+    fn wait_for(receiver: &mut NetworkOpponent, done: impl Fn(&NetworkOpponent) -> bool) {
+        for _ in 0..200 {
+            receiver.drain_incoming();
+            if done(receiver) {
+                return;
+            }
+            thread::sleep(Duration::from_millis(10));
+        }
+        panic!("the expected message never arrived");
+    }
+
+    #[test]
+    fn a_published_board_reaches_the_peer_and_withdrawal_clears_it() {
+        let Some((mut a, mut b)) = opponent_pair() else { return };
+        assert!(b.board_view().is_none());
+
+        let view = OpponentBoardView::from_game(&GameState::with_scoring(7, ScoringMode::Classic));
+        a.announce_board_sharing(true);
+        a.publish_local_board(&view);
+        wait_for(&mut b, |b| b.board_view().is_some());
+        assert_eq!(b.board_view(), Some(&view));
+        assert_eq!(b.opponent_shares_board, Some(true));
+
+        // Kept across rounds: the HUD does not jump while the next starting board travels.
+        b.game_start();
+        assert_eq!(b.board_view(), Some(&view));
+
+        // "I no longer share": the preview disappears, and a stray view is not shown.
+        a.announce_board_sharing(false);
+        wait_for(&mut b, |b| b.opponent_shares_board == Some(false));
+        assert!(b.board_view().is_none());
+        a.publish_local_board(&view);
+        a.announce_board_sharing(false);
+        wait_for(&mut b, |b| b.opponent_shares_board == Some(false));
+        assert!(b.board_view().is_none());
     }
 }

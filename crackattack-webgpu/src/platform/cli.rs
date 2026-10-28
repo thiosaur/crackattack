@@ -23,6 +23,8 @@ pub struct CliArgs {
     pub autoplay: bool,
     /// `--autoplay-rounds N`.
     pub autoplay_rounds: Option<u32>,
+    /// `--autoplay-ai classic|easy|medium|hard`: which brain plays under `--autoplay`.
+    pub autoplay_ai: Option<String>,
     /// `--script-dry-run`.
     pub script_dry_run: bool,
     pub vs_computer: bool,
@@ -132,6 +134,21 @@ pub fn parse_from(args: &[String]) -> Result<CliArgs, String> {
                     i += 2;
                 } else {
                     return Err("--autoplay-rounds requires a number argument".into());
+                }
+            }
+            "--autoplay-ai" => {
+                if i + 1 < args.len() {
+                    match args[i + 1].as_str() {
+                        "classic" | "easy" | "medium" | "hard" => {
+                            cli.autoplay_ai = Some(args[i + 1].clone());
+                        }
+                        other => {
+                            return Err(format!("--autoplay-ai: '{other}' is not classic, easy, medium or hard"));
+                        }
+                    }
+                    i += 2;
+                } else {
+                    return Err("--autoplay-ai requires classic, easy, medium or hard".into());
                 }
             }
             "--vs-computer" => {
@@ -417,6 +434,8 @@ pub fn print_help() {
     println!("Test & QA (developer tooling):");
     println!("  --autoplay                    The AI plays the game (soak/perf; Solo by default)");
     println!("  --autoplay-rounds N           Autoplay exits at the prompt after N rounds");
+    println!("  --autoplay-ai <BRAIN>         Brain of the autoplay: hard (default), medium, easy or classic");
+    println!("                                (all but classic are the grid AI of the VS Computer opponent)");
     println!("  -n, --name <NAME>             Force the player name (several instances, separate HOMEs)");
     println!("  -s, --seed <N>                Fixed random seed");
     println!("  -f, --max-frames <N>          Quit after N frames (with --autoplay/--render-dump)");
@@ -581,6 +600,13 @@ mod tests {
         assert!(parse(&["--difficulty", "impossible"]).is_err());
         assert!(parse(&["--position", "40x80"]).is_err());
         assert!(parse(&["--preset", "nonexistent"]).is_err());
+    }
+
+    #[test]
+    fn autoplay_ai_accepts_known_brains_only() {
+        assert_eq!(parse(&["--autoplay-ai", "hard"]).unwrap().autoplay_ai.as_deref(), Some("hard"));
+        assert!(parse(&["--autoplay-ai", "genius"]).is_err());
+        assert!(parse(&["--autoplay-ai"]).is_err());
     }
 
     #[test]

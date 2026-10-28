@@ -67,11 +67,14 @@ impl ConnectFailure {
     ///
     /// Only non-silent variants are expected here. The silent ones get a generic fallback.
     pub(crate) fn to_lan_error(&self) -> crate::app::meta_state::LanError {
-        use crate::app::meta_state::LanError;
+        use crate::app::meta_state::{LanError, OlderGame};
         match self {
             Self::Busy => LanError::PeerBusy,
-            // Version mismatch: a dedicated player-facing message, without jargon.
-            Self::HandshakeFailed(NetError::VersionMismatch { .. }) => LanError::VersionMismatch,
+            // Version mismatch: a dedicated player-facing message, without jargon. Protocol
+            // versions only go up, so the lower one is the older game.
+            Self::HandshakeFailed(NetError::VersionMismatch { local, remote }) => {
+                LanError::VersionMismatch(if local < remote { OlderGame::Ours } else { OlderGame::Theirs })
+            }
             Self::HandshakeFailed(e) => LanError::Handshake(e.to_string()),
             Self::Io(m) => LanError::Connection(m.clone()),
             // Silent variants are never shown. Generic fallback in case a future path shows them.
@@ -172,6 +175,10 @@ pub(crate) struct NegotiationState {
     /// even without the LAN screen (used for the "online" indicator of opponents and for
     /// reconnection).
     pub(crate) net_peers: Vec<LanPeer>,
+    /// Peers announcing another protocol version. Kept apart from `net_peers` so that nothing
+    /// treats them as reachable (online indicator, reconnection); the LAN screen lists them
+    /// after the playable ones.
+    pub(crate) other_version_peers: Vec<LanPeer>,
     /// Rating (`rt`) of the peer we are inviting. Moved to `opponent_announced_rt` in the
     /// session when the connection succeeds.
     pub(crate) pending_announced_rt: Option<i32>,
@@ -193,6 +200,7 @@ impl NegotiationState {
             tcp_listener: None,
             discovery: None,
             net_peers: Vec::new(),
+            other_version_peers: Vec::new(),
             pending_announced_rt: None,
             pending_invite: None,
             pending_invite_info: None,
@@ -278,6 +286,7 @@ impl NegotiationState {
         self.tcp_listener = None;
         self.discovery = None;
         self.net_peers.clear();
+        self.other_version_peers.clear();
         self.last_announced = None;
     }
 
@@ -561,46 +570,21 @@ impl NegotiationState {
         }
     }
 
-    /// Drains mDNS events into `net_peers`. Returns `true` if the list changed (the caller
-    /// mirrors it to the LAN screen if it is open).
+    /// Drains mDNS events into `net_peers` and `other_version_peers`. Returns `true` if the
+    /// lists changed (the caller mirrors them to the LAN screen if it is open).
     pub(crate) fn poll_discovery_events(&mut self) -> bool {
         let Some(ref discovery) = self.discovery else { return false };
-        use crackattack_net::discovery::DiscoveryEvent;
         let mut changed = false;
         for event in discovery.poll_events() {
             changed = true;
-            let peers = &mut self.net_peers;
-            match event {
-                DiscoveryEvent::PeerUpdated(peer) => {
-                    // The list holds only available peers. A busy or in-game peer is removed,
-                    // and added again when it becomes available.
-                    if peer.status != PeerStatus::Available {
-                        peers.retain(|p| p.session_id != peer.session_id);
-                    } else if let Some(existing) = peers.iter_mut().find(|p| p.session_id == peer.session_id) {
-                        existing.name = peer.name;
-                        existing.addr = peer.addr;
-                        existing.port = peer.port;
-                        existing.status = peer.status;
-                        existing.announced_rating = peer.announced_rating;
-                        existing.uuid_hex = peer.uuid_hex;
-                    } else {
-                        peers.push(LanPeer {
-                            name: peer.name,
-                            addr: peer.addr,
-                            port: peer.port,
-                            session_id: peer.session_id,
-                            status: peer.status,
-                            announced_rating: peer.announced_rating,
-                            uuid_hex: peer.uuid_hex,
-                        });
-                    }
-                }
-                DiscoveryEvent::PeerExpired(session_id) => {
-                    peers.retain(|p| p.session_id != session_id);
-                }
-            }
+            apply_discovery_event(&mut self.net_peers, &mut self.other_version_peers, event);
         }
         changed
+    }
+
+    /// The list shown on the LAN screen: playable peers first, then those on another version.
+    pub(crate) fn lan_list(&self) -> Vec<LanPeer> {
+        self.net_peers.iter().chain(&self.other_version_peers).cloned().collect()
     }
 
     /// Polls the result of the negotiation in flight (non-blocking).
@@ -618,6 +602,51 @@ impl NegotiationState {
         };
         self.phase = NegotiationPhase::Idle;
         result
+    }
+}
+
+/// Applies one mDNS event to the peer lists. The lists hold only available peers: a busy or
+/// in-game peer is removed, and added again when it becomes available again. A peer on
+/// another protocol version goes to `other_version_peers`, never to `net_peers`.
+fn apply_discovery_event(
+    net_peers: &mut Vec<LanPeer>,
+    other_version_peers: &mut Vec<LanPeer>,
+    event: crackattack_net::discovery::DiscoveryEvent,
+) {
+    use crackattack_net::discovery::DiscoveryEvent;
+    match event {
+        DiscoveryEvent::PeerUpdated(peer) => {
+            let (target, other) = if peer.compatible {
+                (net_peers, other_version_peers)
+            } else {
+                (other_version_peers, net_peers)
+            };
+            // A peer that updated its game switches list: drop the old entry.
+            other.retain(|p| p.session_id != peer.session_id);
+            if peer.status != PeerStatus::Available {
+                target.retain(|p| p.session_id != peer.session_id);
+                return;
+            }
+            let entry = LanPeer {
+                name: peer.name,
+                addr: peer.addr,
+                port: peer.port,
+                session_id: peer.session_id,
+                status: peer.status,
+                announced_rating: peer.announced_rating,
+                uuid_hex: peer.uuid_hex,
+                compatible: peer.compatible,
+            };
+            // Updated in place so the list does not reorder under the player's selection.
+            match target.iter_mut().find(|p| p.session_id == entry.session_id) {
+                Some(existing) => *existing = entry,
+                None => target.push(entry),
+            }
+        }
+        DiscoveryEvent::PeerExpired(session_id) => {
+            net_peers.retain(|p| p.session_id != session_id);
+            other_version_peers.retain(|p| p.session_id != session_id);
+        }
     }
 }
 
@@ -740,6 +769,52 @@ fn accept_peer_connection(
 mod tests {
     use super::*;
 
+    fn discovered(sid: &str, compatible: bool, status: PeerStatus) -> crackattack_net::discovery::DiscoveryEvent {
+        crackattack_net::discovery::DiscoveryEvent::PeerUpdated(crackattack_net::discovery::Peer {
+            name: sid.to_string(),
+            addr: std::net::IpAddr::from([192, 168, 1, 10]),
+            port: 45690,
+            session_id: sid.to_string(),
+            status,
+            announced_rating: None,
+            uuid_hex: None,
+            compatible,
+        })
+    }
+
+    #[test]
+    fn other_version_peers_are_listed_apart_and_never_playable() {
+        let (mut net, mut other) = (Vec::new(), Vec::new());
+        apply_discovery_event(&mut net, &mut other, discovered("a", true, PeerStatus::Available));
+        apply_discovery_event(&mut net, &mut other, discovered("b", false, PeerStatus::Available));
+        assert_eq!(net.iter().map(|p| p.session_id.as_str()).collect::<Vec<_>>(), ["a"]);
+        assert_eq!(other.iter().map(|p| p.session_id.as_str()).collect::<Vec<_>>(), ["b"]);
+        assert!(!other[0].compatible);
+    }
+
+    #[test]
+    fn a_peer_that_updates_its_game_switches_list() {
+        let (mut net, mut other) = (Vec::new(), Vec::new());
+        apply_discovery_event(&mut net, &mut other, discovered("a", false, PeerStatus::Available));
+        apply_discovery_event(&mut net, &mut other, discovered("a", true, PeerStatus::Available));
+        assert_eq!((net.len(), other.len()), (1, 0));
+        apply_discovery_event(&mut net, &mut other, discovered("a", false, PeerStatus::Busy));
+        // The same session now announces another version while busy: listed nowhere.
+        assert_eq!((net.len(), other.len()), (0, 0));
+    }
+
+    #[test]
+    fn an_expired_peer_leaves_both_lists() {
+        let (mut net, mut other) = (Vec::new(), Vec::new());
+        apply_discovery_event(&mut net, &mut other, discovered("a", true, PeerStatus::Available));
+        apply_discovery_event(&mut net, &mut other, discovered("b", false, PeerStatus::Available));
+        for sid in ["a", "b"] {
+            apply_discovery_event(&mut net, &mut other,
+                crackattack_net::discovery::DiscoveryEvent::PeerExpired(sid.to_string()));
+        }
+        assert!(net.is_empty() && other.is_empty());
+    }
+
     /// The mDNS status is a pure function of the phase and the game state.
     #[test]
     fn announced_status_derives_from_phase() {
@@ -824,10 +899,17 @@ mod tests {
         ));
         // A typed version mismatch gets a dedicated player-facing message. Other handshake
         // errors keep the technical detail.
+        // The lower protocol version is the older game: its player is the one to update.
+        use crate::app::meta_state::{LanError, OlderGame};
         assert!(matches!(
             ConnectFailure::HandshakeFailed(NetError::VersionMismatch { local: 2, remote: 3 })
                 .to_lan_error(),
-            crate::app::meta_state::LanError::VersionMismatch
+            LanError::VersionMismatch(OlderGame::Ours)
+        ));
+        assert!(matches!(
+            ConnectFailure::HandshakeFailed(NetError::VersionMismatch { local: 4, remote: 3 })
+                .to_lan_error(),
+            LanError::VersionMismatch(OlderGame::Theirs)
         ));
         assert!(matches!(
             ConnectFailure::HandshakeFailed(NetError::Protocol("bad".into())).to_lan_error(),

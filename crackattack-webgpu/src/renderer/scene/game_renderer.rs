@@ -227,7 +227,8 @@ pub fn generate_block_instance(
                 (1.0 - p).clamp(0.0, 1.0)
             }
         }
-        BlockAnimState::Static => 0.0,
+        // Grid blocks never drift: that state belongs to the menu backdrop.
+        BlockAnimState::Static | BlockAnimState::Drifting => 0.0,
     };
 
     // Blocks at y=0 (creep row) use the dimmer color palette.

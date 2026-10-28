@@ -43,6 +43,9 @@ pub struct GarbageLandedEvent {
     pub grid_y: i32,
     pub width: i32,
     pub height: i32,
+    /// First landing of this garbage (end of its drop from the top); later landings
+    /// happen when it falls again after the blocks under it cleared.
+    pub initial: bool,
 }
 
 /// Garbage started shattering (breaking into blocks).

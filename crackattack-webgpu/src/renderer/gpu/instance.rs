@@ -21,6 +21,10 @@ pub enum BlockAnimState {
 
     /// Pop rotation + scale
     AwakingPop = 4,
+
+    /// Menu backdrop: free rotation (`anim_axis_x`, `anim_axis_y`, radians), scale
+    /// (`anim_pivot_offset`) and overall brightness, highlights included (`anim_progress`)
+    Drifting = 5,
 }
 
 impl BlockAnimState {

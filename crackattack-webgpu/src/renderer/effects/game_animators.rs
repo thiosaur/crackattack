@@ -1,7 +1,9 @@
 
 const DANGER_BAR_FADE_TIME: i32 = 20;
 // Loss delays come from the core so they cannot diverge from the engine.
-use crackattack_core::constants::{LOSS_DELAY, LOSS_DELAY_ELIMINATION};
+use crackattack_core::constants::{LOSS_DELAY, LOSS_DELAY_ELIMINATION, PLAY_WIDTH};
+use crackattack_core::vs::board_view::BOARD_VIEW_ROWS;
+use crackattack_core::vs::{BoardCell, OpponentBoardView};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum DangerBarState {
@@ -279,5 +281,196 @@ impl LevelLightAnimator {
             panic_pulse: 0.0,
             local_level,
         }
+    }
+}
+
+/// Time a new garbage slab of the opponent preview takes to fade from bright red to its normal
+/// color.
+const OPPONENT_GARBAGE_FLASH_SECONDS: f32 = 1.0;
+
+/// Opponent board preview: holds the last received picture and makes each new garbage slab
+/// redden when it appears, then fade.
+///
+/// A slab is new when its identifier was absent from the previous picture. The first picture
+/// (session start) reddens nothing; a new round starts from a board without garbage, so it does
+/// not either.
+pub struct OpponentBoardAnimator {
+    view: Option<OpponentBoardView>,
+    /// Remaining flash per garbage identifier, 1.0 (just appeared) to 0.0.
+    flash: [f32; 256],
+}
+
+impl Default for OpponentBoardAnimator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl OpponentBoardAnimator {
+    pub fn new() -> Self {
+        Self { view: None, flash: [0.0; 256] }
+    }
+
+    pub fn time_step(&mut self, view: Option<&OpponentBoardView>, dt: f32) {
+        let fade = dt / OPPONENT_GARBAGE_FLASH_SECONDS;
+        for f in &mut self.flash {
+            *f = (*f - fade).max(0.0);
+        }
+        let Some(view) = view else {
+            self.view = None;
+            return;
+        };
+        if self.view.as_ref() == Some(view) {
+            return;
+        }
+        if let Some(previous) = &self.view {
+            for row in 0..BOARD_VIEW_ROWS {
+                for x in 0..PLAY_WIDTH {
+                    if let BoardCell::Garbage(id) = view.cell(x, row) {
+                        if !previous.has_garbage(id) {
+                            self.flash[id as usize] = 1.0;
+                        }
+                    }
+                }
+            }
+        }
+        self.view = Some(view.clone());
+    }
+
+    /// The picture to draw, if the opponent publishes one.
+    pub fn view(&self) -> Option<&OpponentBoardView> {
+        self.view.as_ref()
+    }
+
+    /// Flash strength of garbage slab `id`, 1.0 when it just appeared, eased toward 0.0.
+    pub fn flash(&self, id: u8) -> f32 {
+        let f = self.flash[id as usize];
+        f * f
+    }
+}
+
+#[cfg(test)]
+mod opponent_board_tests {
+    use super::*;
+    use crackattack_core::grid::{CellRef, CellType};
+    use crackattack_core::{GameState, ScoringMode};
+
+    fn view_with_garbage(ids: &[i16]) -> OpponentBoardView {
+        let mut game = GameState::with_scoring(1, ScoringMode::Classic);
+        for (i, &id) in ids.iter().enumerate() {
+            game.grid.set(i as i32, 12, CellRef { id, cell_type: CellType::Garbage, phase: 0 });
+        }
+        OpponentBoardView::from_game(&game)
+    }
+
+    #[test]
+    fn first_view_reddens_nothing() {
+        let mut anim = OpponentBoardAnimator::new();
+        anim.time_step(Some(&view_with_garbage(&[3])), 0.02);
+        assert_eq!(anim.flash(3), 0.0);
+    }
+
+    #[test]
+    fn new_slab_reddens_then_fades() {
+        let mut anim = OpponentBoardAnimator::new();
+        anim.time_step(Some(&view_with_garbage(&[3])), 0.02);
+        anim.time_step(Some(&view_with_garbage(&[3, 5])), 0.02);
+        assert_eq!(anim.flash(5), 1.0);
+        assert_eq!(anim.flash(3), 0.0, "a slab already shown must not redden again");
+        anim.time_step(Some(&view_with_garbage(&[3, 5])), 0.5);
+        assert!(anim.flash(5) > 0.0 && anim.flash(5) < 1.0);
+        anim.time_step(Some(&view_with_garbage(&[3, 5])), 0.6);
+        assert_eq!(anim.flash(5), 0.0);
+    }
+}
+
+/// Logo shake when garbage lands on the board: a short tremor that dies out.
+pub struct LogoShakeAnimator {
+    /// Strength of the current tremor (0 = none, 1 = the largest).
+    strength: f32,
+    /// Seconds since the tremor started.
+    elapsed: f32,
+}
+
+/// Duration of a tremor (seconds).
+const LOGO_SHAKE_DURATION: f32 = 0.5;
+/// Largest offset (world units; the logo is about 6.7 wide) and tilt (degrees).
+const LOGO_SHAKE_OFFSET: f32 = 0.38;
+const LOGO_SHAKE_TILT_DEG: f32 = 2.4;
+
+impl Default for LogoShakeAnimator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl LogoShakeAnimator {
+    pub fn new() -> Self {
+        Self { strength: 0.0, elapsed: LOGO_SHAKE_DURATION }
+    }
+
+    /// Garbage of `width` x `height` cells landed: starts a tremor, stronger for bigger
+    /// slabs. A landing during a stronger tremor keeps the stronger one.
+    pub fn garbage_landed(&mut self, width: i32, height: i32) {
+        let strength = (0.45 + 0.05 * width as f32 + 0.1 * height as f32).min(1.0);
+        if strength >= self.current_strength() {
+            self.strength = strength;
+            self.elapsed = 0.0;
+        }
+    }
+
+    pub fn time_step(&mut self, dt: f32) {
+        self.elapsed = (self.elapsed + dt).min(LOGO_SHAKE_DURATION);
+    }
+
+    /// Strength left, decaying to 0 over the duration.
+    fn current_strength(&self) -> f32 {
+        let left = 1.0 - self.elapsed / LOGO_SHAKE_DURATION;
+        self.strength * left * left
+    }
+
+    /// Current offset (world units, x and y) and tilt (radians, counterclockwise).
+    pub fn offset(&self) -> (f32, f32, f32) {
+        let s = self.current_strength();
+        if s <= 0.0 {
+            return (0.0, 0.0, 0.0);
+        }
+        // Three unrelated frequencies, so the tremor does not look like a swing.
+        let t = self.elapsed * std::f32::consts::TAU;
+        (
+            s * LOGO_SHAKE_OFFSET * (19.0 * t).sin(),
+            s * LOGO_SHAKE_OFFSET * 0.7 * (23.0 * t + 1.0).sin(),
+            s * LOGO_SHAKE_TILT_DEG.to_radians() * (16.0 * t + 2.0).sin(),
+        )
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn logo_shake_dies_out() {
+        let mut shake = LogoShakeAnimator::new();
+        assert_eq!(shake.offset(), (0.0, 0.0, 0.0));
+        shake.garbage_landed(6, 2);
+        shake.time_step(0.03);
+        assert_ne!(shake.offset(), (0.0, 0.0, 0.0));
+        shake.time_step(1.0);
+        assert_eq!(shake.offset(), (0.0, 0.0, 0.0));
+    }
+
+    #[test]
+    fn bigger_garbage_shakes_harder_and_a_small_one_does_not_cut_it_short() {
+        let mut small = LogoShakeAnimator::new();
+        small.garbage_landed(3, 1);
+        let mut big = LogoShakeAnimator::new();
+        big.garbage_landed(6, 3);
+        assert!(big.current_strength() > small.current_strength());
+        big.time_step(0.05);
+        let before = big.current_strength();
+        big.garbage_landed(3, 1);
+        assert_eq!(big.current_strength(), before);
     }
 }

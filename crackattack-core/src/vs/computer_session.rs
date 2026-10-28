@@ -1,11 +1,11 @@
-//! VsComputerGameSession — wraps VsSession<ComputerOpponent>.
+//! VsComputerGameSession — wraps VsSession<GridOpponent>.
 //!
 //! All VS Computer-specific behavior lives here, not in the runtime.
 
 use crate::frame_data::FrameData;
 use crate::game_state::GameState;
 use crate::input::InputSnapshot;
-use super::computer::ComputerOpponent;
+use super::grid_opponent::GridOpponent;
 use super::opponent::Opponent;
 use super::session::VsSession;
 use super::round::SessionPhase;
@@ -13,7 +13,7 @@ use super::game_session::GameSession;
 
 /// VS Computer game session.
 pub struct VsComputerGameSession {
-    pub inner: VsSession<ComputerOpponent>,
+    pub inner: VsSession<GridOpponent>,
     /// Local pause state (the only cause of freeze in VS Computer).
     frozen: bool,
 }
@@ -25,7 +25,7 @@ impl VsComputerGameSession {
         self.inner.set_needs_ready_prompt(v);
     }
 
-    pub fn new(seed: u32, opponent: ComputerOpponent) -> Self {
+    pub fn new(seed: u32, opponent: GridOpponent) -> Self {
         let mut inner = VsSession::new(seed, opponent);
         // Open series, same model as network mode: the player consents ("Play again?")
         // between rounds. In production, `session_runtime` then calls
@@ -122,8 +122,13 @@ impl GameSession for VsComputerGameSession {
             round_number: self.inner.round_number,
             session_wins: self.inner.session_wins,
             session_losses: self.inner.session_losses,
-            opponent_stats: None,
+            // Handed over once the round is over, as the network reports it: not while it is played.
+            opponent_stats: match self.inner.phase() {
+                SessionPhase::Resolving | SessionPhase::ShowResult => self.inner.opponent.final_stats().cloned(),
+                _ => None,
+            },
             opponent_uuid: None, // Local AI: no persistent identity
+            opponent_board: self.inner.opponent.board_view().cloned(),
         });
 
         SessionSnapshot {
@@ -146,12 +151,41 @@ impl GameSession for VsComputerGameSession {
 mod tests {
     use super::*;
     use crate::frame_data::{SessionInterruption, SessionLifecycle};
-    use crate::virtual_player::AIDifficulty;
+    use crate::ai_difficulty::AIDifficulty;
 
     // Contract tests: the snapshot and drained events reflect the real session state.
 
     fn vs_ia() -> VsComputerGameSession {
-        VsComputerGameSession::new(42, ComputerOpponent::new(AIDifficulty::Medium))
+        VsComputerGameSession::new(42, GridOpponent::new(AIDifficulty::Medium, 42))
+    }
+
+    /// The opponent's stats reach the snapshot once the round is over, and not while it is played.
+    #[test]
+    fn the_opponents_stats_are_handed_over_at_the_end_of_the_round() {
+        use crate::input::{Input, INPUT_ADVANCE, INPUT_DOWN, INPUT_LEFT, INPUT_RIGHT, INPUT_SWAP, INPUT_UP};
+        let mut s = VsComputerGameSession::new(42, GridOpponent::new(AIDifficulty::Hard, 42));
+        let mut human = crate::vs::GridAutoplay::new(AIDifficulty::Hard, 42);
+        let mut input = Input::new();
+        let mut during = None;
+        for tick in 0..(50 * 60 * 6) {
+            let flags = human.update(&s.inner.player_game);
+            for bit in [INPUT_LEFT, INPUT_RIGHT, INPUT_UP, INPUT_DOWN, INPUT_SWAP, INPUT_ADVANCE] {
+                input.set_key(bit, flags & bit != 0);
+            }
+            s.inner.time_step(&input.snapshot());
+            input.end_frame();
+            if tick == 1000 {
+                during = Some(s.snapshot().vs_display.unwrap().opponent_stats);
+            }
+            if matches!(s.inner.phase(), SessionPhase::Resolving | SessionPhase::ShowResult) {
+                break;
+            }
+        }
+        assert!(matches!(s.inner.phase(), SessionPhase::Resolving | SessionPhase::ShowResult), "the round did not end");
+        assert!(matches!(during, Some(None)), "stats shown while the round is played");
+        let shown = s.snapshot().vs_display.unwrap().opponent_stats.expect("no stats at the end of the round");
+        assert!(shown.duration_ticks > 0 && shown.swaps_performed > 0);
+        assert_eq!(shown.swaps_performed, s.inner.opponent.game().stats.swaps_performed);
     }
 
     #[test]

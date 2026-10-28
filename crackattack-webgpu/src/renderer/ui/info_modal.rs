@@ -8,20 +8,43 @@ use super::egui_theme::Palette;
 use crate::app::locale::{current_language, Language};
 use crate::app::menu_tree::InfoSection;
 
+/// What the Updates page shows. The session derives it from the check state (persisted
+/// results and the attempt in progress); the renderer only draws it.
+// Without the `update-check` feature only `Unavailable` and `Managed` are ever built.
+#[cfg_attr(not(feature = "update-check"), allow(dead_code))]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub enum UpdateView {
+    /// This binary cannot check for updates (built from source).
+    #[default]
+    Unavailable,
+    /// Updates come from the store or the distribution (already-localized note).
+    Managed(&'static str),
+    Checking,
+    NeverChecked,
+    /// Nothing newer. `checked` is the date of the last successful check.
+    UpToDate { checked: String },
+    /// A newer version exists, with the page to open to get it.
+    Available { version: String, url: String },
+    /// The last attempt failed. `last_success` is the date of the last successful check.
+    Failed { last_success: Option<String> },
+}
+
+impl UpdateView {
+    /// Whether the player can start a check from this page.
+    fn can_check(&self) -> bool {
+        !matches!(self, Self::Unavailable | Self::Managed(_))
+    }
+}
+
 /// Data for the Credits and Updates pages, coming from the session. It is resolved outside
 /// the renderer from the distribution profile and the public identity, so the renderer never
-/// decides on a URL. Everything is `None` while the public identity is not set.
+/// decides on a URL. Everything is `None` / `Unavailable` while the public identity is not set.
 #[derive(Default)]
 pub struct InfoExtras {
     /// "Contribute" link (repository), if the distribution channel allows it.
     pub contribute_url: Option<String>,
-    /// Available update: (version, URL to open).
-    pub update: Option<(String, String)>,
-    /// Already-localized status line of the update check. `Some` means this binary can check
-    /// for updates: the "Check now" button and this line are shown.
-    pub update_status: Option<String>,
-    /// Already-localized note that updates are managed by the store or distribution.
-    pub managed_info: Option<&'static str>,
+    /// State of the Updates page.
+    pub update_view: UpdateView,
     /// Is the daily automatic check enabled? `Some` means this binary can check for updates,
     /// and the checkbox is shown (a checkbox that does nothing would be worse than none).
     pub update_checks: Option<bool>,
@@ -32,10 +55,8 @@ pub struct InfoExtras {
 /// with the mouse is also reachable with the keyboard and the gamepad.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum InfoAction {
-    /// "Version X available: view the download". Opens the channel page.
+    /// "Download version X". Opens the channel page.
     ViewDownload(String),
-    /// "Ignore this version".
-    IgnoreVersion(String),
     /// "Check now".
     CheckNow,
     /// "Check for updates" checkbox (daily automatic check).
@@ -53,7 +74,6 @@ impl InfoAction {
             InfoAction::ViewDownload(url) | InfoAction::Contribute(url) => {
                 AppCommand::OpenUrl(url.clone())
             }
-            InfoAction::IgnoreVersion(v) => AppCommand::IgnoreUpdateVersion(v.clone()),
             InfoAction::CheckNow => AppCommand::CheckUpdatesNow,
             InfoAction::ToggleUpdateChecks => AppCommand::ToggleUpdateChecks,
         }
@@ -71,11 +91,10 @@ impl InfoExtras {
                 }
             }
             InfoSection::Updates => {
-                if let Some((version, url)) = &self.update {
+                if let UpdateView::Available { url, .. } = &self.update_view {
                     out.push(InfoAction::ViewDownload(url.clone()));
-                    out.push(InfoAction::IgnoreVersion(version.clone()));
                 }
-                if self.update_status.is_some() {
+                if self.update_view.can_check() {
                     out.push(InfoAction::CheckNow);
                 }
                 if self.update_checks.is_some() {
@@ -184,7 +203,7 @@ pub fn render_info_screen(
         focus: if back_focused { NavFocus::Left } else { NavFocus::Content },
         scroll_delta,
         opaque_bg: true,
-        center_content: false, // reading page: aligned to the top
+        center_content: false, // reading page: aligned to the top (the Updates page pads itself)
     };
     let actions = extras.actions(section);
     let mut clicked_action: Option<usize> = None;
@@ -227,34 +246,10 @@ pub fn render_info_screen(
                 }
             }
             InfoSection::Updates => {
-                ui.label(egui::RichText::new(t.update_installed_fmt
-                    .replace("{}", env!("CARGO_PKG_VERSION"))).size(16.0));
-                ui.add_space(8.0);
-                if let Some((version, url)) = &extras.update {
-                    // The "version available" line is itself the button (opens the channel page).
-                    action_button(ui, &InfoAction::ViewDownload(url.clone()),
-                        egui::RichText::new(t.update_view_download_fmt.replace("{}", version))
-                            .size(14.0).color(Palette::TEXT_ACCENT));
-                    action_button(ui, &InfoAction::IgnoreVersion(version.clone()),
-                        egui::RichText::new(t.ignore_this_version).size(12.0).color(Palette::TEXT_DIM));
-                    ui.add_space(6.0);
-                }
-                if let Some(status) = &extras.update_status {
-                    dim(ui, status);
-                    action_button(ui, &InfoAction::CheckNow,
-                        egui::RichText::new(t.update_check_now).size(13.0).color(Palette::TEXT_ACCENT));
-                }
-                if let Some(enabled) = extras.update_checks {
-                    ui.add_space(6.0);
-                    let mark = if enabled { "[x]" } else { "[ ]" };
-                    action_button(ui, &InfoAction::ToggleUpdateChecks,
-                        egui::RichText::new(format!("{mark} {}", t.update_checks_option)).size(13.0));
-                }
-                if let Some(managed) = extras.managed_info {
-                    dim(ui, managed);
-                } else if extras.update_status.is_none() {
-                    dim(ui, t.update_unavailable);
-                }
+                let (clicked, hovered) = render_updates_page(
+                    ui, extras, &actions, info_action_selected, action_scroll_to_selected);
+                clicked_action = clicked;
+                hovered_action = hovered;
             }
             _ => {}
         }
@@ -275,6 +270,171 @@ pub fn render_info_screen(
     }
 }
 
+/// Width of the Updates page buttons (they shrink with the window).
+const PAGE_BUTTON_W: f32 = 340.0;
+
+/// Look of an Updates page button: the main action of the page is filled, the others are
+/// outlined. Every button keeps its frame at rest, so it reads as a button before it is
+/// selected or hovered.
+#[derive(Clone, Copy)]
+enum ButtonLook {
+    Primary,
+    Secondary,
+}
+
+fn page_button(
+    ui: &mut egui::Ui,
+    glyph: char,
+    text: &str,
+    look: ButtonLook,
+    selected: bool,
+    enabled: bool,
+) -> egui::Response {
+    use super::egui_theme::TextSize;
+    let (fill, stroke, ink) = match look {
+        ButtonLook::Primary => (
+            Palette::TEXT_ACCENT,
+            if selected { Palette::TEXT } else { Palette::TEXT_ACCENT },
+            Palette::BG_APP,
+        ),
+        ButtonLook::Secondary => (
+            if selected { Palette::BG_SELECTED } else { Palette::BG_PANEL },
+            if selected { Palette::BORDER_ACTIVE } else { Palette::BORDER },
+            Palette::TEXT,
+        ),
+    };
+    let width = PAGE_BUTTON_W.min(ui.available_width());
+    let button = egui::Button::new(super::icons::icon_text(glyph, text, TextSize::BODY, ink))
+        .fill(fill)
+        .stroke(egui::Stroke::new(2.0, stroke))
+        .corner_radius(8.0)
+        .min_size(egui::vec2(width, 40.0));
+    let response = ui.add_enabled(enabled, button).on_hover_cursor(egui::CursorIcon::PointingHand);
+    // A filled button hides its own border, so the focus shows as a ring around it.
+    if selected && matches!(look, ButtonLook::Primary) {
+        ui.painter().rect_stroke(
+            response.rect.expand(4.0),
+            11.0,
+            egui::Stroke::new(2.0, Palette::BORDER_ACTIVE),
+            egui::StrokeKind::Outside,
+        );
+    }
+    response
+}
+
+/// Icon, headline and detail line of the Updates page, from its state.
+fn updates_header(ui: &mut egui::Ui, view: &UpdateView) {
+    let t = crate::app::locale::t();
+    let installed = t.update_installed_fmt.replace("{}", env!("CARGO_PKG_VERSION"));
+    let (glyph, color, headline, detail) = match view {
+        UpdateView::Unavailable => (
+            super::icons::INFO, Palette::TEXT_DIM, t.update_unavailable.to_string(), installed),
+        UpdateView::Managed(note) => (
+            super::icons::STORE, Palette::TEXT_DIM, note.to_string(), installed),
+        UpdateView::Checking => (
+            super::icons::REFRESH, Palette::TEXT_ACCENT, t.update_status_checking.to_string(), installed),
+        UpdateView::NeverChecked => (
+            super::icons::INFO, Palette::TEXT_DIM, t.update_status_never.to_string(), installed),
+        UpdateView::UpToDate { checked } => (
+            super::icons::CHECK_CIRCLE, Palette::SUCCESS, t.update_uptodate.to_string(),
+            format!("{installed} · {}", t.update_checked_fmt.replace("{}", checked))),
+        UpdateView::Available { version, .. } => (
+            super::icons::DOWNLOAD, Palette::TEXT_ACCENT,
+            t.update_status_available_fmt.replace("{}", version), installed),
+        UpdateView::Failed { last_success } => (
+            super::icons::WIFI_OFF, Palette::WARNING, t.update_status_failed.to_string(),
+            match last_success {
+                Some(date) => format!("{installed} · {}", t.update_last_success_fmt.replace("{}", date)),
+                None => installed,
+            }),
+    };
+    ui.vertical_centered(|ui| {
+        if matches!(view, UpdateView::Checking) {
+            ui.add(egui::Spinner::new().size(44.0).color(color));
+        } else {
+            ui.label(super::icons::icon(glyph).size(44.0).color(color));
+        }
+        ui.add_space(6.0);
+        ui.label(egui::RichText::new(headline).size(20.0).strong().color(Palette::TEXT));
+        ui.label(egui::RichText::new(detail).size(14.0).color(Palette::TEXT_DIM));
+    });
+}
+
+/// The Updates page: state first (icon and headline), then the actions as visible buttons,
+/// then the automatic-check switch. Returns the action clicked and the action hovered this
+/// frame (indexes into `actions`).
+fn render_updates_page(
+    ui: &mut egui::Ui,
+    extras: &InfoExtras,
+    actions: &[InfoAction],
+    info_action_selected: usize,
+    scroll_to_selected: bool,
+) -> (Option<usize>, Option<usize>) {
+    let t = crate::app::locale::t();
+    let mut clicked = None;
+    let mut hovered = None;
+    // `selected` follows the same 1-based index as keyboard and gamepad navigation.
+    let index_of = |a: &InfoAction| actions.iter().position(|x| x == a);
+    let mut track = |r: &egui::Response, i: Option<usize>, selected: bool, also_hovered: bool, also_clicked: bool| {
+        if selected && scroll_to_selected {
+            r.scroll_to_me(Some(egui::Align::Center));
+        }
+        if let Some(i) = i {
+            if r.hovered() || also_hovered {
+                hovered = Some(i);
+            }
+            if r.clicked() || also_clicked {
+                clicked = Some(i);
+            }
+        }
+    };
+
+    // The page is short: push it down so it sits in the middle of the frame, whatever the
+    // window height (the frame itself aligns its content to the top).
+    const PAGE_HEIGHT: f32 = 330.0;
+    ui.add_space(((ui.available_height().min(900.0) - PAGE_HEIGHT) / 2.0).max(0.0));
+    ui.vertical_centered(|ui| {
+        updates_header(ui, &extras.update_view);
+        ui.add_space(14.0);
+
+        let view = &extras.update_view;
+        let check_look = match view {
+            UpdateView::Failed { .. } | UpdateView::NeverChecked => ButtonLook::Primary,
+            _ => ButtonLook::Secondary,
+        };
+        if let UpdateView::Available { version, url } = view {
+            let action = InfoAction::ViewDownload(url.clone());
+            let i = index_of(&action);
+            let selected = i.is_some_and(|i| i + 1 == info_action_selected);
+            let label = t.update_download_fmt.replace("{}", version);
+            let r = page_button(ui, super::icons::DOWNLOAD, &label, ButtonLook::Primary, selected, true);
+            track(&r, i, selected, false, false);
+            ui.add_space(8.0);
+        }
+        if view.can_check() {
+            let i = index_of(&InfoAction::CheckNow);
+            let selected = i.is_some_and(|i| i + 1 == info_action_selected);
+            let label = if matches!(view, UpdateView::Failed { .. }) { t.update_retry } else { t.update_check_now };
+            // No second check while one is running (the command would do nothing).
+            let enabled = !matches!(view, UpdateView::Checking);
+            let r = page_button(ui, super::icons::REFRESH, label, check_look, selected, enabled);
+            track(&r, i, selected, false, false);
+        }
+        if let Some(on) = extras.update_checks {
+            ui.add_space(14.0);
+            let i = index_of(&InfoAction::ToggleUpdateChecks);
+            let selected = i.is_some_and(|i| i + 1 == info_action_selected);
+            // Same on/off component as the Options screens: the egui checkbox, focus shown
+            // with `highlight()` and no frame around it.
+            let mut value = on;
+            let r = ui.checkbox(&mut value, egui::RichText::new(t.update_checks_option).size(14.0));
+            let r = if selected { r.highlight() } else { r };
+            track(&r, i, selected, false, false);
+        }
+    });
+    (clicked, hovered)
+}
+
 /// Splits the leading `# Title` (pinned) from the rest (scrollable body). Without a title it
 /// returns `("", md)`.
 fn split_title(md: &str) -> (&str, &str) {
@@ -292,6 +452,24 @@ mod tests {
     use super::*;
     use crate::app::command::AppCommand;
 
+    /// The Updates page offers a check only when this binary can check, and the download only
+    /// when a newer version exists. A store-managed or source build has no action at all.
+    #[test]
+    fn updates_actions_follow_the_state() {
+        let view = |update_view| InfoExtras { update_view, ..Default::default() }
+            .actions(InfoSection::Updates);
+        assert!(view(UpdateView::Unavailable).is_empty());
+        assert!(view(UpdateView::Managed("store")).is_empty());
+        for v in [
+            UpdateView::Checking,
+            UpdateView::NeverChecked,
+            UpdateView::UpToDate { checked: "2026-10-28".into() },
+            UpdateView::Failed { last_success: None },
+        ] {
+            assert_eq!(view(v), vec![InfoAction::CheckNow]);
+        }
+    }
+
     /// Actions follow the display order, page by page. Each exists only if its control
     /// exists, and links go through a command (never opened by the renderer).
     #[test]
@@ -303,22 +481,21 @@ mod tests {
 
         let extras = InfoExtras {
             contribute_url: Some("https://example.test/repo".into()),
-            update: Some(("2.1.0".into(), "https://example.test/releases".into())),
-            update_status: Some("Version 2.1.0 available".into()),
-            managed_info: Some("managed by"),
+            update_view: UpdateView::Available {
+                version: "2.1.0".into(),
+                url: "https://example.test/releases".into(),
+            },
             update_checks: Some(true),
         };
         let updates = extras.actions(InfoSection::Updates);
         assert_eq!(updates, vec![
             InfoAction::ViewDownload("https://example.test/releases".into()),
-            InfoAction::IgnoreVersion("2.1.0".into()),
             InfoAction::CheckNow,
             InfoAction::ToggleUpdateChecks,
         ]);
         assert!(matches!(updates[0].command(), AppCommand::OpenUrl(u) if u.ends_with("/releases")));
-        assert!(matches!(updates[1].command(), AppCommand::IgnoreUpdateVersion(v) if v == "2.1.0"));
-        assert!(matches!(updates[2].command(), AppCommand::CheckUpdatesNow));
-        assert!(matches!(updates[3].command(), AppCommand::ToggleUpdateChecks));
+        assert!(matches!(updates[1].command(), AppCommand::CheckUpdatesNow));
+        assert!(matches!(updates[2].command(), AppCommand::ToggleUpdateChecks));
 
         let credits = extras.actions(InfoSection::Credits);
         assert_eq!(credits, vec![InfoAction::Contribute("https://example.test/repo".into())]);

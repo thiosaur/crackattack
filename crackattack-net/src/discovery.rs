@@ -63,6 +63,9 @@ pub struct Peer {
     /// Persistent identity of the peer (TXT `uid`, 32 hex digits). It is the reliable
     /// target for quick reconnection, more so than matching on the name.
     pub uuid_hex: Option<String>,
+    /// Whether the peer speaks our protocol version (TXT `nv`). An incompatible peer is
+    /// still reported, so the player sees someone is there but needs another game version.
+    pub compatible: bool,
 }
 
 /// Commands from the app to the discovery thread.
@@ -273,8 +276,8 @@ fn instance_of(fullname: &str) -> Option<String> {
         .map(|s| s.to_string())
 }
 
-/// Builds a `Peer` from a resolved mDNS service. It drops our own service and incompatible
-/// protocol versions. It picks a **connectable** address: IPv4 first (widest compatibility),
+/// Builds a `Peer` from a resolved mDNS service. It drops our own service and flags peers on
+/// another protocol version as incompatible (`Peer::compatible`). It picks a **connectable** address: IPv4 first (widest compatibility),
 /// then non-link-local IPv6 (`fe80::` is not reachable without a scope id, which we do not
 /// propagate), otherwise the first available one.
 fn peer_from_resolved(info: &mdns_sd::ResolvedService, our_session_id: &str) -> Option<Peer> {
@@ -287,10 +290,6 @@ fn peer_from_resolved(info: &mdns_sd::ResolvedService, our_session_id: &str) -> 
         .get_property_val_str("nv")
         .and_then(|s| s.parse::<u32>().ok())
         == Some(protocol::PROTOCOL_VERSION);
-    if !compatible {
-        return None;
-    }
-
     let ips: Vec<IpAddr> = info.addresses.iter().map(|s| s.to_ip_addr()).collect();
     let addr = ips
         .iter()
@@ -324,6 +323,7 @@ fn peer_from_resolved(info: &mdns_sd::ResolvedService, our_session_id: &str) -> 
         status,
         announced_rating,
         uuid_hex,
+        compatible,
     })
 }
 
@@ -396,6 +396,7 @@ mod tests {
                         a_sees_b = true;
                         // Bob announces no rating (unplaced), so TXT `rt` is absent.
                         assert_eq!(p.announced_rating, None, "Bob must not announce an rt");
+                        assert!(p.compatible, "same build, same protocol version");
                         assert_eq!(p.uuid_hex.as_deref(), Some("cd".repeat(16).as_str()));
                     }
                 }

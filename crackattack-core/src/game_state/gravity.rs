@@ -385,7 +385,7 @@ impl GameState {
                     } else {
                         // Land
                         self.gameplay_events.push(GameplayEvent::GarbageLanded(GarbageLandedEvent {
-                            grid_x: x, grid_y: y, width, height,
+                            grid_x: x, grid_y: y, width, height, initial: was_initial,
                         }));
                         garbage.sub_grid_y = 0;
                         garbage.physics_state = GarbageState::Static;

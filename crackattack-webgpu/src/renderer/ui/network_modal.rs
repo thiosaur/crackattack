@@ -633,19 +633,23 @@ fn render_peer_list(
         let mut hovered_now: Option<usize> = None;
         // Render rows. When inactive (list behind an invite), no highlight and no click.
         for (i, peer) in peers.iter().enumerate() {
-            let is_selected = active && i == *selected;
-            let available = peer.status == PeerStatus::Available;
-            // Unavailable suffix: "busy" (negotiating) vs "in game" (playing).
-            let suffix = match peer.status {
-                PeerStatus::Available => "",
-                PeerStatus::Busy => crate::app::locale::t().busy_suffix,
-                PeerStatus::InGame => crate::app::locale::t().in_game_suffix,
+            let is_selected = active && i == *selected && peer.compatible;
+            let available = peer.status == PeerStatus::Available && peer.compatible;
+            // Unavailable suffix: another game version, "busy" (negotiating) vs "in game" (playing).
+            let suffix = if !peer.compatible {
+                crate::app::locale::t().other_version_suffix
+            } else {
+                match peer.status {
+                    PeerStatus::Available => "",
+                    PeerStatus::Busy => crate::app::locale::t().busy_suffix,
+                    PeerStatus::InGame => crate::app::locale::t().in_game_suffix,
+                }
             };
 
             // Clickable (hand cursor, click, hover to focus) only if the list is active AND
             // the peer is **available**; otherwise the row is informational.
             let resp = peer_row(ui, &peer.name, peer.announced_rating, is_selected,
-                active && available, available, suffix);
+                active && available, available, !peer.compatible, suffix);
             if active && available {
                 if resp.clicked() {
                     *selected = i;
@@ -695,6 +699,7 @@ fn peer_row(
     selected: bool,
     clickable: bool,
     available: bool,
+    blocked: bool,
     suffix: &str,
 ) -> egui::Response {
     let label = if suffix.is_empty() {
@@ -703,8 +708,10 @@ fn peer_row(
         format!("{} {}", name, suffix)
     };
 
-    super::helpers::selectable_row(
-        ui, selected, clickable, super::helpers::RowGauge::ListFlush, 340.0,
+    // A peer that cannot be played shows a "ban" icon in place of the chevron.
+    let marker = blocked.then_some(super::icons::BAN);
+    super::helpers::selectable_row_marked(
+        ui, selected, clickable, super::helpers::RowGauge::ListFlush, 340.0, marker,
         |ui, _conventional| {
             // Own color rule (not the 3-case convention): an unfocused peer stays in full
             // `TEXT` for list readability, and only an unavailable peer is dimmed.

@@ -621,6 +621,9 @@ impl<P: crate::platform_shell::PlatformShell> AppState<P> {
                 block_impact_phases: std::collections::HashMap::new(),
                 danger_bar_animator: crate::renderer::effects::game_animators::DangerBarAnimator::new(),
                 level_light_animator: crate::renderer::effects::game_animators::LevelLightAnimator::new(),
+                opponent_board_animator: crate::renderer::effects::game_animators::OpponentBoardAnimator::new(),
+                logo_shake_animator: crate::renderer::effects::game_animators::LogoShakeAnimator::new(),
+                menu_backdrop: crate::renderer::effects::menu_backdrop::MenuBackdrop::new(0x5eed_b10c),
             },
             ui: UiRuntime {
                 ui_pipeline_cache,
@@ -670,6 +673,7 @@ impl<P: crate::platform_shell::PlatformShell> AppState<P> {
                         }
                     },
                     autoplay: boot.autoplay,
+                    autoplay_ai: boot.autoplay_ai,
                     autoplay_max_rounds: {
                         if boot.autoplay_rounds > 0 { Some(boot.autoplay_rounds) } else { None }
                     },

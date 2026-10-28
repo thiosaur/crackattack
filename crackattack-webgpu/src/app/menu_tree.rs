@@ -12,7 +12,7 @@
 //! - No closures and no generic engine.
 
 use crate::app::meta_state::OptionsTab;
-use crackattack_core::virtual_player::AIDifficulty;
+use crackattack_core::ai_difficulty::AIDifficulty;
 
 /// Section of the About/Info screen (Info submenu).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

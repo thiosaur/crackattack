@@ -34,6 +34,8 @@ pub struct BootConfig {
     pub autoplay: bool,
     /// 0 = unlimited.
     pub autoplay_rounds: u32,
+    /// `None` = the classic autoplay; otherwise the level of the grid AI.
+    pub autoplay_ai: Option<crackattack_core::ai_difficulty::AIDifficulty>,
     pub vs_computer: bool,
     /// 0 = easy, 1 = medium (default), 2 = hard.
     pub ai_difficulty: u8,
@@ -99,6 +101,13 @@ pub fn resolve(cli: &CliArgs, boot: &BootOverrides, env: &EnvOverrides) -> BootC
         seed: boot.seed.or(cli.seed),
         autoplay: boot.autoplay.unwrap_or(cli.autoplay),
         autoplay_rounds: boot.autoplay_rounds.or(cli.autoplay_rounds).unwrap_or(0),
+        autoplay_ai: match cli.autoplay_ai.as_deref() {
+            // The old autoplay, kept for comparisons until it is retired.
+            Some("classic") => None,
+            Some("easy") => Some(crackattack_core::ai_difficulty::AIDifficulty::Easy),
+            Some("medium") => Some(crackattack_core::ai_difficulty::AIDifficulty::Medium),
+            _ => Some(crackattack_core::ai_difficulty::AIDifficulty::Hard),
+        },
         vs_computer: cli.vs_computer,
         ai_difficulty,
         fixed_step,
@@ -167,6 +176,16 @@ mod tests {
         assert!(!rsl(&cli, &["session:autoplay=false"]).autoplay);
         assert_eq!(rsl(&cli, &["session:autoplay.max_rounds=9"]).autoplay_rounds, 9);
         assert_eq!(rsl(&CliArgs::default(), &[]).autoplay_rounds, 0);
+    }
+
+    #[test]
+    fn autoplay_plays_with_the_grid_ai_at_cortex_level_by_default() {
+        use crackattack_core::ai_difficulty::AIDifficulty;
+        assert_eq!(rsl(&CliArgs::default(), &[]).autoplay_ai, Some(AIDifficulty::Hard));
+        let easy = CliArgs { autoplay_ai: Some("easy".into()), ..Default::default() };
+        assert_eq!(rsl(&easy, &[]).autoplay_ai, Some(AIDifficulty::Easy));
+        let classic = CliArgs { autoplay_ai: Some("classic".into()), ..Default::default() };
+        assert_eq!(rsl(&classic, &[]).autoplay_ai, None);
     }
 
     #[test]

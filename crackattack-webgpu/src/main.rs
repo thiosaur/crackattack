@@ -54,7 +54,7 @@ const WINDOW_HEIGHT: u32 = 700;
 const TICKS_PER_SECOND: u32 = 50;
 const TICK_DURATION: Duration = Duration::from_micros(1_000_000 / TICKS_PER_SECOND as u64);
 
-/// Wake-up interval for static states (menu, solo pause): about 15 Hz.
+/// Wake-up interval for static states (solo pause): about 15 Hz.
 /// The game logic still runs at 50 Hz (the accumulator in `tick()` catches up with
 /// real time). Only wake-ups and rendering are less frequent, which saves about
 /// 70% of the frames in these states.
@@ -805,7 +805,7 @@ impl<P: platform_shell::PlatformShell> AppState<P> {
                         }
                     } else {
                         match lan.peers.get(lan.selected) {
-                            Some(peer) if peer.status == PeerStatus::Available => vec![
+                            Some(peer) if peer.status == PeerStatus::Available && peer.compatible => vec![
                                 AppCommand::PlayUiConfirm,
                                 AppCommand::ConnectToPeer {
                                     addr: peer.addr,
@@ -1469,6 +1469,7 @@ impl<P: platform_shell::PlatformShell> AppState<P> {
                 let cmds = self.runtime.sync_post_game(&frame);
                 for cmd in cmds { self.apply_app_command(cmd); }
                 self.renderer.spawn_nucleons_and_chain_rings(&frame);
+                self.renderer.shake_logo_on_garbage_landing(&frame);
             }
         }
 
@@ -1529,7 +1530,7 @@ impl<P: platform_shell::PlatformShell> AppState<P> {
     }
 
     /// Wake-up interval (and so render rate) for the current state.
-    /// Only the truly static states (menu, solo or local pause) are slowed down. 50 Hz is
+    /// Only the truly static state (solo or local pause) is slowed down. 50 Hz is
     /// kept whenever the network is involved (communication latency, ready/waiting
     /// states) or a game is active. The logic always runs at 50 Hz (see `tick()`).
     fn wake_interval(&self) -> Duration {
@@ -1544,11 +1545,11 @@ impl<P: platform_shell::PlatformShell> AppState<P> {
         if self.scheduling.transition_grace > 0 {
             return TICK_DURATION;
         }
-        use crate::app::meta_state::FlowState;
-        if matches!(s.flow_state, FlowState::Menu) || s.pause_menu_open {
-            IDLE_TICK_DURATION // menu (with overlays) and solo pause: about 15 Hz
+        // The menu keeps the full rate: its backdrop blocks drift continuously.
+        if s.pause_menu_open {
+            IDLE_TICK_DURATION // solo pause: about 15 Hz
         } else {
-            TICK_DURATION // active game (Playing / PostGame / ready / countdown): 50 Hz
+            TICK_DURATION // menu (backdrop), active game (Playing / PostGame / ready / countdown): 50 Hz
         }
     }
 

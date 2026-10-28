@@ -22,6 +22,10 @@ impl Palette {
     pub const TEXT_UNAVAILABLE: egui::Color32 = egui::Color32::from_rgb(122, 110, 92);
 
     pub const DANGER: egui::Color32 = egui::Color32::from_rgb(255, 100, 100);
+    /// Positive state (Updates page: up to date).
+    pub const SUCCESS: egui::Color32 = egui::Color32::from_rgb(90, 209, 154);
+    /// Degraded state that is not an error of the player's (Updates page: cannot check).
+    pub const WARNING: egui::Color32 = egui::Color32::from_rgb(240, 179, 90);
 }
 
 /// The single type scale for dialogs. Use it instead of literal sizes.

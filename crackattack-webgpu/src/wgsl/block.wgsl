@@ -67,6 +67,9 @@ const STATE_STATIC: f32 = 0.0;
 const STATE_DYING_SHRINK: f32 = 2.0;
 const STATE_SWAPPING: f32 = 3.0;
 const STATE_AWAKING_POP: f32 = 4.0;
+// Menu backdrop: free rotation and scale. animAxisX / animAxisY are the angles (radians)
+// around X then Y, animPivotOffset is the scale, animProgress the overall brightness.
+const STATE_DRIFTING: f32 = 5.0;
 
 // Visual effect flags. Only bit 0 is read here; the CPU also sets bits 1 and 2,
 // which this shader ignores.
@@ -108,6 +111,8 @@ struct VertexOutput {
     @location(1) normalEye: vec3f,
     @location(2) posEye: vec3f,
     @location(4) instanceColor: vec4f,
+    // Overall brightness, highlights included (1 except for the menu backdrop).
+    @location(5) brightness: f32,
 }
 
 // Rodrigues rotation formula: rotate vector v around axis by angle (radians)
@@ -339,6 +344,15 @@ fn vs_main(in: VertexInput) -> VertexOutput {
         localPos.z = localPos.z * stretch;
     }
 
+    // STATE_DRIFTING: menu backdrop block, tumbling and scaled.
+    if (abs(inst.state - STATE_DRIFTING) < 0.5) {
+        localPos = rotateAroundAxis(localPos, vec3f(1.0, 0.0, 0.0), inst.animAxisX);
+        localPos = rotateAroundAxis(localPos, vec3f(0.0, 1.0, 0.0), inst.animAxisY);
+        localNormal = rotateAroundAxis(localNormal, vec3f(1.0, 0.0, 0.0), inst.animAxisX);
+        localNormal = rotateAroundAxis(localNormal, vec3f(0.0, 1.0, 0.0), inst.animAxisY);
+        localPos = localPos * inst.animPivotOffset;
+    }
+
     // Final position: local transformed + instance world position
     let worldPos = localPos + inst.position;
     let pos4 = vec4f(worldPos, 1.0);
@@ -348,6 +362,7 @@ fn vs_main(in: VertexInput) -> VertexOutput {
     out.position = transform.mvp * pos4;
     out.normalEye = normalize((transform.normalMatrix * vec4f(localNormal, 0.0)).xyz);
     out.instanceColor = inst.color;
+    out.brightness = select(1.0, inst.animProgress, abs(inst.state - STATE_DRIFTING) < 0.5);
 
     return out;
 }
@@ -391,7 +406,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4f {
     var finalColor = ambientContrib + directContrib + emissionContrib;
 
     // lighting.ambient.a is a global brightness multiplier (default 1.0, no-op at release).
-    finalColor = finalColor * lighting.ambient.a;
+    finalColor = finalColor * lighting.ambient.a * in.brightness;
 
     // Blocks are opaque
     var alpha = 1.0;

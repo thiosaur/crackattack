@@ -5,7 +5,7 @@ use crate::renderer::gpu::render_command::RenderCommandBuffer;
 use crate::renderer::gpu::ring_buffer::UniformRingBuffer;
 use crate::renderer::scene::pipelines::ScenePipelines;
 use crate::renderer::scene::garbage_flavor::GarbageFlavorImageState;
-use crate::renderer::effects::game_animators::{DangerBarAnimator, LevelLightAnimator};
+use crate::renderer::effects::game_animators::{DangerBarAnimator, LevelLightAnimator, LogoShakeAnimator, OpponentBoardAnimator};
 
 pub struct SceneRenderer {
     /// GPU pipelines and buffers — immutable after init.
@@ -26,6 +26,10 @@ pub struct SceneRenderer {
     /// Renderer-side animators.
     pub danger_bar_animator: DangerBarAnimator,
     pub level_light_animator: LevelLightAnimator,
+    pub opponent_board_animator: OpponentBoardAnimator,
+    pub logo_shake_animator: LogoShakeAnimator,
+    /// Blocks drifting behind the menu.
+    pub menu_backdrop: crate::renderer::effects::menu_backdrop::MenuBackdrop,
 }
 
 impl SceneRenderer {
@@ -33,6 +37,8 @@ impl SceneRenderer {
     pub fn reset_for_menu(&mut self) {
         self.level_light_animator = LevelLightAnimator::new();
         self.danger_bar_animator = DangerBarAnimator::new();
+        self.opponent_board_animator = OpponentBoardAnimator::new();
+        self.logo_shake_animator = LogoShakeAnimator::new();
         self.block_impact_phases.clear();
         self.garbage_flavor_state = GarbageFlavorImageState::default();
         self.garbage_flavor_instance_idx = None;

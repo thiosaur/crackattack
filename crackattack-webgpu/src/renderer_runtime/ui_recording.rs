@@ -63,11 +63,13 @@ impl RendererRuntime {
             let mut db_snap = self.scene.danger_bar_animator.snapshot();
             if !draw_hud { db_snap.visible = false; }
             self.ui.ui_renderer.wall_clock = scheduling.wall_clock_seconds;
+            self.ui.ui_renderer.logo_shake = self.scene.logo_shake_animator.offset();
 
             // Layer 1: HUD
             ui_batches.extend(self.ui.ui_renderer.generate_batches(
                 frame, vs_display,
                 !draw_hud, &db_snap,
+                &self.scene.opponent_board_animator,
                 {
                     let phase = scheduling.wall_clock_seconds * scheduling.panic_freq * std::f32::consts::TAU;
                     scheduling.panic_smoothed * phase.sin().powi(2)

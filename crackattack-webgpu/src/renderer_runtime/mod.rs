@@ -267,7 +267,13 @@ impl RendererRuntime {
             })
         });
         #[allow(unused_mut)] // `mut` is only used under `--features dev` below
-        let mut lighting_uniforms = prepare_lighting_uniforms(frame, countdown_progress);
+        let mut lighting_uniforms = if plan.flow_state.is_menu() {
+            // Menu backdrop: steady light, whatever state the last game left behind.
+            scheduling.panic_smoothed = 0.0;
+            crate::renderer::gpu::uniforms::LightingUniformsGPU::default()
+        } else {
+            prepare_lighting_uniforms(frame, countdown_progress)
+        };
 
         // Low-pass filter `panic_intensity` so sudden jumps (e.g. garbage
         // landing and dropping free_rows by several rows at once) do not
@@ -309,6 +315,20 @@ impl RendererRuntime {
             0,
             bytemuck::bytes_of(&lighting_uniforms),
         );
+    }
+
+    /// The logo trembles when garbage first lands on the board (not when it falls again).
+    /// Called with the events of the frame's steps, like `spawn_nucleons_and_chain_rings`.
+    pub(crate) fn shake_logo_on_garbage_landing(&mut self, frame: &FrameData) {
+        for event in &frame.gameplay_events {
+            if let crackattack_core::gameplay_event::GameplayEvent::GarbageLanded(g) = event {
+                if !g.initial {
+                    continue;
+                }
+                log::debug!("Logo shake: garbage {}x{} landed", g.width, g.height);
+                self.scene.logo_shake_animator.garbage_landed(g.width, g.height);
+            }
+        }
     }
 
     pub(crate) fn spawn_nucleons_and_chain_rings(&mut self, frame: &FrameData) {

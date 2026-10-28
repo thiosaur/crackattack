@@ -4,6 +4,7 @@
 //! Two planes: data (garbage batches) and control (immediate signals).
 
 use bytemuck::{Pod, Zeroable};
+use crackattack_core::vs::OpponentBoardView;
 
 /// Communication period in game ticks.
 /// Gameplay garbage is exchanged every this many frames.
@@ -14,7 +15,13 @@ pub(crate) const COMMUNICATION_PERIOD: i32 = 32;
 /// wire format (handshake, invite, messages) OR anything that makes two versions play a different
 /// game: rules, garbage, creep, communication period, round arbitration. The handshake carries
 /// the player identity (a 16-byte uuid).
-pub(crate) const PROTOCOL_VERSION: u32 = 3;
+///
+/// From version 4, a control message may be an EXTENSION (`CTRL_EXTENSION`): it carries its own
+/// length, and a peer skips an extension type it does not know. An extension carries only what
+/// can be lost without changing the game (display, comfort): the opponent board preview, whether
+/// a player shares it. Anything about rules, garbage, synchronisation or arbitration is a
+/// fixed-size message and needs a new version.
+pub(crate) const PROTOCOL_VERSION: u32 = 4;
 
 /// Length of the handshake head (magic + version). It is read and checked before the rest of
 /// the preamble, so a version mismatch is always reported as such, whatever the length of the
@@ -269,6 +276,12 @@ pub(crate) enum ControlMessage {
     },
     /// Server-authoritative round verdict.
     RoundVerdict { round_id: u16, winner: PeerRole, reason: VerdictReason },
+    /// Extension: the sender's board, for the opponent preview.
+    BoardView(OpponentBoardView),
+    /// Extension: whether the sender shares its board (sent at each round, before any view).
+    BoardSharing(bool),
+    /// Extension of a type this version does not know: received and skipped.
+    UnknownExtension(u8),
 }
 
 // Wire type IDs for `ControlMessage` variants.
@@ -286,6 +299,21 @@ const CTRL_PING: u8 = 0x0B;
 const CTRL_PONG: u8 = 0x0C;
 const CTRL_STATS: u8 = 0x0D;
 const CTRL_ROUND_VERDICT: u8 = 0x0E;
+/// Extension: `[ext type u8][length u16 LE][payload]`, see `PROTOCOL_VERSION`.
+pub(crate) const CTRL_EXTENSION: u8 = 0x0F;
+
+/// Extension header after the id byte: type (1) + length (2).
+pub(crate) const EXTENSION_HEADER_LEN: usize = 3;
+/// Longest extension payload a peer may announce; beyond it the stream is treated as corrupt.
+pub(crate) const MAX_EXTENSION_LEN: usize = 1024;
+
+const EXT_BOARD_VIEW: u8 = 1;
+const EXT_BOARD_SHARING: u8 = 2;
+
+/// Payload length of an extension, read from its header (`header` starts at the extension type).
+pub(crate) fn extension_len(header: &[u8]) -> usize {
+    u16::from_le_bytes([header[1], header[2]]) as usize
+}
 
 /// Payload size (bytes AFTER the id byte) of each control message. This is the
 /// **single source of the wire layout**: the framer (`communicator::MessageReader`)
@@ -303,6 +331,8 @@ pub(crate) fn ctrl_payload_size(ctrl_id: u8) -> Option<usize> {
         CTRL_START_AT => 7,      // ctx + epoch (2) + tick (4)
         CTRL_ROUND_LIFE_REPORT => 11, // round_id (2) + status + loss_tick (4) + swaps (4)
         CTRL_STATS => 32,        // 8 × u32
+        // Header only: the length that follows is read from it (`extension_len`).
+        CTRL_EXTENSION => EXTENSION_HEADER_LEN,
         _ => return None,
     })
 }
@@ -381,6 +411,9 @@ impl ControlMessage {
                 buf.push(*reason as u8);
                 buf
             }
+            Self::BoardView(view) => extension_bytes(EXT_BOARD_VIEW, &view.to_bytes()),
+            Self::BoardSharing(shares) => extension_bytes(EXT_BOARD_SHARING, &[u8::from(*shares)]),
+            Self::UnknownExtension(ext) => extension_bytes(*ext, &[]),
         }
     }
 
@@ -468,11 +501,39 @@ impl ControlMessage {
                 };
                 Ok(Self::RoundVerdict { round_id, winner, reason })
             }
+            CTRL_EXTENSION => {
+                let len = extension_len(&data[1..]);
+                let payload = data
+                    .get(1 + EXTENSION_HEADER_LEN..1 + EXTENSION_HEADER_LEN + len)
+                    .ok_or(ProtocolError::IncompleteControl)?;
+                match data[1] {
+                    EXT_BOARD_VIEW => OpponentBoardView::from_bytes(payload)
+                        .map(Self::BoardView)
+                        .ok_or(ProtocolError::InvalidBoardView),
+                    EXT_BOARD_SHARING => match payload {
+                        [0] => Ok(Self::BoardSharing(false)),
+                        [1] => Ok(Self::BoardSharing(true)),
+                        _ => Err(ProtocolError::InvalidControlType(CTRL_EXTENSION)),
+                    },
+                    other => Ok(Self::UnknownExtension(other)),
+                }
+            }
             // Unreachable while the table covers the same ids as this match (see the
             // guard above). Returns an error instead of panicking if they ever diverge.
             _ => Err(ProtocolError::InvalidControlType(data[0])),
         }
     }
+}
+
+/// `[CTRL_EXTENSION][ext type][length u16 LE][payload]`.
+fn extension_bytes(ext: u8, payload: &[u8]) -> Vec<u8> {
+    debug_assert!(payload.len() <= MAX_EXTENSION_LEN);
+    let mut buf = Vec::with_capacity(1 + EXTENSION_HEADER_LEN + payload.len());
+    buf.push(CTRL_EXTENSION);
+    buf.push(ext);
+    buf.extend_from_slice(&(payload.len() as u16).to_le_bytes());
+    buf.extend_from_slice(payload);
+    buf
 }
 
 fn parse_sync_context(b: u8) -> Result<SyncContext, ProtocolError> {
@@ -510,6 +571,8 @@ pub(crate) enum ProtocolError {
     /// Garbage entry with dimensions outside the game's bounds (hostile peer or sender bug).
     InvalidGarbageEntry { height: i32, width: i32, flavor: i32, timestamp: i32 },
     InvalidControlType(u8),
+    /// Opponent board view whose cells no board can produce.
+    InvalidBoardView,
 }
 
 impl std::fmt::Display for ProtocolError {
@@ -528,6 +591,7 @@ impl std::fmt::Display for ProtocolError {
                     height, width, flavor, timestamp),
             Self::InvalidControlType(t) =>
                 write!(f, "invalid control message type: 0x{:02X}", t),
+            Self::InvalidBoardView => write!(f, "invalid opponent board view"),
         }
     }
 }
@@ -563,11 +627,18 @@ mod tests {
             ControlMessage::RoundVerdict {
                 round_id: 1, winner: PeerRole::Server, reason: VerdictReason::OnlyOneLost,
             },
+            ControlMessage::BoardView(sample_board_view()),
+            ControlMessage::BoardSharing(true),
+            ControlMessage::BoardSharing(false),
+            ControlMessage::UnknownExtension(0xEE),
         ];
         for msg in samples {
             let bytes = msg.to_bytes();
-            let expected = ctrl_payload_size(bytes[0])
+            let mut expected = ctrl_payload_size(bytes[0])
                 .unwrap_or_else(|| panic!("id 0x{:02X} missing from the table ({:?})", bytes[0], msg));
+            if bytes[0] == CTRL_EXTENSION {
+                expected += extension_len(&bytes[1..]);
+            }
             assert_eq!(bytes.len(), 1 + expected,
                 "layout mismatch for {:?}: to_bytes emits {} bytes, the table says 1+{}",
                 msg, bytes.len(), expected);
@@ -578,6 +649,42 @@ mod tests {
             assert_eq!(format!("{decoded:?}"), format!("{msg:?}"), "round-trip {msg:?}");
         }
         assert!(ctrl_payload_size(0xFF).is_none());
+    }
+
+    fn sample_board_view() -> OpponentBoardView {
+        let mut bytes = [0u8; crackattack_core::vs::board_view::BOARD_VIEW_LEN];
+        bytes[0] = 1;
+        bytes[1] = 9;
+        bytes[6] = 9;
+        OpponentBoardView::from_bytes(&bytes).unwrap()
+    }
+
+    /// An extension of a type this version does not know is skipped, whatever its payload.
+    #[test]
+    fn unknown_extension_is_skipped() {
+        let bytes = extension_bytes(0xEE, &[1, 2, 3, 4, 5]);
+        assert!(matches!(ControlMessage::from_bytes(&bytes), Ok(ControlMessage::UnknownExtension(0xEE))));
+    }
+
+    #[test]
+    fn invalid_board_view_and_sharing_are_rejected() {
+        let mut view = sample_board_view().to_bytes();
+        view[3] = 0xFF;
+        assert!(matches!(
+            ControlMessage::from_bytes(&extension_bytes(EXT_BOARD_VIEW, &view)),
+            Err(ProtocolError::InvalidBoardView)
+        ));
+        assert!(matches!(
+            ControlMessage::from_bytes(&extension_bytes(EXT_BOARD_VIEW, &view[..10])),
+            Err(ProtocolError::InvalidBoardView)
+        ));
+        assert!(ControlMessage::from_bytes(&extension_bytes(EXT_BOARD_SHARING, &[2])).is_err());
+        // Truncated: the header announces more than what is there.
+        let full = ControlMessage::BoardView(sample_board_view()).to_bytes();
+        assert!(matches!(
+            ControlMessage::from_bytes(&full[..full.len() - 1]),
+            Err(ProtocolError::IncompleteControl)
+        ));
     }
 
     /// Dimensions outside the game's bounds are rejected at the network boundary
@@ -892,10 +999,10 @@ mod tests {
     #[test]
     fn handshake_reference_bytes() {
         let bytes = HandshakePacket::new("AB", [0x11; 16], 45678).to_bytes();
-        let mut expected = vec![0x4B, 0x41, 0x52, 0x43, 3, 0, 0, 0];
+        let mut expected = vec![0x4B, 0x41, 0x52, 0x43, 4, 0, 0, 0];
         expected.extend_from_slice(&[0x11; 16]);
         expected.extend_from_slice(&[0x6E, 0xB2, 2, b'A', b'B']);
-        assert_eq!(PROTOCOL_VERSION, 3, "update the reference bytes with the new version");
+        assert_eq!(PROTOCOL_VERSION, 4, "update the reference bytes with the new version");
         assert_eq!(bytes, expected);
     }
 }

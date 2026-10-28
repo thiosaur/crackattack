@@ -22,7 +22,7 @@ impl FlowState {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GameMode {
     Solo,
-    VsComputer(crackattack_core::virtual_player::AIDifficulty),
+    VsComputer(crackattack_core::ai_difficulty::AIDifficulty),
     VsNetwork,
 }
 
@@ -282,6 +282,18 @@ pub struct LanPeer {
     pub announced_rating: Option<i32>,
     /// Persistent peer identity (TXT record `uid`). A reliable reconnection target.
     pub uuid_hex: Option<String>,
+    /// `false` when the peer runs another protocol version: listed for information, not
+    /// playable (the player must update).
+    pub compatible: bool,
+}
+
+/// After a version mismatch, which of the two games is the older one.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OlderGame {
+    /// Ours: the local player must update.
+    Ours,
+    /// The peer's: the other player must update.
+    Theirs,
 }
 
 /// Error shown on the LAN screen. Variants are structured; the technical detail
@@ -289,8 +301,9 @@ pub struct LanPeer {
 #[derive(Debug, Clone)]
 pub enum LanError {
     PeerBusy,
-    /// The peer runs another game version (incompatible protocol). The player message has no detail.
-    VersionMismatch,
+    /// The peer runs another game version (incompatible protocol). The message says whose game
+    /// is the older one, so the right player knows to update.
+    VersionMismatch(OlderGame),
     Handshake(String),
     Connection(String),
     Discovery(String),
@@ -303,7 +316,8 @@ impl LanError {
     pub fn message(&self, l: &crate::app::locale::Locale) -> String {
         match self {
             Self::PeerBusy => l.error_peer_busy.to_string(),
-            Self::VersionMismatch => l.error_version_mismatch.to_string(),
+            Self::VersionMismatch(OlderGame::Ours) => l.error_version_mismatch_ours.to_string(),
+            Self::VersionMismatch(OlderGame::Theirs) => l.error_version_mismatch_theirs.to_string(),
             Self::Handshake(d) => l.error_handshake_fmt.replace("{}", d),
             Self::Connection(d) => l.error_connection_fmt.replace("{}", d),
             Self::Discovery(d) => l.error_discovery_fmt.replace("{}", d),
@@ -456,8 +470,43 @@ impl LanScreenState {
             self.selected = 0;
             return;
         }
-        // Clamp first (peers may have left), then take a shared cyclic step.
-        self.selected = crate::app::focus::ring_move(self.selected.min(n - 1), n, delta);
+        // Clamp first (peers may have left), then take a shared cyclic step. Peers that cannot
+        // be played (another network version) are not in the ring: the step skips them.
+        let mut next = self.selected.min(n - 1);
+        for _ in 0..n {
+            next = crate::app::focus::ring_move(next, n, delta);
+            if self.is_selectable(next) {
+                self.selected = next;
+                return;
+            }
+        }
+        self.selected = self.selected.min(n - 1);
+    }
+
+    /// Whether the focus ring can rest on item `i`. Only a peer on another network version is
+    /// left out: it is listed for information.
+    pub fn is_selectable(&self, i: usize) -> bool {
+        !matches!(self.phase, LanScreenPhase::Scanning)
+            || self.peers.get(i).map_or(true, |p| p.compatible)
+    }
+
+    /// Replaces the peer list (a discovery update) and keeps the selection on a selectable
+    /// item: if the new list leaves it on a peer that cannot be played, it moves on to the
+    /// next selectable item, ending on Back at worst.
+    pub fn set_peers(&mut self, peers: Vec<LanPeer>) {
+        self.peers = peers;
+        let n = self.nav_count();
+        if n == 0 {
+            return;
+        }
+        let mut i = self.selected.min(n - 1);
+        for _ in 0..n {
+            if self.is_selectable(i) {
+                break;
+            }
+            i = crate::app::focus::ring_move(i, n, 1);
+        }
+        self.selected = i;
     }
 }
 
@@ -737,6 +786,7 @@ mod tests {
             status: crackattack_net::discovery::PeerStatus::Available,
             announced_rating: None,
             uuid_hex: None,
+            compatible: true,
         }
     }
 
@@ -754,7 +804,7 @@ mod tests {
         assert_eq!(s.selected, 0, "Back alone: nothing else to reach");
 
         s.phase = LanScreenPhase::Error {
-            error: LanError::VersionMismatch,
+            error: LanError::VersionMismatch(OlderGame::Ours),
             hint: Some(LanErrorHint::Download("https://example.test/releases".into())),
         };
         assert_eq!((s.nav_count(), s.retour_index()), (2, 1));
@@ -765,7 +815,7 @@ mod tests {
 
         // The "managed by" note is not navigable.
         s.phase = LanScreenPhase::Error {
-            error: LanError::VersionMismatch,
+            error: LanError::VersionMismatch(OlderGame::Ours),
             hint: Some(LanErrorHint::ManagedBy(crate::platform::distribution::ManagedBy::Store)),
         };
         assert_eq!((s.nav_count(), s.retour_index()), (1, 0));
@@ -773,6 +823,37 @@ mod tests {
         // Scanning: the peers are back in the ring.
         s.phase = LanScreenPhase::Scanning;
         assert_eq!((s.nav_count(), s.retour_index()), (3, 2));
+    }
+
+    /// A peer on another network version is listed but outside the focus ring: the keyboard
+    /// and gamepad step over it, and a list update never leaves the selection on it.
+    #[test]
+    fn lan_selection_skips_other_version_peers() {
+        let mut s = LanScreenState::new(45678);
+        let mut other = peer("Old");
+        other.compatible = false;
+        // [A, Old, Back]: compatible peers come first, then the other-version ones.
+        s.set_peers(vec![peer("A"), other.clone()]);
+        assert_eq!((s.nav_count(), s.retour_index()), (3, 2));
+        assert!(s.is_selectable(0) && !s.is_selectable(1) && s.is_selectable(2));
+        s.selected = 0;
+        s.move_selection(1);
+        assert_eq!(s.selected, 2, "Old is stepped over: A -> Back");
+        s.move_selection(-1);
+        assert_eq!(s.selected, 0, "Back -> A, not Old");
+
+        // Only an other-version peer: the selection rests on Back.
+        s.selected = 0;
+        s.set_peers(vec![other.clone()]);
+        assert_eq!(s.selected, s.retour_index());
+        s.move_selection(1);
+        assert_eq!(s.selected, s.retour_index(), "nothing else to reach");
+
+        // The selected compatible peer disappears while an other-version one takes its index.
+        s.set_peers(vec![peer("A"), other.clone()]);
+        s.selected = 0;
+        s.set_peers(vec![other]);
+        assert_eq!(s.selected, s.retour_index());
     }
 
     /// LAN list navigation stays bounded (keyboard and gamepad share this code). While

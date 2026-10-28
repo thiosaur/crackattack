@@ -256,7 +256,7 @@ pub(crate) fn send_control(conn: &mut NetConnection, msg: &ControlMessage) -> Re
 }
 
 /// Time limit to complete a frame that has **started**. A legitimate frame is at most
-/// ~520 bytes and is sent in a single `send_all` with TCP_NODELAY. If it is not complete
+/// ~1 KB (an extension at `MAX_EXTENSION_LEN`) and is sent in a single `send_all` with TCP_NODELAY. If it is not complete
 /// 5 s after its first byte, the peer is dead or hostile.
 const FRAME_STALL_TIMEOUT: Duration = Duration::from_secs(5);
 
@@ -374,6 +374,17 @@ impl MessageReader {
                             continue;
                         }
                     }
+                    // Extension: its header is in, the announced payload follows.
+                    if self.frame[1] == CTRL_EXTENSION && self.needed == 2 + EXTENSION_HEADER_LEN {
+                        let len = extension_len(&self.frame[2..]);
+                        if len > MAX_EXTENSION_LEN {
+                            return Err(format!("extension 0x{:02X} too long: {} bytes", self.frame[2], len));
+                        }
+                        if len > 0 {
+                            self.needed += len;
+                            continue;
+                        }
+                    }
                     let msg = ControlMessage::from_bytes(&self.frame[1..])
                         .map_err(|e| format!("control parse error: {}", e))?;
                     self.reset();
@@ -443,6 +454,54 @@ mod tests {
             _ => panic!("wrong message decoded from fragmented frame"),
         }
         let _ = writer.join();
+    }
+
+    /// Polls until a message arrives (or panics after 100 polls).
+    fn next_message(reader: &mut MessageReader, conn: &mut NetConnection) -> ReceivedMessage {
+        for _ in 0..100 {
+            if let Some(m) = reader.poll(conn).expect("no error expected") {
+                return m;
+            }
+        }
+        panic!("message never completed");
+    }
+
+    /// An extension this version does not know, between two known messages, is read whole and
+    /// skipped: the messages around it arrive intact.
+    #[test]
+    fn unknown_extension_between_known_messages_is_skipped() {
+        let Some((mut sender, mut receiver)) = loopback_pair() else { return };
+        let mut stream = vec![MSG_TYPE_CONTROL];
+        stream.extend_from_slice(&ControlMessage::Ping(3).to_bytes());
+        stream.extend_from_slice(&[MSG_TYPE_CONTROL, CTRL_EXTENSION, 0xEE, 5, 0, 1, 2, 3, 4, 5]);
+        stream.push(MSG_TYPE_CONTROL);
+        stream.extend_from_slice(&ControlMessage::Pong(4).to_bytes());
+        sender.send_all(&stream).unwrap();
+
+        let mut reader = MessageReader::new();
+        assert!(matches!(next_message(&mut reader, &mut receiver), ReceivedMessage::Control(ControlMessage::Ping(3))));
+        assert!(matches!(next_message(&mut reader, &mut receiver), ReceivedMessage::Control(ControlMessage::UnknownExtension(0xEE))));
+        assert!(matches!(next_message(&mut reader, &mut receiver), ReceivedMessage::Control(ControlMessage::Pong(4))));
+    }
+
+    /// An extension announcing more than `MAX_EXTENSION_LEN` is a stream error, not a wait.
+    #[test]
+    fn oversized_extension_is_an_error() {
+        let Some((mut sender, mut receiver)) = loopback_pair() else { return };
+        let len = (MAX_EXTENSION_LEN as u16 + 1).to_le_bytes();
+        sender.send_all(&[MSG_TYPE_CONTROL, CTRL_EXTENSION, 0xEE, len[0], len[1]]).unwrap();
+        let mut reader = MessageReader::new();
+        for _ in 0..100 {
+            match reader.poll(&mut receiver) {
+                Ok(None) => {}
+                Ok(Some(_)) => panic!("no complete message was sent"),
+                Err(e) => {
+                    assert!(e.contains("too long"), "unexpected error: {e}");
+                    return;
+                }
+            }
+        }
+        panic!("oversized extension never rejected");
     }
 
     /// The type byte alone, a pause, then the rest of the frame: the type byte must NOT be
