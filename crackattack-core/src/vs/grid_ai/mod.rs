@@ -1,7 +1,6 @@
 //! Grid-playing AI for the VS Computer opponent.
 //!
-//! A port of the strategic bot of crack-attack-web (`aiPlanner.ts`, `aiController.ts`,
-//! GPL-2.0-or-later, https://github.com/mishan/crack-attack-web). It drives a real
+//! A port of a strategic bot (see AUTHORS for its origin). It drives a real
 //! `GameState`: every tick it reads the board and the cursor and returns the next input.
 //! `planner` is the pure part (cascade evaluator and multi-swap planners); `controller` is
 //! the decision loop that reads a `GameState`.

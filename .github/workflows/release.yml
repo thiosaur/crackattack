@@ -168,7 +168,7 @@ jobs:
             # The game finds its data from the executable's location.
             test -f "$app/Contents/Resources/assets/textures/ui/logo.png"
             test -s "$app/Contents/Resources/AppIcon.icns"
-            (cd dist && ditto -c -k --keepParent "$name" "$name.zip")
+            (cd dist && ditto -c -k --keepParent "$name" "$name-portable.zip")
             # Disk image: the app next to a link to Applications, on a background with an
             # arrow. dmgbuild writes the window layout itself (no Finder scripting, which is
             # unreliable on a runner); the version is pinned.

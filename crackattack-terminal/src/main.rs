@@ -2,8 +2,11 @@
 
 mod danger;
 mod render;
+mod screen;
 
-use crackattack_core::{GameState, InputSnapshot};
+use crackattack_core::ai_difficulty::AIDifficulty;
+use crackattack_core::vs::GridAutoplay;
+use crackattack_core::{FrameData, GameState, InputSnapshot};
 use crackattack_core::input::*;
 use std::io::{self, Write};
 use std::time::{Duration, Instant};
@@ -21,6 +24,9 @@ fn main() {
 
     let mut seed: Option<u32> = None;
     let mut max_frames: Option<i32> = None;
+    let mut autoplay: Option<AIDifficulty> = None;
+    let mut headless = false;
+    let mut captures = Captures::default();
 
     let mut i = 1;
     while i < args.len() {
@@ -40,6 +46,39 @@ fn main() {
             "--debug" => {
                 render::SHOW_DEBUG.store(true, std::sync::atomic::Ordering::Relaxed);
             }
+            "--smooth" => {
+                render::SMOOTH_RISE.with(|smooth| smooth.set(true));
+            }
+            "--autoplay" => {
+                // Optional level: easy, medium or hard (the default, as in the GUI).
+                let level = args.get(i + 1).and_then(|a| parse_level(a));
+                if level.is_some() {
+                    i += 1;
+                }
+                autoplay = Some(level.unwrap_or(AIDifficulty::Hard));
+            }
+            "--headless" => headless = true,
+            "--capture" => {
+                if let Some(list) = args.get(i + 1) {
+                    match parse_capture_ticks(list) {
+                        Some((ticks, at_end)) => {
+                            captures.ticks = ticks;
+                            captures.at_end = at_end;
+                        }
+                        None => {
+                            eprintln!("--capture: expected ticks such as 100,250,end");
+                            std::process::exit(2);
+                        }
+                    }
+                    i += 1;
+                }
+            }
+            "--capture-file" => {
+                if let Some(path) = args.get(i + 1) {
+                    captures.path = path.clone();
+                    i += 1;
+                }
+            }
             "--help" | "-h" => {
                 println!("Crack Attack! Terminal (Rust)");
                 println!();
@@ -49,6 +88,15 @@ fn main() {
                 println!("  --seed N      Use a specific seed (default: a new one each game)");
                 println!("  --frames N    Stop after N frames");
                 println!("  --debug       Show the state of the cells under the cursor");
+                println!("  --smooth      Move the stack by sixteenths of a row instead of halves");
+                println!("                (smoother, but the gaps between blocks flicker)");
+                println!("  --autoplay [LEVEL]  The AI plays (easy, medium or hard; default hard)");
+                println!("  --headless    No display: the game runs at full speed, for tests");
+                println!("                (with --autoplay; stops at game over, --frames or the");
+                println!("                last capture)");
+                println!("  --capture T1,T2,...  Text captures of the screen at these ticks;");
+                println!("                'end' for the last frame");
+                println!("  --capture-file PATH  Where captures go (default: {})", DEFAULT_CAPTURE_FILE);
                 println!("  --help        Show this help");
                 println!();
                 println!("Controls:");
@@ -66,10 +114,182 @@ fn main() {
 
     let seed = seed.unwrap_or_else(random_seed);
     let mut state = GameState::new(seed);
+    let mut driver = Driver::new(autoplay.map(|level| GridAutoplay::new(level, seed)), captures);
 
-    let (frame, ending) = play(&mut state, max_frames);
+    let (frame, ending) = if headless {
+        run_headless(&mut state, &mut driver, max_frames)
+    } else {
+        play(&mut state, &mut driver, max_frames)
+    };
     // The terminal is restored by now: the summary stays in the shell after the game.
     println!("{}", summary(&frame, ending, seed));
+    if let Some(written) = driver.finish(&frame) {
+        match written {
+            Ok((count, path)) => println!("  {} capture(s) written to {}", count, path),
+            Err(e) => eprintln!("  Captures not written: {}", e),
+        }
+    }
+}
+
+const DEFAULT_CAPTURE_FILE: &str = "crackattack-captures.txt";
+
+fn parse_level(arg: &str) -> Option<AIDifficulty> {
+    match arg {
+        "easy" => Some(AIDifficulty::Easy),
+        "medium" => Some(AIDifficulty::Medium),
+        "hard" => Some(AIDifficulty::Hard),
+        _ => None,
+    }
+}
+
+/// `100,250,end` → ([100, 250], true).
+fn parse_capture_ticks(list: &str) -> Option<(Vec<i32>, bool)> {
+    let mut ticks = Vec::new();
+    let mut at_end = false;
+    for item in list.split(',').map(str::trim).filter(|i| !i.is_empty()) {
+        if item == "end" {
+            at_end = true;
+        } else {
+            ticks.push(item.parse().ok().filter(|&t: &i32| t > 0)?);
+        }
+    }
+    ticks.sort_unstable();
+    ticks.dedup();
+    (!ticks.is_empty() || at_end).then_some((ticks, at_end))
+}
+
+/// Text captures requested on the command line.
+#[derive(Clone, Debug)]
+struct Captures {
+    /// Ticks to capture, sorted.
+    ticks: Vec<i32>,
+    /// Also capture the last frame.
+    at_end: bool,
+    path: String,
+}
+
+impl Default for Captures {
+    fn default() -> Self {
+        Self { ticks: Vec::new(), at_end: false, path: DEFAULT_CAPTURE_FILE.to_string() }
+    }
+}
+
+impl Captures {
+    fn wanted(&self) -> bool {
+        !self.ticks.is_empty() || self.at_end
+    }
+}
+
+/// What runs each tick, with or without a display: the AI (if any), edge detection of
+/// the keys, the side panel's state, and the screen captures.
+struct Driver {
+    ai: Option<GridAutoplay>,
+    prev_state: u8,
+    danger: danger::DangerAnimator,
+    /// Chain just reached, and ticks left to show it.
+    chain: Option<(i32, i32)>,
+    ticks: i32,
+    captures: Captures,
+    /// Decodes every frame, so a capture shows exactly what the terminal holds.
+    screen: Option<screen::Screen>,
+    taken: String,
+    taken_count: usize,
+    hud: render::Hud,
+}
+
+impl Driver {
+    fn new(ai: Option<GridAutoplay>, captures: Captures) -> Self {
+        let screen = captures.wanted().then(screen::Screen::new);
+        Self {
+            ai,
+            prev_state: 0,
+            danger: danger::DangerAnimator::new(),
+            chain: None,
+            ticks: 0,
+            captures,
+            screen,
+            taken: String::new(),
+            taken_count: 0,
+            hud: render::Hud::default(),
+        }
+    }
+
+    /// One game tick from the keys held (`keys`, `INPUT_*` bits); the AI adds its own.
+    fn step(&mut self, state: &mut GameState, keys: u8) -> FrameData {
+        let mut input = InputSnapshot::new();
+        input.state = keys;
+        if let Some(ai) = &mut self.ai {
+            input.state |= ai.update(state);
+        }
+        // Edge detection: compute pressed_this_frame from state transitions.
+        input.pressed_this_frame = input.state & !self.prev_state;
+        input.prev_state = self.prev_state;
+        self.prev_state = input.state;
+
+        let frame = state.step(&input);
+        self.ticks += 1;
+        self.danger.step(frame.ui.creep_freeze, frame.ui.loss_countdown);
+        self.chain = self.chain.map(|(n, left)| (n, left - 1)).filter(|&(_, left)| left > 0);
+        for event in &frame.gameplay_events {
+            if let crackattack_core::gameplay_event::GameplayEvent::ChainProgressed(e) = event {
+                self.chain = Some((e.chain_level, CHAIN_SHOW_TICKS));
+            }
+        }
+        self.hud = render::Hud { danger: self.danger.bars(), chain: self.chain.map(|(n, _)| n) };
+        if let Some(screen) = &mut self.screen {
+            screen.feed(&render::rendered(&frame, &self.hud));
+            if self.captures.ticks.binary_search(&self.ticks).is_ok() {
+                self.take(&format!("tick {}", self.ticks));
+            }
+        }
+        frame
+    }
+
+    /// The keys pressed during the pause must not count as held after it.
+    fn release_keys(&mut self) {
+        self.prev_state = 0;
+    }
+
+    /// Every capture tick is behind: nothing left to wait for.
+    fn captures_done(&self) -> bool {
+        self.captures.wanted() && !self.captures.at_end
+            && self.captures.ticks.last().is_some_and(|&t| self.ticks >= t)
+    }
+
+    fn take(&mut self, title: &str) {
+        if let Some(screen) = &self.screen {
+            self.taken.push_str(&screen.capture(title));
+            self.taken.push('\n');
+            self.taken_count += 1;
+        }
+    }
+
+    /// Takes the end capture if asked and writes the file; `None` without captures.
+    fn finish(&mut self, last: &FrameData) -> Option<Result<(usize, String), io::Error>> {
+        if !self.captures.wanted() {
+            return None;
+        }
+        if self.captures.at_end && self.ticks > 0 {
+            let title = format!("end, tick {}{}", self.ticks, if last.game_over { ", game over" } else { "" });
+            self.take(&title);
+        }
+        let content = format!("{}{}", screen::legend(), self.taken);
+        Some(std::fs::write(&self.captures.path, content).map(|_| (self.taken_count, self.captures.path.clone())))
+    }
+}
+
+/// Runs the game without a display, as fast as it goes: for autoplay tests and captures.
+fn run_headless(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>) -> (FrameData, Ending) {
+    // Without a limit, a game nobody plays would last until the stack tops out.
+    loop {
+        let frame = driver.step(state, 0);
+        if frame.game_over {
+            return (frame, Ending::Lost);
+        }
+        if max_frames.is_some_and(|max| driver.ticks >= max) || driver.captures_done() {
+            return (frame, Ending::FrameLimit);
+        }
+    }
 }
 
 /// A new seed for each game, from the clock: each launch deals a different board. The
@@ -95,33 +315,24 @@ enum Ending {
 }
 
 /// Runs the game until it ends; returns the last frame and why it stopped.
-fn play(state: &mut GameState, max_frames: Option<i32>) -> (crackattack_core::FrameData, Ending) {
+fn play(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>) -> (FrameData, Ending) {
     let _guard = TerminalGuard::new();
     render::initialize();
     let _ = io::stdout().flush();
 
     let frame_duration = Duration::from_millis(1000 / TICKS_PER_SECOND as u64);
-    let mut frame_count = 0;
     let mut quit = false;
-    let mut prev_state: u8 = 0;
-    let mut last = crackattack_core::FrameData::default();
+    let mut last = FrameData::default();
     let mut paused = false;
-    let mut danger = danger::DangerAnimator::new();
-    // Chain just reached, and ticks left to show it.
-    let mut chain: Option<(i32, i32)> = None;
 
     let ending = loop {
         let frame_start = Instant::now();
 
         let mut pause_pressed = false;
-        let mut input = read_input(&mut quit, &mut pause_pressed);
+        let keys = read_input(&mut quit, &mut pause_pressed);
         if pause_pressed && !last.game_over {
             paused = !paused;
         }
-        // Edge detection: compute pressed_this_frame from state transitions.
-        input.pressed_this_frame = input.state & !prev_state;
-        input.prev_state = prev_state;
-        prev_state = input.state;
 
         if quit {
             break Ending::Quit;
@@ -131,33 +342,20 @@ fn play(state: &mut GameState, max_frames: Option<i32>) -> (crackattack_core::Fr
         if paused {
             render::render_paused(&last);
             let _ = io::stdout().flush();
-            prev_state = 0;
+            driver.release_keys();
             std::thread::sleep(frame_duration);
             continue;
         }
 
-        let frame = state.step(&input);
-
-        danger.step(frame.ui.creep_freeze, frame.ui.loss_countdown);
-        chain = chain.map(|(n, left)| (n, left - 1)).filter(|&(_, left)| left > 0);
-        for event in &frame.gameplay_events {
-            if let crackattack_core::gameplay_event::GameplayEvent::ChainProgressed(e) = event {
-                chain = Some((e.chain_level, CHAIN_SHOW_TICKS));
-            }
-        }
-        let hud = render::Hud { danger: danger.bars(), chain: chain.map(|(n, _)| n) };
-        render::render(&frame, &hud);
+        let frame = driver.step(state, keys);
+        render::render(&frame, &driver.hud);
         let _ = io::stdout().flush();
-
-        frame_count += 1;
 
         let game_over = frame.game_over;
         last = frame;
 
-        if let Some(max) = max_frames {
-            if frame_count >= max {
-                break Ending::FrameLimit;
-            }
+        if max_frames.is_some_and(|max| driver.ticks >= max) {
+            break Ending::FrameLimit;
         }
 
         if game_over {
@@ -217,8 +415,9 @@ fn is_pause_key(code: KeyCode) -> bool {
     matches!(code, KeyCode::Char('p') | KeyCode::Char('P'))
 }
 
-fn read_input(quit: &mut bool, pause_pressed: &mut bool) -> InputSnapshot {
-    let mut input = InputSnapshot::new();
+/// Keys pressed since the last tick, as `INPUT_*` bits.
+fn read_input(quit: &mut bool, pause_pressed: &mut bool) -> u8 {
+    let mut keys = 0;
 
     while event::poll(Duration::ZERO).unwrap_or(false) {
         if let Ok(Event::Key(KeyEvent { code, kind: KeyEventKind::Press, .. })) = event::read() {
@@ -228,11 +427,11 @@ fn read_input(quit: &mut bool, pause_pressed: &mut bool) -> InputSnapshot {
             if is_pause_key(code) {
                 *pause_pressed = true;
             }
-            input.state |= map_key(code);
+            keys |= map_key(code);
         }
     }
 
-    input
+    keys
 }
 
 #[cfg(test)]
@@ -279,6 +478,39 @@ mod tests {
         assert!(text.contains("--seed 42"));
         assert!(!text.contains("Best chain"));
         assert!(summary(&frame, Ending::Quit, 42).starts_with("Game stopped"));
+    }
+
+    #[test]
+    fn capture_ticks_are_parsed_sorted_with_end() {
+        assert_eq!(parse_capture_ticks("250,100,end"), Some((vec![100, 250], true)));
+        assert_eq!(parse_capture_ticks("end"), Some((vec![], true)));
+        assert_eq!(parse_capture_ticks("10, 10"), Some((vec![10], false)));
+        assert_eq!(parse_capture_ticks("0"), None);
+        assert_eq!(parse_capture_ticks("abc"), None);
+        assert_eq!(parse_capture_ticks(""), None);
+        assert_eq!(parse_level("medium"), Some(AIDifficulty::Medium));
+        assert_eq!(parse_level("--seed"), None);
+    }
+
+    #[test]
+    fn the_autoplay_plays_headless_and_captures_the_chosen_ticks() {
+        let path = std::env::temp_dir().join(format!("crackattack-capture-test-{}.txt", std::process::id()));
+        let captures = Captures { ticks: vec![50, 400], at_end: true, path: path.display().to_string() };
+        let mut state = GameState::new(3);
+        let mut driver = Driver::new(Some(GridAutoplay::new(AIDifficulty::Hard, 3)), captures);
+        let (frame, ending) = run_headless(&mut state, &mut driver, Some(600));
+        let written = driver.finish(&frame).unwrap();
+        let content = std::fs::read_to_string(&path);
+        let _ = std::fs::remove_file(&path);
+        assert_eq!(ending, Ending::FrameLimit);
+        assert_eq!(written.unwrap().0, 3);
+        let content = content.unwrap();
+        for title in ["=== tick 50 ===", "=== tick 400 ===", "=== end, tick 600 ==="] {
+            assert!(content.contains(title), "missing {}", title);
+        }
+        // The AI did play: alone, the stack would not have scored.
+        assert!(frame.score > 0);
+        assert!(content.contains("Score"));
     }
 
     #[test]

@@ -47,13 +47,13 @@ impl PlanBoard {
 }
 
 /// Base (matchable) flavour of a block flavour. The Rust sim has no special flavours, so
-/// this is the identity (the TypeScript version collapses special colours onto normal ones).
+/// this is the identity (the reference version collapses special colours onto normal ones).
 pub(super) fn map_flavor_to_base_flavor(flavor: i16) -> i16 {
     flavor
 }
 
 /// Whether two block flavours match for elimination (non-X path): same base flavour, and
-/// gray never matches (in the TypeScript sim gray is not on the planning board).
+/// gray never matches (in the reference sim gray is not on the planning board).
 pub(super) fn flavor_match(a: i16, b: i16) -> bool {
     let (a, b) = (map_flavor_to_base_flavor(a), map_flavor_to_base_flavor(b));
     a == b && i32::from(a) != BF_GRAY
@@ -73,7 +73,7 @@ pub(crate) fn can_swap(b: &PlanBoard, x: usize, y: usize) -> bool {
 }
 
 /// A deterministic pseudo-random rank used only to break equal planner choices.
-/// Reproduces the TypeScript 32-bit operations exactly.
+/// Reproduces the reference 32-bit operations exactly.
 pub(super) fn seeded_rank(seed: Option<u32>, words: &[usize]) -> u32 {
     let Some(seed) = seed else {
         return 0;

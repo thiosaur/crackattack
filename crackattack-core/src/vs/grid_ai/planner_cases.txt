@@ -1,4 +1,4 @@
-# Generated from crack-attack-web aiPlanner.ts by planner-diff/gen.mjs; see planner.rs tests.
+# Recorded results of the reference planner; see planner/tests.rs.
 board 3 1,1,-1,-1,-1,-1,1,-1,-1,1,0,-1,1,0,-1,0,0,-1
 canswap => 111111011100000
 swaps => 1.8.5.0 1.3.3.0 1.6.3.0 1.6.3.0 1.3.3.0 1.8.5.0 1.6.3.0 1.3.3.0 1.6.3.0 1.6.3.0 1.6.3.0 1.6.3.0 1.6.3.0 1.6.3.0 1.6.3.0

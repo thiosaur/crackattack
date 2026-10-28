@@ -137,7 +137,7 @@ knobs! {
 
 impl AiTuning {
     /// Difficulty is behavioural, not just paced: the tiers differ in strategy, not reflexes
-    /// (the web version measured that reaction speed barely affects survival). The cooldown is
+    /// (the reference bot measured that reaction speed barely affects survival). The cooldown is
     /// kept for feel only: easy visibly calmer, hard snappier.
     ///   easy   - the strategic rules without any set-up (no chains, combos or shatters) except
     ///            under garbage pressure; slow hands.

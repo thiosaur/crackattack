@@ -23,6 +23,16 @@ Copyright (C) 2000-2005 by the following (from the original COPYRIGHT file):
 The credits shown in the game name the main authors; this file keeps the full list.
 
 
+Computer opponent on the grid
+-----------------------------
+The strategy of the computer opponent that plays on the grid (cascade look-ahead, chain
+and combo planning, decision loop) is a port to Rust of the bot of crack-attack-web, a
+web version of the game:
+
+  Misha Nasledov       crack-attack-web, https://github.com/mishan/crack-attack-web
+                       (GPL-2.0-or-later)
+
+
 Assets of this edition
 ----------------------
 The origin and license of every image, sound, music track and font are listed in

@@ -1,22 +1,19 @@
-//! The decision loop of the grid-playing AI (port of `aiController.ts`).
-//!
-//! Port of aiController.ts from crack-attack-web (https://github.com/mishan/crack-attack-web),
-//! original work Copyright (C) 2000 Daniel Nelson, GPL-2.0-or-later.
+//! The decision loop of the grid-playing AI.
 //!
 //! It drives a real `GameState`: each tick it reads the board and the swap cursor and returns
 //! the next input flags, so its play is fully visible. It is a pure, deterministic function of
 //! the sim state, its own small plan/timer and an optional judgment seed (no clocks, no draws
 //! from the gameplay RNG).
 //!
-//! The strategy is the one of the web version: *hard* evaluates cascades, builds short chains
+//! The strategy is the one of the reference bot: *hard* evaluates cascades, builds short chains
 //! and crossed-column x8/x10 combos and dismantles garbage supports; *medium* fires the chains,
 //! combos and shatters it sees; *easy* only reacts to what is one swap away. A per-difficulty
 //! think delay paces the visible reactions.
 //!
-//! Differences from the web version, on purpose:
+//! Differences from the reference bot, on purpose:
 //! - swap legality is the one of this simulator (`GameState::process_swap`), not a copy of the
-//!   TypeScript checks;
-//! - the "hold fire" and "garbage-aware danger" knobs, off in every tier of the web version
+//!   reference checks;
+//! - the "hold fire" and "garbage-aware danger" knobs, off in every tier of the reference bot
 //!   (measured neutral-to-negative there), are not ported.
 
 use crate::game_state::GameState;

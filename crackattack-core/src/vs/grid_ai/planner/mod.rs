@@ -1,8 +1,5 @@
 //! Pure look-ahead evaluator and multi-swap planners for the strategic grid AI.
 //!
-//! Port of aiPlanner.ts from crack-attack-web (https://github.com/mishan/crack-attack-web),
-//! original work Copyright (C) 2000 Daniel Nelson, GPL-2.0-or-later.
-//!
 //! The greedy matcher only ever executes a 3-in-a-row that is one swap away, but a plain
 //! 3-match sends *no garbage* (normal garbage needs magnitude > 3, and chain garbage needs
 //! multiplier > 1). To actually attack, the bot must build **4+ combos** (width garbage)
@@ -19,7 +16,7 @@
 //! *guides* the planner toward combo/chain setups; the real sim is authoritative for what
 //! actually fires.
 //!
-//! Reading a `PlanBoard` from the simulator grid lives in the controller (the TypeScript
+//! Reading a `PlanBoard` from the simulator grid lives in the controller (the reference
 //! `readPlanBoard` / `readGravityPlanBoard` are not part of this module).
 
 mod board;

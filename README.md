@@ -153,8 +153,9 @@ cargo run --release -p crackattack-terminal
 </p>
 
 It runs the same game engine as the graphical version (same rules, same 50 Hz tick). The
-board is drawn with 256 colors and Unicode block characters, so the stack rises smoothly
-and falling blocks move finely; the danger bars of the final countdown are there too. It is
+board is drawn with 256 colors and Unicode block characters: the stack rises by half a
+row at a time (`--smooth` moves it by sixteenths, smoother but the gaps between blocks may
+flicker), and the danger bars of the final countdown are there too. It is
 a solo game only: no menus, no sound, no computer opponent and no network play. Use a
 terminal that supports 256 colors and UTF-8, and large enough to show the whole board.
 
@@ -168,7 +169,9 @@ terminal that supports 256 colors and UTF-8, and large enough to show the whole 
 
 Each game deals a new board; a summary with the seed is printed when the game ends, and
 `--seed N` replays the same one. Other options: `--frames N` stops after N frames, `--debug`
-shows the state of the cells under the cursor, `--help` lists them. The terminal is
+shows the state of the cells under the cursor, and `--autoplay [easy|medium|hard]` lets the
+computer play (with `--headless`, `--capture` and `--capture-file` it writes text captures of
+the screen, handy for tests). `--help` lists them all. The terminal is
 restored when the game ends or quits.
 
 ## Feedback
@@ -184,6 +187,9 @@ original game are welcome in [Discussions](../../discussions).
   Its C++ source code is at [gnu-lorien/crack-attack](https://github.com/gnu-lorien/crack-attack).
   The full list of copyright holders is in [AUTHORS](AUTHORS).
 - **This edition** — Back From The Stack: Rust / WebGPU rewrite (2.x) by Thiosaur.
+- The strategy of the computer opponent on the grid is ported from the bot of
+  [crack-attack-web](https://github.com/mishan/crack-attack-web) by Misha Nasledov
+  ([@mishan](https://github.com/mishan)), GPL-2.0-or-later; see [AUTHORS](AUTHORS).
 - Images, sound effects, music and fonts: origin and license of every file in
   [crackattack-webgpu/assets/CREDITS.md](crackattack-webgpu/assets/CREDITS.md). The music is
   based on "Les Crapauds" (Victor Meusy, 1897, public domain).
