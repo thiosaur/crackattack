@@ -32,7 +32,7 @@ pub enum GarbagePhase {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub(crate) enum EmptyPhase {
+pub enum EmptyPhase {
     #[default]
     Static = 0,
     Immutable = 30,

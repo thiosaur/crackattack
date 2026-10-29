@@ -20,106 +20,31 @@ pub(crate) const TICKS_PER_SECOND: i32 = 50;
 const CHAIN_SHOW_TICKS: i32 = 75;
 
 fn main() {
-    let args: Vec<String> = std::env::args().collect();
-
-    let mut seed: Option<u32> = None;
-    let mut max_frames: Option<i32> = None;
-    let mut autoplay: Option<AIDifficulty> = None;
-    let mut headless = false;
-    let mut captures = Captures::default();
-
-    let mut i = 1;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--seed" => {
-                if i + 1 < args.len() {
-                    seed = args[i + 1].parse().ok();
-                    i += 1;
-                }
-            }
-            "--frames" => {
-                if i + 1 < args.len() {
-                    max_frames = Some(args[i + 1].parse().unwrap_or(1000));
-                    i += 1;
-                }
-            }
-            "--debug" => {
-                render::SHOW_DEBUG.store(true, std::sync::atomic::Ordering::Relaxed);
-            }
-            "--smooth" => {
-                render::SMOOTH_RISE.with(|smooth| smooth.set(true));
-            }
-            "--autoplay" => {
-                // Optional level: easy, medium or hard (the default, as in the GUI).
-                let level = args.get(i + 1).and_then(|a| parse_level(a));
-                if level.is_some() {
-                    i += 1;
-                }
-                autoplay = Some(level.unwrap_or(AIDifficulty::Hard));
-            }
-            "--headless" => headless = true,
-            "--capture" => {
-                if let Some(list) = args.get(i + 1) {
-                    match parse_capture_ticks(list) {
-                        Some((ticks, at_end)) => {
-                            captures.ticks = ticks;
-                            captures.at_end = at_end;
-                        }
-                        None => {
-                            eprintln!("--capture: expected ticks such as 100,250,end");
-                            std::process::exit(2);
-                        }
-                    }
-                    i += 1;
-                }
-            }
-            "--capture-file" => {
-                if let Some(path) = args.get(i + 1) {
-                    captures.path = path.clone();
-                    i += 1;
-                }
-            }
-            "--help" | "-h" => {
-                println!("Crack Attack! Terminal (Rust)");
-                println!();
-                println!("Usage: crackattack-terminal [OPTIONS]");
-                println!();
-                println!("Options:");
-                println!("  --seed N      Use a specific seed (default: a new one each game)");
-                println!("  --frames N    Stop after N frames");
-                println!("  --debug       Show the state of the cells under the cursor");
-                println!("  --smooth      Move the stack by sixteenths of a row instead of halves");
-                println!("                (smoother, but the gaps between blocks flicker)");
-                println!("  --autoplay [LEVEL]  The AI plays (easy, medium or hard; default hard)");
-                println!("  --headless    No display: the game runs at full speed, for tests");
-                println!("                (with --autoplay; stops at game over, --frames or the");
-                println!("                last capture)");
-                println!("  --capture T1,T2,...  Text captures of the screen at these ticks;");
-                println!("                'end' for the last frame");
-                println!("  --capture-file PATH  Where captures go (default: {})", DEFAULT_CAPTURE_FILE);
-                println!("  --help        Show this help");
-                println!();
-                println!("Controls:");
-                println!("  Arrow keys / WASD  Move cursor");
-                println!("  Space              Swap blocks");
-                println!("  Enter              Raise the stack");
-                println!("  P                  Pause / resume");
-                println!("  Q / Escape         Quit");
-                return;
-            }
-            _ => {}
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let options = match parse_args(&args) {
+        Ok(Some(options)) => options,
+        Ok(None) => {
+            print_help();
+            return;
         }
-        i += 1;
-    }
+        Err(e) => {
+            eprintln!("crackattack-terminal: {}", e);
+            eprintln!("Try --help.");
+            std::process::exit(2);
+        }
+    };
+    render::SHOW_DEBUG.store(options.debug, std::sync::atomic::Ordering::Relaxed);
+    render::SMOOTH_RISE.with(|smooth| smooth.set(options.smooth));
 
-    let seed = seed.unwrap_or_else(random_seed);
+    let seed = options.seed.unwrap_or_else(random_seed);
     let mut state = GameState::new(seed);
-    let mut driver = Driver::new(autoplay.map(|level| GridAutoplay::new(level, seed)), captures);
+    let autoplay = options.autoplay.map(|level| GridAutoplay::new(level, seed));
+    let mut driver = Driver::new(autoplay, options.captures);
 
-    let (frame, ending) = if headless {
-        run_headless(&mut state, &mut driver, max_frames)
+    let (frame, ending) = if options.headless {
+        run_headless(&mut state, &mut driver, options.max_frames)
     } else {
-        play(&mut state, &mut driver, max_frames)
+        play(&mut state, &mut driver, options.max_frames)
     };
     // The terminal is restored by now: the summary stays in the shell after the game.
     println!("{}", summary(&frame, ending, seed));
@@ -128,6 +53,88 @@ fn main() {
             Ok((count, path)) => println!("  {} capture(s) written to {}", count, path),
             Err(e) => eprintln!("  Captures not written: {}", e),
         }
+    }
+}
+
+/// Command-line options.
+#[derive(Debug, Default)]
+struct Options {
+    seed: Option<u32>,
+    max_frames: Option<i32>,
+    debug: bool,
+    smooth: bool,
+    autoplay: Option<AIDifficulty>,
+    headless: bool,
+    captures: Captures,
+}
+
+/// The options, `None` for `--help`, or what is wrong with them.
+fn parse_args(args: &[String]) -> Result<Option<Options>, String> {
+    let mut options = Options::default();
+    let mut args = args.iter().map(String::as_str).peekable();
+    while let Some(arg) = args.next() {
+        let mut value = |what: &str| args.next().ok_or_else(|| format!("{} expects {}", arg, what));
+        match arg {
+            "--seed" => {
+                let n = value("a number")?;
+                options.seed = Some(n.parse().map_err(|_| format!("--seed: '{}' is not a number", n))?);
+            }
+            "--frames" => {
+                let n = value("a number of frames")?;
+                options.max_frames = Some(
+                    n.parse().ok().filter(|&n: &i32| n > 0)
+                        .ok_or_else(|| format!("--frames: '{}' is not a positive number", n))?,
+                );
+            }
+            "--debug" => options.debug = true,
+            "--smooth" => options.smooth = true,
+            "--autoplay" => {
+                // Optional level: easy, medium or hard (the default, as in the GUI).
+                let level = args.peek().and_then(|a| parse_level(a));
+                if level.is_some() {
+                    args.next();
+                }
+                options.autoplay = Some(level.unwrap_or(AIDifficulty::Hard));
+            }
+            "--headless" => options.headless = true,
+            "--capture" => {
+                let list = value("ticks such as 100,250,end")?;
+                let (ticks, at_end) = parse_capture_ticks(list)
+                    .ok_or_else(|| format!("--capture: '{}' is not a list such as 100,250,end", list))?;
+                options.captures.ticks = ticks;
+                options.captures.at_end = at_end;
+            }
+            "--capture-file" => options.captures.path = value("a path")?.to_string(),
+            "--help" | "-h" => return Ok(None),
+            _ => return Err(format!("unknown option '{}'", arg)),
+        }
+    }
+    Ok(Some(options))
+}
+
+fn print_help() {
+    println!("Crack Attack! Terminal (Rust)");
+    println!();
+    println!("Usage: crackattack-terminal [OPTIONS]");
+    println!();
+    println!("Options:");
+    println!("  --seed N      Use a specific seed (default: a new one each game)");
+    println!("  --frames N    Stop after N frames");
+    println!("  --debug       Show the state of the cells under the cursor");
+    println!("  --smooth      Move the stack by sixteenths of a row instead of halves");
+    println!("                (smoother, but the gaps between blocks flicker)");
+    println!("  --autoplay [LEVEL]  The AI plays (easy, medium or hard; default hard)");
+    println!("  --headless    No display: the game runs at full speed, for tests");
+    println!("                (with --autoplay; stops at game over, --frames or the");
+    println!("                last capture)");
+    println!("  --capture T1,T2,...  Text captures of the screen at these ticks;");
+    println!("                'end' for the last frame");
+    println!("  --capture-file PATH  Where captures go (default: {})", DEFAULT_CAPTURE_FILE);
+    println!("  --help        Show this help");
+    println!();
+    println!("Controls:");
+    for key in &render::KEYS {
+        println!("  {:<19}{}", key.keys, key.action);
     }
 }
 
@@ -195,6 +202,7 @@ struct Driver {
     taken: String,
     taken_count: usize,
     hud: render::Hud,
+    renderer: render::Renderer,
 }
 
 impl Driver {
@@ -211,6 +219,7 @@ impl Driver {
             taken: String::new(),
             taken_count: 0,
             hud: render::Hud::default(),
+            renderer: render::Renderer::new(),
         }
     }
 
@@ -235,14 +244,32 @@ impl Driver {
                 self.chain = Some((e.chain_level, CHAIN_SHOW_TICKS));
             }
         }
-        self.hud = render::Hud { danger: self.danger.bars(), chain: self.chain.map(|(n, _)| n) };
+        self.hud = render::Hud { danger: self.danger.bars(), chain: self.chain.map(|(n, _)| n), game_over: None };
+        frame
+    }
+
+    /// The text that brings the terminal to `frame` (or to the pause screen): only what
+    /// changed. Captures decode it as the terminal would.
+    fn draw(&mut self, frame: &FrameData, paused: bool) -> String {
+        let text = if paused { self.renderer.paused(frame) } else { self.renderer.frame(frame, &self.hud) };
         if let Some(screen) = &mut self.screen {
-            screen.feed(&render::rendered(&frame, &self.hud));
-            if self.captures.ticks.binary_search(&self.ticks).is_ok() {
+            screen.feed(&text);
+            if !paused && self.captures.ticks.binary_search(&self.ticks).is_ok() {
                 self.take(&format!("tick {}", self.ticks));
             }
         }
-        frame
+        text
+    }
+
+    /// One tick of the game-over animation: the game itself has stopped.
+    fn step_game_over(&mut self) {
+        self.ticks += 1;
+        self.hud.game_over = Some(self.hud.game_over.map_or(0, |t| t + 1));
+    }
+
+    /// GAME OVER is fully shown.
+    fn game_over_shown(&self) -> bool {
+        self.hud.game_over.is_some_and(|t| t >= render::game_over_ticks())
     }
 
     /// The keys pressed during the pause must not count as held after it.
@@ -283,7 +310,15 @@ fn run_headless(state: &mut GameState, driver: &mut Driver, max_frames: Option<i
     // Without a limit, a game nobody plays would last until the stack tops out.
     loop {
         let frame = driver.step(state, 0);
+        if driver.captures.wanted() {
+            driver.draw(&frame, false);
+        }
         if frame.game_over {
+            // The GAME OVER animation, for captures.
+            while driver.captures.wanted() && !driver.game_over_shown() {
+                driver.step_game_over();
+                driver.draw(&frame, false);
+            }
             return (frame, Ending::Lost);
         }
         if max_frames.is_some_and(|max| driver.ticks >= max) || driver.captures_done() {
@@ -319,6 +354,7 @@ fn play(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>) -> 
     let _guard = TerminalGuard::new();
     render::initialize();
     let _ = io::stdout().flush();
+    driver.renderer.set_width(terminal_width());
 
     let frame_duration = Duration::from_millis(1000 / TICKS_PER_SECOND as u64);
     let mut quit = false;
@@ -328,8 +364,11 @@ fn play(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>) -> 
     let ending = loop {
         let frame_start = Instant::now();
 
-        let mut pause_pressed = false;
-        let keys = read_input(&mut quit, &mut pause_pressed);
+        let (mut pause_pressed, mut resized) = (false, false);
+        let keys = read_input(&mut quit, &mut pause_pressed, &mut resized);
+        if resized {
+            driver.renderer.set_width(terminal_width());
+        }
         if pause_pressed && !last.game_over {
             paused = !paused;
         }
@@ -340,7 +379,7 @@ fn play(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>) -> 
 
         // Paused: the game does not step, the board is hidden.
         if paused {
-            render::render_paused(&last);
+            print!("{}", driver.draw(&last, true));
             let _ = io::stdout().flush();
             driver.release_keys();
             std::thread::sleep(frame_duration);
@@ -348,7 +387,7 @@ fn play(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>) -> 
         }
 
         let frame = driver.step(state, keys);
-        render::render(&frame, &driver.hud);
+        print!("{}", driver.draw(&frame, false));
         let _ = io::stdout().flush();
 
         let game_over = frame.game_over;
@@ -359,8 +398,7 @@ fn play(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>) -> 
         }
 
         if game_over {
-            // Leave the final board on screen a moment before the summary.
-            std::thread::sleep(Duration::from_secs(2));
+            show_game_over(driver, &last);
             break Ending::Lost;
         }
 
@@ -372,6 +410,38 @@ fn play(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>) -> 
 
     // The guard's Drop restores the terminal (alternate screen, cursor, raw mode).
     (last, ending)
+}
+
+/// Game over: the logo turns into GAME OVER, then the final board stays until a key is
+/// pressed.
+fn show_game_over(driver: &mut Driver, last: &FrameData) {
+    let frame_duration = Duration::from_millis(1000 / TICKS_PER_SECOND as u64);
+    while !driver.game_over_shown() {
+        driver.step_game_over();
+        print!("{}", driver.draw(last, false));
+        let _ = io::stdout().flush();
+        std::thread::sleep(frame_duration);
+    }
+    // Keys pressed in the rush before the loss, or during the animation, do not count.
+    while event::poll(Duration::ZERO).unwrap_or(false) {
+        let _ = event::read();
+    }
+    loop {
+        match event::read() {
+            Ok(Event::Key(KeyEvent { kind: KeyEventKind::Press, .. })) | Err(_) => break,
+            Ok(Event::Resize(..)) => {
+                driver.renderer.set_width(terminal_width());
+                print!("{}", driver.draw(last, false));
+                let _ = io::stdout().flush();
+            }
+            Ok(_) => {}
+        }
+    }
+}
+
+/// Width of the terminal in columns, if it can be read.
+fn terminal_width() -> Option<usize> {
+    terminal::size().ok().map(|(columns, _)| columns as usize)
 }
 
 /// End-of-game message printed in the shell: how the game ended, score, time, best chain
@@ -396,13 +466,18 @@ fn summary(frame: &crackattack_core::FrameData, ending: Ending, seed: u32) -> St
 
 /// Map a crossterm KeyCode to an input bitmask. Returns 0 for unmapped keys.
 fn map_key(code: KeyCode) -> u8 {
+    // Letters work in either case (Caps Lock).
+    let code = match code {
+        KeyCode::Char(c) => KeyCode::Char(c.to_ascii_lowercase()),
+        code => code,
+    };
     match code {
-        KeyCode::Up    | KeyCode::Char('w') | KeyCode::Char('W') => INPUT_UP,
-        KeyCode::Down  | KeyCode::Char('s') | KeyCode::Char('S') => INPUT_DOWN,
-        KeyCode::Left  | KeyCode::Char('a')                      => INPUT_LEFT,
-        KeyCode::Right | KeyCode::Char('d')                      => INPUT_RIGHT,
-        KeyCode::Char(' ')                                       => INPUT_SWAP,
-        KeyCode::Enter                                           => INPUT_ADVANCE,
+        KeyCode::Up    | KeyCode::Char('w') => INPUT_UP,
+        KeyCode::Down  | KeyCode::Char('s') => INPUT_DOWN,
+        KeyCode::Left  | KeyCode::Char('a') => INPUT_LEFT,
+        KeyCode::Right | KeyCode::Char('d') => INPUT_RIGHT,
+        KeyCode::Char(' ')                  => INPUT_SWAP,
+        KeyCode::Enter                      => INPUT_ADVANCE,
         _ => 0,
     }
 }
@@ -415,12 +490,17 @@ fn is_pause_key(code: KeyCode) -> bool {
     matches!(code, KeyCode::Char('p') | KeyCode::Char('P'))
 }
 
-/// Keys pressed since the last tick, as `INPUT_*` bits.
-fn read_input(quit: &mut bool, pause_pressed: &mut bool) -> u8 {
+/// Keys pressed since the last tick, as `INPUT_*` bits. Also tells whether the terminal
+/// was resized (the screen must then be redrawn whole).
+fn read_input(quit: &mut bool, pause_pressed: &mut bool, resized: &mut bool) -> u8 {
     let mut keys = 0;
 
     while event::poll(Duration::ZERO).unwrap_or(false) {
-        if let Ok(Event::Key(KeyEvent { code, kind: KeyEventKind::Press, .. })) = event::read() {
+        let event = event::read();
+        if let Ok(Event::Resize(..)) = event {
+            *resized = true;
+        }
+        if let Ok(Event::Key(KeyEvent { code, kind: KeyEventKind::Press, .. })) = event {
             if is_quit_key(code) {
                 *quit = true;
             }
@@ -434,9 +514,81 @@ fn read_input(quit: &mut bool, pause_pressed: &mut bool) -> u8 {
     keys
 }
 
+/// RAII guard: enables raw mode on construction and restores the FULL terminal state on drop:
+/// raw mode, alternate screen and cursor visibility. Restoring in `Drop` means a panic in the
+/// main loop still leaves the user's terminal usable.
+struct TerminalGuard {
+    active: bool,
+}
+
+impl TerminalGuard {
+    fn new() -> Self {
+        match terminal::enable_raw_mode() {
+            Ok(()) => TerminalGuard { active: true },
+            Err(e) => {
+                eprintln!("Warning: could not enable raw mode: {}", e);
+                TerminalGuard { active: false }
+            }
+        }
+    }
+}
+
+impl Drop for TerminalGuard {
+    fn drop(&mut self) {
+        render::cleanup();
+        let _ = io::stdout().flush();
+        if self.active {
+            let _ = terminal::disable_raw_mode();
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn args(line: &str) -> Vec<String> {
+        line.split_whitespace().map(String::from).collect()
+    }
+
+    #[test]
+    fn options_are_parsed() {
+        let options = parse_args(&args("--seed 42 --frames 300 --autoplay easy --headless --smooth"))
+            .unwrap()
+            .unwrap();
+        assert_eq!(options.seed, Some(42));
+        assert_eq!(options.max_frames, Some(300));
+        assert_eq!(options.autoplay, Some(AIDifficulty::Easy));
+        assert!(options.headless && options.smooth && !options.debug);
+        // A level is optional: the next option is not taken for one.
+        let options = parse_args(&args("--autoplay --debug")).unwrap().unwrap();
+        assert_eq!(options.autoplay, Some(AIDifficulty::Hard));
+        assert!(options.debug);
+        assert!(parse_args(&args("--seed 1 --help")).unwrap().is_none());
+    }
+
+    #[test]
+    fn bad_options_are_errors() {
+        for line in ["--seed abc", "--seed", "--frames abc", "--frames 0", "--frames",
+                     "--capture x", "--capture-file", "--sede 4", "extra"] {
+            assert!(parse_args(&args(line)).is_err(), "{}", line);
+        }
+    }
+
+    #[test]
+    fn help_lists_every_key_of_the_panel() {
+        // One table for both: the panel's short forms are among the keys --help gives.
+        for key in &render::KEYS {
+            assert!(key.keys.contains(key.hint_key), "{}", key.keys);
+        }
+    }
+
+    #[test]
+    fn letters_work_in_either_case() {
+        for (lower, upper) in [('w', 'W'), ('a', 'A'), ('s', 'S'), ('d', 'D')] {
+            assert_eq!(map_key(KeyCode::Char(lower)), map_key(KeyCode::Char(upper)));
+        }
+    }
 
     #[test]
     fn arrows_map_to_directions() {
@@ -534,33 +686,36 @@ mod tests {
         assert!(is_quit_key(KeyCode::Esc));
         assert!(!is_quit_key(KeyCode::Char('a')));
     }
-}
 
-/// RAII guard: enables raw mode on construction and restores the FULL terminal state on drop:
-/// raw mode, alternate screen and cursor visibility. Restoring in `Drop` means a panic in the
-/// main loop still leaves the user's terminal usable.
-struct TerminalGuard {
-    active: bool,
-}
-
-impl TerminalGuard {
-    fn new() -> Self {
-        match terminal::enable_raw_mode() {
-            Ok(()) => TerminalGuard { active: true },
-            Err(e) => {
-                eprintln!("Warning: could not enable raw mode: {}", e);
-                TerminalGuard { active: false }
+    /// What the game writes to the terminal (`--ignored --nocapture` to see it): bytes per
+    /// second, lines rewritten and the biggest frame, in a game the AI plays, with
+    /// `--smooth`, and paused.
+    #[test]
+    #[ignore]
+    fn output_bandwidth() {
+        for (name, smooth, paused) in [("normal", false, false), ("smooth", true, false), ("paused", false, true)] {
+            render::SMOOTH_RISE.with(|s| s.set(smooth));
+            let (mut bytes, mut lines, mut peak, mut frames) = (0, 0, 0, 0);
+            for seed in [1, 2, 3] {
+                let mut state = GameState::new(seed);
+                let mut driver = Driver::new(Some(GridAutoplay::new(AIDifficulty::Hard, seed)), Captures::default());
+                for _ in 0..5000 {
+                    let frame = driver.step(&mut state, 0);
+                    let text = driver.draw(&frame, paused);
+                    bytes += text.len();
+                    lines += text.matches(";1H").count();
+                    peak = peak.max(text.len());
+                    frames += 1;
+                    if frame.game_over {
+                        break;
+                    }
+                }
             }
-        }
-    }
-}
-
-impl Drop for TerminalGuard {
-    fn drop(&mut self) {
-        render::cleanup();
-        let _ = io::stdout().flush();
-        if self.active {
-            let _ = terminal::disable_raw_mode();
+            let per_second = bytes as f64 / frames as f64 * TICKS_PER_SECOND as f64 / 1024.0;
+            println!(
+                "{:<6} {:>6.1} KB/s  {:>5.0} B/frame  {:.1} lines/frame  peak {} B",
+                name, per_second, bytes as f64 / frames as f64, lines as f64 / frames as f64, peak
+            );
         }
     }
 }

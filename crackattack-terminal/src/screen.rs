@@ -6,7 +6,8 @@
 // paper (background: the upper part). Captures can be compared and searched without
 // images.
 
-use crate::render::COLOR_LETTERS;
+use crate::render::palette::*;
+use crate::render::PANEL_COLUMN;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(crate) struct Cell {
@@ -58,7 +59,11 @@ impl Screen {
                         continue; // private modes: alternate screen, sync, cursor
                     }
                     match last {
-                        'H' => (self.row, self.col) = (0, 0),
+                        // Cursor position "row;col", from 1; home without parameters.
+                        'H' => {
+                            let mut at = params.split(';').map(|n| n.parse::<usize>().unwrap_or(1).max(1) - 1);
+                            (self.row, self.col) = (at.next().unwrap_or(0), at.next().unwrap_or(0));
+                        }
                         'J' if params == "2" => self.rows.clear(),
                         // Erase to the end of the line.
                         'K' if params.is_empty() || params == "0" => {
@@ -120,25 +125,25 @@ impl Screen {
 
     /// The characters shown, one string per line, trailing spaces removed.
     pub(crate) fn text(&self) -> Vec<String> {
-        self.layer(|cell| cell.ch)
+        self.layer(|_, cell| cell.ch)
     }
 
-    fn layer(&self, f: impl Fn(&Cell) -> char) -> Vec<String> {
+    fn layer(&self, f: impl Fn(usize, &Cell) -> char) -> Vec<String> {
         self.rows
             .iter()
-            .map(|line| line.iter().map(&f).collect::<String>().trim_end().to_string())
+            .map(|line| line.iter().enumerate().map(|(col, cell)| f(col, cell)).collect::<String>().trim_end().to_string())
             .collect()
     }
 
     /// One capture: the characters, then the ink and paper letters.
     pub(crate) fn capture(&self, title: &str) -> String {
-        let ink = |cell: &Cell| match cell.ink {
-            Some(color) => letter(color),
+        let ink = |col: usize, cell: &Cell| match cell.ink {
+            Some(color) => letter(col, color),
             // An eighth block with no ink: its lower part is the default background.
             None if cell.ch != ' ' && !('▁'..='█').contains(&cell.ch) => '-',
             None => ' ',
         };
-        let paper = |cell: &Cell| cell.paper.map_or(' ', letter);
+        let paper = |col: usize, cell: &Cell| cell.paper.map_or(' ', |color| letter(col, color));
         let mut out = format!("=== {} ===\n", title);
         for (name, lines) in [("text", self.text()), ("ink", self.layer(ink)), ("paper", self.layer(paper))] {
             out.push_str(&format!("--- {} ---\n", name));
@@ -151,9 +156,36 @@ impl Screen {
     }
 }
 
-/// Letter of a color in captures; `?` for a color the game does not use.
-pub(crate) fn letter(color: u8) -> char {
-    COLOR_LETTERS.iter().find(|c| c.0 == color).map_or('?', |c| c.1)
+/// Letter for each color of the board in text captures (`--capture`): capital letters for
+/// blocks, lowercase for their dark rising-row versions.
+const BOARD_LETTERS: &[(u8, char, &str)] = &[
+    (COLORS[0], 'P', "purple block"), (COLORS[1], 'B', "blue block"),
+    (COLORS[2], 'G', "green block"), (COLORS[3], 'Y', "yellow block"),
+    (COLORS[4], 'O', "orange block"), (COLORS[5], 'A', "gray block"),
+    (DIM_COLORS[0], 'p', "purple, rising row"), (DIM_COLORS[1], 'b', "blue, rising row"),
+    (DIM_COLORS[2], 'g', "green, rising row"), (DIM_COLORS[3], 'y', "yellow, rising row"),
+    (DIM_COLORS[4], 'o', "orange, rising row"), (DIM_COLORS[5], 'a', "gray, rising row"),
+    (GARBAGE_COLOR, 'R', "garbage"), (GARBAGE_FLASH_COLOR, 'r', "garbage, hit"),
+    (GARBAGE_GRAY_COLOR, 'K', "gray garbage"), (GARBAGE_GRAY_FLASH_COLOR, 'k', "gray garbage, hit"),
+    (CURSOR_COLOR, 'W', "cursor"), (DYING_COLOR, 'w', "dying block"),
+    (DOT_COLOR, 'd', "dots"),
+    (DANGER_PURPLE[0], 'V', "danger, purple"), (DANGER_PURPLE[1], 'v', "danger, purple fading"),
+    (DANGER_RED[0], 'X', "danger, red"), (DANGER_RED[1], 'x', "danger, red fading"),
+];
+/// Same for the side panel, which reuses some board colors (the logo is red and purple
+/// like garbage and purple blocks, the key hints gray like gray blocks): its own letters,
+/// so that a letter always means one thing.
+const PANEL_LETTERS: &[(u8, char, &str)] = &[
+    (CHAIN_COLOR, 'C', "chain popup"),
+    (LOGO_COLORS[0], 'L', "logo, CRACK"), (LOGO_COLORS[1], 'M', "logo, ATTACK!"),
+    (HINT_COLOR, 'H', "key hints"),
+];
+
+/// Letter of a color at column `col` in captures (the board and the side panel have their
+/// own letters); `?` for a color not used there.
+pub(crate) fn letter(col: usize, color: u8) -> char {
+    let letters = if col < PANEL_COLUMN { BOARD_LETTERS } else { PANEL_LETTERS };
+    letters.iter().find(|c| c.0 == color).map_or('?', |c| c.1)
 }
 
 /// Header of a capture file: what the letters mean.
@@ -164,8 +196,12 @@ pub(crate) fn legend() -> String {
          paper (background; the upper part). '-' is text in the default color, a space the\n\
          default background.\n",
     );
-    for (color, letter, name) in COLOR_LETTERS {
-        out.push_str(&format!("  {}  {:<24} (256-color {})\n", letter, name, color));
+    for (title, letters) in [("Board:", BOARD_LETTERS), ("Side panel:", PANEL_LETTERS)] {
+        out.push_str(title);
+        out.push('\n');
+        for (color, letter, name) in letters {
+            out.push_str(&format!("  {}  {:<24} (256-color {})\n", letter, name, color));
+        }
     }
     out.push('\n');
     out
@@ -174,6 +210,13 @@ pub(crate) fn legend() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_cursor_moves_to_a_position() {
+        let mut screen = Screen::new();
+        screen.feed("\x1b[Habc\r\ndef\x1b[2;2HX\x1b[1;3H\x1b[K");
+        assert_eq!(screen.text(), vec!["ab", "dXf"]);
+    }
 
     #[test]
     fn colors_and_reverse_video_are_decoded() {
