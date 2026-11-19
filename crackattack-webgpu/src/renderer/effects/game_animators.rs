@@ -1,7 +1,6 @@
 
 const DANGER_BAR_FADE_TIME: i32 = 20;
-// Loss delays come from the core so they cannot diverge from the engine.
-use crackattack_core::constants::{LOSS_DELAY, LOSS_DELAY_ELIMINATION, PLAY_WIDTH};
+use crackattack_core::constants::PLAY_WIDTH;
 use crackattack_core::vs::board_view::BOARD_VIEW_ROWS;
 use crackattack_core::vs::{BoardCell, OpponentBoardView};
 
@@ -43,7 +42,10 @@ impl DangerBarAnimator {
         }
     }
 
-    pub fn time_step(&mut self, creep_freeze: bool, loss_countdown: i32) {
+    /// The loss delays come from the engine's frame (`UIState`), so they cannot diverge from it.
+    pub fn time_step(&mut self, ui: &crackattack_core::frame_data::UIState) {
+        let (creep_freeze, loss_countdown) = (ui.creep_freeze, ui.loss_countdown);
+        let (loss_delay, floor) = (ui.loss_delay, ui.loss_delay_floor);
         match self.state {
             DangerBarState::Inactive | DangerBarState::FadeLowToInactive | DangerBarState::FadeHighToInactive => {
                 if matches!(self.state, DangerBarState::FadeLowToInactive | DangerBarState::FadeHighToInactive) {
@@ -61,7 +63,7 @@ impl DangerBarAnimator {
                 if !creep_freeze {
                     self.fade_countdown = DANGER_BAR_FADE_TIME;
                     self.state = DangerBarState::FadeLowToInactive;
-                } else if loss_countdown <= LOSS_DELAY_ELIMINATION {
+                } else if loss_countdown <= floor {
                     self.state = DangerBarState::HighAlert;
                 }
             }
@@ -75,11 +77,11 @@ impl DangerBarAnimator {
 
         if matches!(self.state, DangerBarState::LowAlert | DangerBarState::HighAlert) {
             self.bar = if self.state == DangerBarState::LowAlert {
-                (LOSS_DELAY - loss_countdown) as f32
-                    / (LOSS_DELAY - LOSS_DELAY_ELIMINATION) as f32
+                (loss_delay - loss_countdown) as f32
+                    / (loss_delay - floor).max(1) as f32
             } else {
-                (LOSS_DELAY_ELIMINATION - loss_countdown) as f32
-                    / LOSS_DELAY_ELIMINATION as f32
+                (floor - loss_countdown) as f32
+                    / floor.max(1) as f32
             };
             self.bar = self.bar.clamp(0.0, 1.0);
         }

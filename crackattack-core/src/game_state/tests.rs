@@ -377,3 +377,12 @@ fn dropped_garbage_first_landing_is_initial() {
     }
     assert_eq!(landings, vec![true]);
 }
+
+/// The frame carries the loss countdown's start and floor, so clients need not import them.
+#[test]
+fn frame_exposes_the_loss_delays() {
+    let mut game = GameState::new(7);
+    let frame = game.step(&InputSnapshot::new());
+    assert_eq!(frame.ui.loss_delay, crate::constants::LOSS_DELAY);
+    assert_eq!(frame.ui.loss_delay_floor, crate::constants::LOSS_DELAY_ELIMINATION);
+}

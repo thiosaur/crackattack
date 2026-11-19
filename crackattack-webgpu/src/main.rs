@@ -50,8 +50,8 @@ use crate::app::command::{AppCommand, AppKey, AppMusic};
 const WINDOW_WIDTH: u32 = 700;
 const WINDOW_HEIGHT: u32 = 700;
 
-/// Game tick rate: 50 Hz fixed step.
-const TICKS_PER_SECOND: u32 = 50;
+/// Game tick rate: the engine's fixed step.
+const TICKS_PER_SECOND: u32 = crackattack_core::constants::STEPS_PER_SECOND as u32;
 const TICK_DURATION: Duration = Duration::from_micros(1_000_000 / TICKS_PER_SECOND as u64);
 
 /// Wake-up interval for static states (solo pause): about 15 Hz.

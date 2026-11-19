@@ -15,12 +15,16 @@ use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use crossterm::terminal;
 
 /// Core game ticks per second (one step per frame).
-pub(crate) const TICKS_PER_SECOND: i32 = 50;
+pub(crate) const TICKS_PER_SECOND: i32 = crackattack_core::constants::STEPS_PER_SECOND;
 /// How long the chain just reached stays in the side panel (ticks).
 const CHAIN_SHOW_TICKS: i32 = 75;
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.iter().any(|arg| arg == "--version" || arg == "-V") {
+        println!("{}", version_line());
+        return;
+    }
     let options = match parse_args(&args) {
         Ok(Some(options)) => options,
         Ok(None) => {
@@ -35,11 +39,13 @@ fn main() {
     };
     render::SHOW_DEBUG.store(options.debug, std::sync::atomic::Ordering::Relaxed);
     render::SMOOTH_RISE.with(|smooth| smooth.set(options.smooth));
+    render::COMPACT.with(|compact| compact.set(options.compact));
 
     let seed = options.seed.unwrap_or_else(random_seed);
     let mut state = GameState::new(seed);
     let autoplay = options.autoplay.map(|level| GridAutoplay::new(level, seed));
     let mut driver = Driver::new(autoplay, options.captures);
+    driver.compact_forced = options.compact;
 
     let (frame, ending) = if options.headless {
         run_headless(&mut state, &mut driver, options.max_frames)
@@ -63,6 +69,7 @@ struct Options {
     max_frames: Option<i32>,
     debug: bool,
     smooth: bool,
+    compact: bool,
     autoplay: Option<AIDifficulty>,
     headless: bool,
     captures: Captures,
@@ -88,6 +95,7 @@ fn parse_args(args: &[String]) -> Result<Option<Options>, String> {
             }
             "--debug" => options.debug = true,
             "--smooth" => options.smooth = true,
+            "--compact" => options.compact = true,
             "--autoplay" => {
                 // Optional level: easy, medium or hard (the default, as in the GUI).
                 let level = args.peek().and_then(|a| parse_level(a));
@@ -123,6 +131,8 @@ fn print_help() {
     println!("  --debug       Show the state of the cells under the cursor");
     println!("  --smooth      Move the stack by sixteenths of a row instead of halves");
     println!("                (smoother, but the gaps between blocks flicker)");
+    println!("  --compact     One line per row: the screen fits 80x24, the shellcade canvas");
+    println!("                (chosen by itself when the terminal is too short)");
     println!("  --autoplay [LEVEL]  The AI plays (easy, medium or hard; default hard)");
     println!("  --headless    No display: the game runs at full speed, for tests");
     println!("                (with --autoplay; stops at game over, --frames or the");
@@ -130,12 +140,18 @@ fn print_help() {
     println!("  --capture T1,T2,...  Text captures of the screen at these ticks;");
     println!("                'end' for the last frame");
     println!("  --capture-file PATH  Where captures go (default: {})", DEFAULT_CAPTURE_FILE);
+    println!("  --version     Show the version");
     println!("  --help        Show this help");
     println!();
     println!("Controls:");
     for key in &render::KEYS {
         println!("  {:<19}{}", key.keys, key.action);
     }
+}
+
+/// What `--version` prints; the release pipeline checks it against the tag.
+fn version_line() -> String {
+    format!("crackattack-terminal {}", env!("CARGO_PKG_VERSION"))
 }
 
 const DEFAULT_CAPTURE_FILE: &str = "crackattack-captures.txt";
@@ -203,6 +219,8 @@ struct Driver {
     taken_count: usize,
     hud: render::Hud,
     renderer: render::Renderer,
+    /// `--compact`: compact whatever the terminal size.
+    compact_forced: bool,
 }
 
 impl Driver {
@@ -220,6 +238,7 @@ impl Driver {
             taken_count: 0,
             hud: render::Hud::default(),
             renderer: render::Renderer::new(),
+            compact_forced: false,
         }
     }
 
@@ -237,7 +256,7 @@ impl Driver {
 
         let frame = state.step(&input);
         self.ticks += 1;
-        self.danger.step(frame.ui.creep_freeze, frame.ui.loss_countdown);
+        self.danger.step(&frame.ui);
         self.chain = self.chain.map(|(n, left)| (n, left - 1)).filter(|&(_, left)| left > 0);
         for event in &frame.gameplay_events {
             if let crackattack_core::gameplay_event::GameplayEvent::ChainProgressed(e) = event {
@@ -259,6 +278,15 @@ impl Driver {
             }
         }
         text
+    }
+
+    /// Fits the screen to the terminal, at launch and after a resize: lines cut to its
+    /// width, and the compact screen (one line per row) when the normal one is too tall.
+    fn fit_terminal(&mut self) {
+        let size = terminal::size().ok().map(|(columns, rows)| (columns as usize, rows as usize));
+        let compact = self.compact_forced || size.is_some_and(|(_, rows)| rows < render::tall_lines());
+        render::COMPACT.with(|c| c.set(compact));
+        self.renderer.set_width(size.map(|(columns, _)| columns));
     }
 
     /// One tick of the game-over animation: the game itself has stopped.
@@ -354,7 +382,7 @@ fn play(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>) -> 
     let _guard = TerminalGuard::new();
     render::initialize();
     let _ = io::stdout().flush();
-    driver.renderer.set_width(terminal_width());
+    driver.fit_terminal();
 
     let frame_duration = Duration::from_millis(1000 / TICKS_PER_SECOND as u64);
     let mut quit = false;
@@ -367,7 +395,7 @@ fn play(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>) -> 
         let (mut pause_pressed, mut resized) = (false, false);
         let keys = read_input(&mut quit, &mut pause_pressed, &mut resized);
         if resized {
-            driver.renderer.set_width(terminal_width());
+            driver.fit_terminal();
         }
         if pause_pressed && !last.game_over {
             paused = !paused;
@@ -430,7 +458,7 @@ fn show_game_over(driver: &mut Driver, last: &FrameData) {
         match event::read() {
             Ok(Event::Key(KeyEvent { kind: KeyEventKind::Press, .. })) | Err(_) => break,
             Ok(Event::Resize(..)) => {
-                driver.renderer.set_width(terminal_width());
+                driver.fit_terminal();
                 print!("{}", driver.draw(last, false));
                 let _ = io::stdout().flush();
             }
@@ -439,10 +467,6 @@ fn show_game_over(driver: &mut Driver, last: &FrameData) {
     }
 }
 
-/// Width of the terminal in columns, if it can be read.
-fn terminal_width() -> Option<usize> {
-    terminal::size().ok().map(|(columns, _)| columns as usize)
-}
 
 /// End-of-game message printed in the shell: how the game ended, score, time, best chain
 /// and the seed to replay the same game.
@@ -559,12 +583,20 @@ mod tests {
         assert_eq!(options.seed, Some(42));
         assert_eq!(options.max_frames, Some(300));
         assert_eq!(options.autoplay, Some(AIDifficulty::Easy));
-        assert!(options.headless && options.smooth && !options.debug);
+        assert!(options.headless && options.smooth && !options.debug && !options.compact);
+        assert!(parse_args(&args("--compact")).unwrap().unwrap().compact);
         // A level is optional: the next option is not taken for one.
         let options = parse_args(&args("--autoplay --debug")).unwrap().unwrap();
         assert_eq!(options.autoplay, Some(AIDifficulty::Hard));
         assert!(options.debug);
         assert!(parse_args(&args("--seed 1 --help")).unwrap().is_none());
+    }
+
+    #[test]
+    fn version_line_names_the_workspace_version() {
+        let line = version_line();
+        assert!(line.starts_with("crackattack-terminal "), "{}", line);
+        assert!(line.len() > "crackattack-terminal ".len());
     }
 
     #[test]

@@ -191,6 +191,12 @@ pub struct UIState {
     pub creep_freeze: bool,
     /// Raw loss countdown for renderer-side danger bar
     pub loss_countdown: i32,
+    /// The countdown's value when it starts (`LOSS_DELAY`) and the floor it is brought back
+    /// to when blocks are eliminated meanwhile (`LOSS_DELAY_ELIMINATION`), in ticks. How
+    /// many warning phases to show, and where they start, is up to the client: derive
+    /// them from these two values and `loss_countdown`.
+    pub loss_delay: i32,
+    pub loss_delay_floor: i32,
     /// Effective height of block stack (for renderer-side level lights)
     pub top_effective_row: i32,
     /// Rows left before the safe height, fraction included (`Creep::rows_to_loss`), and

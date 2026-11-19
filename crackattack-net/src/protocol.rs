@@ -178,9 +178,10 @@ impl GameplayBuffer {
     /// The fields of each entry are **validated at the network boundary**. A hostile
     /// peer cannot inject out-of-range dimensions into the engine: an out-of-range
     /// `width` would call `rng.number(max <= 0)` and write outside the grid.
-    /// The bounds are the core crate's constants (single source).
+    /// The attack shape is checked by the engine (`GarbageAttack::try_new`); only the
+    /// packet-level limits (count, timestamp) are checked here.
     pub(crate) fn from_bytes(data: &[u8]) -> Result<Self, ProtocolError> {
-        use crackattack_core::constants::{MAX_GARBAGE_HEIGHT, PLAY_WIDTH};
+        use crackattack_core::garbage::GarbageAttack;
         if data.is_empty() {
             return Err(ProtocolError::IncompleteBuffer);
         }
@@ -198,10 +199,7 @@ impl GameplayBuffer {
             // `pod_read_unaligned`: `from_bytes` would need a 4-byte aligned slice,
             // which a `Vec<u8>` does not guarantee.
             let entry: GarbageEntry = bytemuck::pod_read_unaligned(&data[offset..offset + 16]);
-            let valid = (1..=MAX_GARBAGE_HEIGHT).contains(&entry.height)
-                && (1..=PLAY_WIDTH as i32).contains(&entry.width)
-                && (crackattack_core::garbage::GARBAGE_FLAVOR_NORMAL
-                    ..=crackattack_core::garbage::GARBAGE_FLAVOR_GRAY).contains(&entry.flavor)
+            let valid = GarbageAttack::try_new(entry.height, entry.width, entry.flavor).is_some()
                 && entry.timestamp >= 0;
             if !valid {
                 return Err(ProtocolError::InvalidGarbageEntry {

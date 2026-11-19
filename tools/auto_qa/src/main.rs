@@ -19,7 +19,7 @@
 use crackattack_core::ai_difficulty::AIDifficulty;
 use crackattack_core::vs::GridAutoplay;
 use crackattack_core::{
-    AIController, GameState, Input, ScoringMode, BlockState, FrameData,
+    GameState, Input, ScoringMode, BlockState, FrameData,
     constants::PLAY_WIDTH,
 };
 
@@ -50,21 +50,19 @@ struct CliArgs {
     output_dir: String,
     /// Verbosity: 0=silent, 1=summary, 2=per-game, 3=per-tick.
     verbose: u8,
-    /// Who plays: the grid AI at a level, or the old `AIController` (`classic`).
+    /// Who plays: the grid AI at a level.
     player: Player,
 }
 
 /// The driver of a game.
 #[derive(Clone, Copy, PartialEq)]
 enum Player {
-    Classic,
     Grid(AIDifficulty),
 }
 
 impl Player {
     fn parse(name: &str) -> Option<Self> {
         match name {
-            "classic" => Some(Self::Classic),
             "easy" => Some(Self::Grid(AIDifficulty::Easy)),
             "medium" => Some(Self::Grid(AIDifficulty::Medium)),
             "hard" => Some(Self::Grid(AIDifficulty::Hard)),
@@ -73,23 +71,20 @@ impl Player {
     }
 }
 
-/// A driver playing one game; both are deterministic for a seed.
+/// A driver playing one game; deterministic for a seed.
 enum Driver {
-    Classic(AIController),
     Grid(GridAutoplay),
 }
 
 impl Driver {
     fn new(player: Player, seed: u32) -> Self {
         match player {
-            Player::Classic => Self::Classic(AIController::new()),
             Player::Grid(level) => Self::Grid(GridAutoplay::new(level, seed)),
         }
     }
 
     fn update(&mut self, game: &GameState) -> u8 {
         match self {
-            Self::Classic(ai) => ai.update(game),
             Self::Grid(ai) => ai.update(game),
         }
     }
@@ -470,7 +465,7 @@ fn parse_args(argv: &[String]) -> CliArgs {
                 match argv.get(i).and_then(|s| Player::parse(s)) {
                     Some(player) => cli.player = player,
                     None => {
-                        eprintln!("--ai expects classic, easy, medium or hard");
+                        eprintln!("--ai expects easy, medium or hard");
                         std::process::exit(2);
                     }
                 }
@@ -509,7 +504,7 @@ fn print_help() {
     println!("  --seed-start <N>       Starting seed for the auto-generated range (default 1)");
     println!("  --seed-count <N>       Count for the auto-generated range (default 100)");
     println!("  --max-ticks <N>        Hard tick cap per game (default 30000)");
-    println!("  --ai <LEVEL>           Player: hard (default), medium, easy (grid AI) or classic (old AIController)");
+    println!("  --ai <LEVEL>           Player: hard (default), medium or easy");
     println!("  --stop-on-first        Stop after the first incident");
     println!("  -o, --output <dir>     Output directory for reports (default qa_reports)");
     println!("  -v / -vv / -q          Verbosity");

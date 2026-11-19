@@ -2,23 +2,17 @@
 //!
 //! `cargo run --release -p crackattack-core --example solo_eval -- [GAMES] [MAX_MINUTES]`
 //!
-//! Drivers: `classic` (the original test-oriented autoplay) and the grid-playing AI of the VS
-//! Computer opponent at its three levels. A game ends when the board tops out or at the time cap.
+//! Drivers: the grid-playing AI of the VS Computer opponent at its three levels. A game ends when the board tops out or at the time cap.
 
 use crackattack_core::stats::GameStats;
 use crackattack_core::vs::GridAutoplay;
 use crackattack_core::ai_difficulty::AIDifficulty;
 use crackattack_core::{
-    AIController, GameState, GameStatus, Input, ScoringMode, INPUT_ADVANCE, INPUT_DOWN,
+    GameState, GameStatus, Input, ScoringMode, INPUT_ADVANCE, INPUT_DOWN,
     INPUT_LEFT, INPUT_RIGHT, INPUT_SWAP, INPUT_UP, STEPS_PER_SECOND,
 };
 
 const KEYS: [u8; 6] = [INPUT_LEFT, INPUT_RIGHT, INPUT_UP, INPUT_DOWN, INPUT_SWAP, INPUT_ADVANCE];
-
-enum Driver {
-    Classic(AIController),
-    Grid(GridAutoplay),
-}
 
 struct Outcome {
     score: i32,
@@ -33,24 +27,14 @@ fn play(driver_name: &str, seed: u32, max_ticks: i32) -> Outcome {
     let mut game = GameState::with_scoring(seed, ScoringMode::Classic);
     let mut input = Input::new();
     let mut driver = match driver_name {
-        "classic" => Driver::Classic(AIController::new()),
-        "easy" => Driver::Grid(GridAutoplay::new(AIDifficulty::Easy, seed)),
-        "medium" => Driver::Grid(GridAutoplay::new(AIDifficulty::Medium, seed)),
-        _ => Driver::Grid(GridAutoplay::new(AIDifficulty::Hard, seed)),
+        "easy" => GridAutoplay::new(AIDifficulty::Easy, seed),
+        "medium" => GridAutoplay::new(AIDifficulty::Medium, seed),
+        _ => GridAutoplay::new(AIDifficulty::Hard, seed),
     };
     let mut ticks = 0;
     let mut cursor_steps = 0u32;
     while game.status == GameStatus::Playing && ticks < max_ticks {
-        let flags = match &mut driver {
-            Driver::Classic(ai) => {
-                let mut f = ai.update(&game);
-                if AIController::should_fast_forward(&game) {
-                    f |= INPUT_ADVANCE;
-                }
-                f
-            }
-            Driver::Grid(ai) => ai.update(&game),
-        };
+        let flags = driver.update(&game);
         if flags & (INPUT_LEFT | INPUT_RIGHT | INPUT_UP | INPUT_DOWN) != 0 {
             cursor_steps += 1;
         }
@@ -82,7 +66,7 @@ fn main() {
         "{:<8} {:>6} {:>7} {:>8} {:>7} {:>8} {:>9} {:>8} {:>7} {:>9} {:>7}",
         "driver", "score", "time s", "blocks", "blk/min", "swaps", "swaps/min", "cells/s", "chains", "max chain", "capped"
     );
-    for name in ["classic", "easy", "medium", "hard"] {
+    for name in ["easy", "medium", "hard"] {
         let outcomes: Vec<Outcome> = (1..=games).map(|seed| play(name, seed, max_ticks)).collect();
         let n = outcomes.len() as f64;
         let mean = |f: &dyn Fn(&Outcome) -> f64| outcomes.iter().map(f).sum::<f64>() / n;

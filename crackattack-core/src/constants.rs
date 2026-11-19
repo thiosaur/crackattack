@@ -34,6 +34,14 @@ pub const CREEP_START_SECONDS_PER_ROW: f32 =
 
 // Loss delay (defeat countdown, used by creep.rs). Exported here so the renderer
 // interprets `loss_countdown` with the engine's value instead of a local copy.
+// These two values are game rules: `LOSS_DELAY` is the time between the stack
+// reaching the top and the defeat, and `LOSS_DELAY_ELIMINATION` is the floor the
+// countdown is brought back to when blocks are eliminated meanwhile (creep.rs).
+// How the countdown is shown is not a rule: how many warning phases there are, where
+// they start, their colors and fades are the client's choice (e.g. 4 s of purple then
+// 3 s of red would be as valid as the current split). Clients should derive their
+// thresholds from these values, not copy them, and the engine should not grow a
+// "warning phase" notion for them.
 pub const LOSS_DELAY: i32 = 7 * STEPS_PER_SECOND;         // 350 time steps (7 seconds)
 pub const LOSS_DELAY_ELIMINATION: i32 = STEPS_PER_SECOND; // 50 time steps (1 second)
 
@@ -41,7 +49,7 @@ pub const LOSS_DELAY_ELIMINATION: i32 = STEPS_PER_SECOND; // 50 time steps (1 se
 pub const PLAY_WIDTH: usize = 6;
 pub(crate) const PLAY_HEIGHT: usize = 45;
 pub const SAFE_HEIGHT: usize = 13;
-pub const VISIBLE_HEIGHT: usize = SAFE_HEIGHT + 1;
+pub(crate) const VISIBLE_HEIGHT: usize = SAFE_HEIGHT + 1;
 
 // Storage sizes
 pub(crate) const BLOCK_STORE_SIZE: usize = PLAY_WIDTH * PLAY_HEIGHT;

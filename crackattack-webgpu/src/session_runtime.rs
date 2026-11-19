@@ -51,7 +51,7 @@ impl SuspensionTimer {
 pub(crate) struct SessionConfig {
     pub seed: u32,
     pub autoplay: bool,
-    /// Grid AI level driving the autoplay (`None` = the classic autoplay).
+    /// Grid AI level driving the autoplay (`None` = Hard).
     pub autoplay_ai: Option<crackattack_core::ai_difficulty::AIDifficulty>,
     /// E2E bound: autoplay quits at the prompt after N rounds played (`None` = unlimited).
     pub autoplay_max_rounds: Option<u32>,
@@ -85,9 +85,8 @@ pub(crate) struct SessionState {
     /// (TCP listener, mDNS discovery, peers seen). See `negotiation`.
     pub(crate) negotiation: NegotiationState,
     pub(crate) input: Input,
-    pub(crate) ai_controller: crackattack_core::AIController,
-    /// Grid AI replacing `ai_controller` under `--autoplay-ai easy|medium|hard`; built on first use.
-    pub(crate) autoplay_grid_level: Option<crackattack_core::ai_difficulty::AIDifficulty>,
+    /// Grid AI level of the autoplay (`--autoplay-ai`); the AI itself is built on first use.
+    pub(crate) autoplay_grid_level: crackattack_core::ai_difficulty::AIDifficulty,
     pub(crate) autoplay_grid: Option<crackattack_core::vs::GridAutoplay>,
     pub(crate) flow_state: FlowState,
     pub(crate) game_seed: u32,
@@ -430,8 +429,7 @@ impl SessionRuntime {
                 game,
                 negotiation: NegotiationState::new(),
                 input: Input::new(),
-                ai_controller: crackattack_core::AIController::new(),
-                autoplay_grid_level: config.autoplay_ai,
+                autoplay_grid_level: config.autoplay_ai.unwrap_or(crackattack_core::ai_difficulty::AIDifficulty::Hard),
                 autoplay_grid: None,
                 flow_state,
                 game_seed,
@@ -1866,22 +1864,13 @@ impl SessionRuntime {
                     if ai_can_play {
                         if let Some(game) = session.game_state_mut() {
                             use crackattack_core::input::*;
-                            let ai = match self.session.autoplay_grid_level {
-                                Some(level) => {
-                                    let seed = self.session.game_seed;
-                                    self.session
-                                        .autoplay_grid
-                                        .get_or_insert_with(|| crackattack_core::vs::GridAutoplay::new(level, seed))
-                                        .update(game)
-                                }
-                                None => {
-                                    let mut flags = self.session.ai_controller.update(game);
-                                    if crackattack_core::AIController::should_fast_forward(game) {
-                                        flags |= INPUT_ADVANCE;
-                                    }
-                                    flags
-                                }
-                            };
+                            let level = self.session.autoplay_grid_level;
+                            let seed = self.session.game_seed;
+                            let ai = self
+                                .session
+                                .autoplay_grid
+                                .get_or_insert_with(|| crackattack_core::vs::GridAutoplay::new(level, seed))
+                                .update(game);
                             for flag in [INPUT_LEFT, INPUT_RIGHT, INPUT_UP, INPUT_DOWN, INPUT_SWAP, INPUT_ADVANCE] {
                                 self.session.input.set_key(flag, ai & flag != 0);
                             }

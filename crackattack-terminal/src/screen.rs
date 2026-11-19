@@ -7,7 +7,7 @@
 // images.
 
 use crate::render::palette::*;
-use crate::render::PANEL_COLUMN;
+use crate::render::panel_column;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub(crate) struct Cell {
@@ -184,7 +184,7 @@ const PANEL_LETTERS: &[(u8, char, &str)] = &[
 /// Letter of a color at column `col` in captures (the board and the side panel have their
 /// own letters); `?` for a color not used there.
 pub(crate) fn letter(col: usize, color: u8) -> char {
-    let letters = if col < PANEL_COLUMN { BOARD_LETTERS } else { PANEL_LETTERS };
+    let letters = if col < panel_column() { BOARD_LETTERS } else { PANEL_LETTERS };
     letters.iter().find(|c| c.0 == color).map_or('?', |c| c.1)
 }
 

@@ -20,11 +20,11 @@ pub const BOARD_VIEW_ROWS: usize = SAFE_HEIGHT;
 pub const BOARD_VIEW_LEN: usize = PLAY_WIDTH * BOARD_VIEW_ROWS;
 
 /// Longest stretch of played ticks without a published view (the network communication period).
-pub const BOARD_VIEW_PERIOD: i32 = 32;
+pub(crate) const BOARD_VIEW_PERIOD: i32 = 32;
 
 /// Shortest gap between two published views, so a chain breaking several slabs in a row does
 /// not send a burst.
-pub const BOARD_VIEW_MIN_GAP: i32 = 8;
+pub(crate) const BOARD_VIEW_MIN_GAP: i32 = 8;
 
 const CELL_EMPTY: u8 = 0;
 const CELL_BLOCK: u8 = 1;
@@ -125,7 +125,7 @@ fn is_board_event(event: &GameplayEvent) -> bool {
 /// first tick after resuming publishes a fresh view, unless it is the one last published (the
 /// receiver already has it).
 #[derive(Debug, Clone)]
-pub struct BoardViewPublisher {
+pub(crate) struct BoardViewPublisher {
     last: Option<OpponentBoardView>,
     ticks_since_publish: i32,
     event_pending: bool,

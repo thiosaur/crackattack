@@ -111,6 +111,8 @@ impl GameState {
             danger_height,
             creep_freeze: self.creep.creep_freeze,
             loss_countdown: self.creep.loss_countdown,
+            loss_delay: LOSS_DELAY,
+            loss_delay_floor: LOSS_DELAY_ELIMINATION,
             top_effective_row: self.grid.top_effective_row,
             rows_to_loss: self.creep.rows_to_loss(self.grid.top_effective_row),
             seconds_per_row: self.creep.seconds_per_row(),

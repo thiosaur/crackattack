@@ -141,8 +141,12 @@ data. `cargo test --workspace` runs the test suite. To build without the update 
 ## Terminal version
 
 The workspace also contains `crackattack-terminal`, a small text version of the game that
-runs in any terminal with ANSI colors and UTF-8 symbols. It is not part of the downloadable
-packages: build it from source (see above, no graphics libraries needed).
+runs in any terminal with ANSI colors and UTF-8 symbols. Each release has it as a separate,
+tiny download (one executable, no game data, no installer): `crackattack-terminal-<version>-windows-x86_64.zip`,
+`-macos-arm64.zip` or `-linux-x86_64.tar.gz`, on the [Releases](../../releases) page. Unpack it
+and run `crackattack-terminal` from a terminal. On macOS, the first run is blocked like the
+application: run `xattr -d com.apple.quarantine crackattack-terminal` once. It can also be built
+from source (see above, no graphics libraries needed):
 
 ```sh
 cargo run --release -p crackattack-terminal

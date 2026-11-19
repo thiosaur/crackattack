@@ -6,6 +6,28 @@ use crate::block::PopDirection;
 pub const GARBAGE_FLAVOR_NORMAL: i32 = 0;
 pub const GARBAGE_FLAVOR_GRAY: i32 = 1;
 
+/// The shape of a garbage attack, checked against the rules: a height within
+/// `1..=MAX_GARBAGE_HEIGHT`, a width within `1..=PLAY_WIDTH` and a known flavor.
+/// Anything that comes from outside the engine (a network peer, a script) goes through
+/// [`GarbageAttack::try_new`] before it can reach the simulation: an out-of-range width
+/// would otherwise draw from an empty random range and write outside the grid.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct GarbageAttack {
+    pub height: i32,
+    pub width: i32,
+    pub flavor: i32,
+}
+
+impl GarbageAttack {
+    /// `None` if any of the three values is outside the rules.
+    pub fn try_new(height: i32, width: i32, flavor: i32) -> Option<Self> {
+        let valid = (1..=MAX_GARBAGE_HEIGHT).contains(&height)
+            && (1..=PLAY_WIDTH as i32).contains(&width)
+            && (GARBAGE_FLAVOR_NORMAL..=GARBAGE_FLAVOR_GRAY).contains(&flavor);
+        valid.then_some(Self { height, width, flavor })
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct GarbageId(pub u16);
 
@@ -213,5 +235,26 @@ impl GarbageArena {
 impl Default for GarbageArena {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod attack_tests {
+    use super::*;
+
+    #[test]
+    fn attack_bounds() {
+        let max_h = MAX_GARBAGE_HEIGHT;
+        let max_w = PLAY_WIDTH as i32;
+        assert!(GarbageAttack::try_new(1, 1, GARBAGE_FLAVOR_NORMAL).is_some());
+        assert!(GarbageAttack::try_new(max_h, max_w, GARBAGE_FLAVOR_GRAY).is_some());
+        for (h, w, f) in [
+            (0, 3, 0), (-1, 3, 0), (max_h + 1, 3, 0),
+            (2, 0, 0), (2, -1, 0), (2, max_w + 1, 0),
+            (2, 3, -1), (2, 3, GARBAGE_FLAVOR_GRAY + 1),
+            (i32::MIN, i32::MAX, i32::MIN),
+        ] {
+            assert_eq!(GarbageAttack::try_new(h, w, f), None, "({h}, {w}, {f})");
+        }
     }
 }

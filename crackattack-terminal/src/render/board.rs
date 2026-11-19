@@ -17,23 +17,46 @@ thread_local! {
     /// falls on the edge of a character: always with half-row steps, in 2 positions out
     /// of 8 with sixteenths. The same goes for the cursor bracket ticks.
     pub(crate) static SMOOTH_RISE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    /// `--compact`: one terminal line per row and blocks two columns wide, so the screen
+    /// fits 80×24 (the shellcade arcade canvas). A block is then ▇ with an eighth of gap
+    /// on top, and the stack rises by whole rows.
+    pub(crate) static COMPACT: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
-/// Fine vertical units: per row, and per terminal line.
-pub(super) const ROW_UNITS: i32 = 16;
+pub(super) fn compact() -> bool {
+    COMPACT.with(|compact| compact.get())
+}
+
+/// Fine vertical units per terminal line (one per eighth of a character).
 pub(super) const LINE_UNITS: i32 = 8;
+
+/// Fine vertical units per row: two terminal lines, or one when compact.
+pub(super) fn row_units() -> i32 {
+    if compact() { LINE_UNITS } else { 2 * LINE_UNITS }
+}
 /// Terminal columns per cell: a gap column (cursor brackets, garbage seams) then the block.
-pub(super) const CELL_COLUMNS: usize = 4;
-const BLOCK_COLUMNS: usize = 3;
+pub(super) fn cell_columns() -> usize {
+    if compact() { 3 } else { 4 }
+}
+pub(super) fn block_columns() -> usize {
+    cell_columns() - 1
+}
 /// Width of the playfield in terminal columns (with the closing gap column on the right).
-pub(super) const FIELD_COLUMNS: usize = PLAY_WIDTH * CELL_COLUMNS + 1;
+pub(super) fn field_columns() -> usize {
+    PLAY_WIDTH * cell_columns() + 1
+}
 /// Lines shown below the ground: the part of the rising row not pushed up yet.
-pub(super) const LINES_BELOW_GROUND: i32 = 2;
+pub(super) fn lines_below_ground() -> i32 {
+    row_units() / LINE_UNITS
+}
 /// Vertical span painted, in units: from the bottom of the rising row to the top of the
 /// playfield.
-pub(super) const BOTTOM_UNIT: i32 = -LINES_BELOW_GROUND * LINE_UNITS;
-pub(super) const TOP_UNIT: i32 = SAFE_HEIGHT as i32 * ROW_UNITS;
-pub(super) const SPAN_UNITS: usize = (TOP_UNIT - BOTTOM_UNIT) as usize;
+pub(super) fn lowest_unit() -> i32 {
+    -row_units()
+}
+pub(super) fn top_unit() -> i32 {
+    SAFE_HEIGHT as i32 * row_units()
+}
 
 /// Dying block: a small square, which shrinks during the second half of the delay.
 const DYING_GLYPHS: [char; 2] = ['■', '▪'];
@@ -44,8 +67,11 @@ const SHATTER_FLASH_TICKS: i32 = 8;
 pub(super) const POP_ROTATE_TIME: i32 = 4 * INTERNAL_POP_DELAY / 5;
 /// Thinnest a flipping block gets, as a fraction of a block.
 const FLIP_MIN_HEIGHT: f32 = 0.2;
-/// How far two swapping blocks move apart vertically where they cross (units).
-pub(super) const SWAP_LIFT_UNITS: i32 = 5;
+/// How far two swapping blocks move apart vertically where they cross (units): about a
+/// third of a row.
+pub(super) fn swap_lift_units() -> i32 {
+    (row_units() * 5 + 8) / 16
+}
 
 /// Marks the playable area: a dot at the center of each empty cell. The dots rise with
 /// the stack; the glyph and line are picked so the dot lands closest to the center.
@@ -58,8 +84,10 @@ pub(super) const DOT_HEIGHTS: [f32; 3] = [2.5, 4.2, 6.5];
 /// Cursor: two brackets around its two cells, rising with the blocks and framing their
 /// row, one unit beyond it at the top and the bottom. Each is a bar in the gap column,
 /// with a tick at the top and at the bottom running over the first column of the block
-/// next to it. This is the thickness of the ticks (units).
-pub(super) const CURSOR_TICK_UNITS: i32 = 2;
+/// next to it. This is the thickness of the ticks (units): an eighth of a row.
+pub(super) fn cursor_tick_units() -> i32 {
+    row_units() / 8
+}
 
 /// Bottom of a row in units above the ground, from its grid row, the stack rise and the
 /// sub-row fall offset. Row 1 sits on the ground when the stack has not risen. Snapped
@@ -67,7 +95,7 @@ pub(super) const CURSOR_TICK_UNITS: i32 = 2;
 pub(super) fn bottom_unit(grid_y: i32, sub_grid_y: i32, play_offset_y: f32) -> i32 {
     let rows = grid_y as f32 - 1.0 + play_offset_y + sub_grid_y as f32 / STEPS_PER_GRID as f32;
     let step = if SMOOTH_RISE.with(|smooth| smooth.get()) { 1 } else { LINE_UNITS };
-    let units = rows * ROW_UNITS as f32 / step as f32;
+    let units = rows * row_units() as f32 / step as f32;
     if step == 1 {
         return units.round() as i32;
     }
@@ -87,10 +115,10 @@ pub(super) fn paint(frame: &FrameData) -> Canvas {
             && garbage.shatter_progress * (SHATTER_TIME as f32) < SHATTER_FLASH_TICKS as f32;
         let color = garbage_color(garbage.flavor, flashing);
         let bottom = bottom_unit(garbage.grid_y, garbage.sub_grid_y, rise);
-        let left = garbage.grid_x.max(0) as usize * CELL_COLUMNS + 1;
-        let right = (garbage.grid_x + garbage.width).max(1) as usize * CELL_COLUMNS - 1;
+        let left = garbage.grid_x.max(0) as usize * cell_columns() + 1;
+        let right = (garbage.grid_x + garbage.width).max(1) as usize * cell_columns() - 1;
         // One slab: the seams between its cells are filled.
-        canvas.fill(left..=right, bottom, bottom + garbage.height * ROW_UNITS - 1, color);
+        canvas.fill(left..=right, bottom, bottom + garbage.height * row_units() - 1, color);
     }
 
     let swap_factor = frame.swapper.swap_factor;
@@ -105,12 +133,13 @@ pub(super) fn paint(frame: &FrameData) -> Canvas {
         let bottom = bottom_unit(block.grid_y, block.sub_grid_y, rise);
         if is_dying {
             // A small square on the line of the cell center, in the middle column.
-            let center = bottom + ROW_UNITS / 2;
+            let center = bottom + row_units() / 2;
             let second_half = block.animation_countdown * 2 < DYING_DELAY;
             canvas.marks.push((
-                x * CELL_COLUMNS + CELL_COLUMNS / 2,
+                x * cell_columns() + cell_columns() / 2,
                 center.div_euclid(LINE_UNITS),
                 DYING_GLYPHS[second_half as usize],
+                DYING_COLOR,
             ));
             continue;
         }
@@ -120,12 +149,12 @@ pub(super) fn paint(frame: &FrameData) -> Canvas {
             COLORS[flavor]
         };
         // One unit of gap on top keeps stacked blocks apart.
-        let (mut low, mut high) = (bottom, bottom + ROW_UNITS - 1);
-        let mut left = (x * CELL_COLUMNS + 1) as i32;
+        let (mut low, mut high) = (bottom, bottom + row_units() - 1);
+        let mut left = (x * cell_columns() + 1) as i32;
         if state.contains(BlockState::AWAKING) {
             // From a shattered garbage.
             let remaining = block.pop_countdown - frame.time_step;
-            let under_slab = canvas.get(left as usize + 1, bottom + ROW_UNITS / 2).is_some();
+            let under_slab = canvas.get(left as usize + 1, bottom + row_units() / 2).is_some();
             if block.pop_countdown != 0 && remaining >= POP_ROTATE_TIME && under_slab {
                 // Still inside its garbage, which is drawn (and flashes) as one slab.
                 continue;
@@ -133,7 +162,7 @@ pub(super) fn paint(frame: &FrameData) -> Canvas {
             let (awaking_color, height) =
                 awaking_look(remaining, block.pop_countdown, block.pop_color, color);
             color = awaking_color;
-            let shrink = ((ROW_UNITS - 1) as f32 * (1.0 - height) / 2.0).round() as i32;
+            let shrink = ((row_units() - 1) as f32 * (1.0 - height) / 2.0).round() as i32;
             low += shrink;
             high -= shrink;
             if low >= high {
@@ -147,12 +176,12 @@ pub(super) fn paint(frame: &FrameData) -> Canvas {
             let other = if rightward { x + 1 } else { x.wrapping_sub(1) };
             for cell in [x, other].into_iter().filter(|&c| c < PLAY_WIDTH) {
                 // Every line the row touches: the dot sits in one of them.
-                for line in bottom.div_euclid(LINE_UNITS)..=(bottom + ROW_UNITS - 1).div_euclid(LINE_UNITS) {
-                    canvas.no_dots.push((cell * CELL_COLUMNS + CELL_COLUMNS / 2, line));
+                for line in bottom.div_euclid(LINE_UNITS)..=(bottom + row_units() - 1).div_euclid(LINE_UNITS) {
+                    canvas.no_dots.push((cell * cell_columns() + cell_columns() / 2, line));
                 }
             }
-            let shift = (swap_factor * CELL_COLUMNS as f32).round() as i32;
-            let lift = ((swap_factor * std::f32::consts::PI).sin() * SWAP_LIFT_UNITS as f32).round() as i32;
+            let shift = (swap_factor * cell_columns() as f32).round() as i32;
+            let lift = ((swap_factor * std::f32::consts::PI).sin() * swap_lift_units() as f32).round() as i32;
             if rightward {
                 left += shift;
                 low += lift;
@@ -162,14 +191,21 @@ pub(super) fn paint(frame: &FrameData) -> Canvas {
             }
         }
         let left = left.max(0) as usize;
-        canvas.fill(left..=left + BLOCK_COLUMNS - 1, low, high, color);
+        canvas.fill(left..=left + block_columns() - 1, low, high, color);
     }
 
     // Cursor last, over garbage seams: same height and position as the blocks of its row.
     let cursor_x = frame.swapper.grid_x.max(0) as usize;
     let bottom = bottom_unit(frame.swapper.grid_y, 0, rise);
-    let top = bottom + ROW_UNITS - 1;
-    let (left, right) = (cursor_x * CELL_COLUMNS, (cursor_x + 2) * CELL_COLUMNS);
+    let top = bottom + row_units() - 1;
+    let (left, right) = (cursor_x * cell_columns(), (cursor_x + 2) * cell_columns());
+    if compact() {
+        // One line per row: eighth-thin ticks would cover half a two-column block, so
+        // the brackets are drawn as such, in the gap columns.
+        let line = bottom.div_euclid(LINE_UNITS);
+        canvas.marks.extend([(left, line, '[', CURSOR_COLOR), (right, line, ']', CURSOR_COLOR)]);
+        return canvas;
+    }
     let ticks = cursor_ticks(bottom);
     for (bar, tick) in [(left, left + 1), (right, right - 1)] {
         canvas.fill(bar..=bar, bottom - 1, top + 1, CURSOR_COLOR);
@@ -188,20 +224,20 @@ pub(super) fn paint(frame: &FrameData) -> Canvas {
 /// (or above) would spill over it, so it then moves into the next character inside its
 /// own row (only with `--smooth`: half-row steps never need it).
 pub(super) fn cursor_ticks(bottom: i32) -> [(i32, i32); 2] {
-    let top = bottom + ROW_UNITS - 1;
+    let top = bottom + row_units() - 1;
     let line_start = |unit: i32| unit.div_euclid(LINE_UNITS) * LINE_UNITS;
     // The brick below ends at bottom - 2 (bottom - 1 is the gap).
     let low = if line_start(bottom) <= bottom - 2 {
-        (line_start(bottom) + LINE_UNITS, line_start(bottom) + LINE_UNITS + CURSOR_TICK_UNITS)
+        (line_start(bottom) + LINE_UNITS, line_start(bottom) + LINE_UNITS + cursor_tick_units())
     } else {
-        (bottom - 1, bottom + CURSOR_TICK_UNITS)
+        (bottom - 1, bottom + cursor_tick_units())
     };
     // The brick above starts at top + 1 (top is the gap).
     let end = line_start(top - 1) + LINE_UNITS;
     let high = if end > top + 1 {
-        (line_start(top - 1) - CURSOR_TICK_UNITS, line_start(top - 1))
+        (line_start(top - 1) - cursor_tick_units(), line_start(top - 1))
     } else {
-        (top - CURSOR_TICK_UNITS, top + 1)
+        (top - cursor_tick_units(), top + 1)
     };
     [low, high]
 }
@@ -238,11 +274,11 @@ pub(super) fn awaking_look(remaining: i32, pop_countdown: i32, pop_color: i32, c
 /// above stays clear: the stack rises into it and garbage arrives through it.
 /// A block fills units `[bottom, bottom + 15)`, so its center is at `bottom + 7.5`.
 pub(super) fn dot_at(col: usize, line: i32, rise: f32) -> Option<char> {
-    if col % CELL_COLUMNS != CELL_COLUMNS / 2 || col >= PLAY_WIDTH * CELL_COLUMNS {
+    if col % cell_columns() != cell_columns() / 2 || col >= PLAY_WIDTH * cell_columns() {
         return None;
     }
     (1..SAFE_HEIGHT as i32).find_map(|row| {
-        let center = bottom_unit(row, 0, rise) as f32 + (ROW_UNITS - 1) as f32 / 2.0;
+        let center = bottom_unit(row, 0, rise) as f32 + (row_units() - 1) as f32 / 2.0;
         // The closest (line, glyph): in the line holding the center or the one below.
         let home = (center as i32).div_euclid(LINE_UNITS);
         let (best_line, glyph) = [home, home - 1]
@@ -252,7 +288,7 @@ pub(super) fn dot_at(col: usize, line: i32, rise: f32) -> Option<char> {
                 let off = |(l, g): (i32, usize)| ((l * LINE_UNITS) as f32 + DOT_HEIGHTS[g] - center).abs();
                 off(*a).total_cmp(&off(*b))
             })?;
-        let in_view = (0..TOP_UNIT / LINE_UNITS).contains(&best_line);
+        let in_view = (0..top_unit() / LINE_UNITS).contains(&best_line);
         (in_view && best_line == line).then_some(DOTS[glyph])
     })
 }
@@ -263,9 +299,9 @@ pub(super) fn dot_at(col: usize, line: i32, rise: f32) -> Option<char> {
 pub(super) fn push_line(out: &mut String, canvas: &Canvas, line: i32, rise: f32) {
     let base = line * LINE_UNITS;
     let mut pen = Pen::default();
-    for col in 0..FIELD_COLUMNS {
-        if let Some(glyph) = canvas.mark(col, line) {
-            pen.switch(out, Pen::ink(DYING_COLOR));
+    for col in 0..field_columns() {
+        if let Some((glyph, color)) = canvas.mark(col, line) {
+            pen.switch(out, Pen::ink(color));
             out.push(glyph);
             continue;
         }
@@ -290,8 +326,8 @@ mod tests {
 
     #[test]
     fn bracket_ticks_stay_within_the_row_and_its_gaps() {
-        for bottom in 0..ROW_UNITS * 2 {
-            let top = bottom + ROW_UNITS - 1;
+        for bottom in 0..row_units() * 2 {
+            let top = bottom + row_units() - 1;
             let [(low, low_end), (high_start, high)] = cursor_ticks(bottom);
             assert!(bottom - 1 <= low && low_end <= high_start && high <= top + 1, "bottom {}", bottom);
         }
@@ -300,14 +336,14 @@ mod tests {
     #[test]
     fn dots_mark_each_cell_and_rise_with_the_stack() {
         SMOOTH_RISE.with(|smooth| smooth.set(true));
-        let count = |rise: f32| (0..TOP_UNIT / LINE_UNITS)
-            .flat_map(|line| (0..FIELD_COLUMNS).map(move |col| (col, line)))
+        let count = |rise: f32| (0..top_unit() / LINE_UNITS)
+            .flat_map(|line| (0..field_columns()).map(move |col| (col, line)))
             .filter(|&(col, line)| dot_at(col, line, rise).is_some())
             .count();
         assert_eq!(count(0.0), PLAY_WIDTH * (SAFE_HEIGHT - 1));
         // Row 1 (units 0 to 15, center 7.5): at rest, a high dot at the top of line 0;
         // a quarter row higher, a middle dot in line 1; half a row higher, top of line 1.
-        let col = CELL_COLUMNS / 2;
+        let col = cell_columns() / 2;
         assert_eq!(dot_at(col, 0, 0.0), Some('˙'));
         assert_eq!(dot_at(col, 1, 0.0), None);
         assert_eq!(dot_at(col, 1, 0.25), Some('·'));
@@ -319,19 +355,19 @@ mod tests {
     fn each_dot_lands_close_to_its_cell_center_whatever_the_rise() {
         for smooth in [false, true] {
             SMOOTH_RISE.with(|s| s.set(smooth));
-            for step in 0..ROW_UNITS {
-                let rise = step as f32 / ROW_UNITS as f32;
-                let col = CELL_COLUMNS / 2;
+            for step in 0..row_units() {
+                let rise = step as f32 / row_units() as f32;
+                let col = cell_columns() / 2;
                 for row in 1..SAFE_HEIGHT as i32 {
-                    let center = bottom_unit(row, 0, rise) as f32 + (ROW_UNITS - 1) as f32 / 2.0;
-                    let found: Vec<f32> = (0..TOP_UNIT / LINE_UNITS)
+                    let center = bottom_unit(row, 0, rise) as f32 + (row_units() - 1) as f32 / 2.0;
+                    let found: Vec<f32> = (0..top_unit() / LINE_UNITS)
                         .filter_map(|line| dot_at(col, line, rise).map(|g| {
                             let i = DOTS.iter().position(|d| *d == g).unwrap();
                             (line * LINE_UNITS) as f32 + DOT_HEIGHTS[i]
                         }))
-                        .filter(|y| (y - center).abs() < ROW_UNITS as f32 / 2.0)
+                        .filter(|y| (y - center).abs() < row_units() as f32 / 2.0)
                         .collect();
-                    if center + 1.5 >= TOP_UNIT as f32 {
+                    if center + 1.5 >= top_unit() as f32 {
                         continue;
                     }
                     assert_eq!(found.len(), 1, "smooth {} rise {}/16 row {}", smooth, step, row);
@@ -353,16 +389,16 @@ mod tests {
         block.animation_countdown = DYING_DELAY;
         let (x, y) = (block.grid_x as usize, block.grid_y);
         let canvas = paint(&frame);
-        let center = bottom_unit(y, 0, frame.play_offset_y) + ROW_UNITS / 2;
-        let col = x * CELL_COLUMNS + CELL_COLUMNS / 2;
-        assert_eq!(canvas.mark(col, center.div_euclid(LINE_UNITS)), Some('■'));
+        let center = bottom_unit(y, 0, frame.play_offset_y) + row_units() / 2;
+        let col = x * cell_columns() + cell_columns() / 2;
+        assert_eq!(canvas.mark(col, center.div_euclid(LINE_UNITS)), Some(('■', DYING_COLOR)));
         // The cell itself is left empty around the square.
         assert_eq!(canvas.get(col, center), None);
     }
 
     /// Units of column `col` painted in `color`.
     fn painted(canvas: &Canvas, col: usize, color: u8) -> Vec<i32> {
-        (BOTTOM_UNIT..TOP_UNIT).filter(|&u| canvas.get(col, u) == Some(color)).collect()
+        (lowest_unit()..top_unit()).filter(|&u| canvas.get(col, u) == Some(color)).collect()
     }
 
     #[test]
@@ -371,21 +407,21 @@ mod tests {
         frame.swapper.swap_factor = 0.5;
         let color = COLORS[frame.blocks[0].flavor as usize];
         let bottom = bottom_unit(3, 0, frame.play_offset_y);
-        let left = CELL_COLUMNS + 1 + CELL_COLUMNS / 2;
+        let left = cell_columns() + 1 + cell_columns() / 2;
         let canvas = paint(&frame);
-        assert!(painted(&canvas, CELL_COLUMNS + 1, color).is_empty());
+        assert!(painted(&canvas, cell_columns() + 1, color).is_empty());
         let units = painted(&canvas, left, color);
-        assert_eq!(units, (bottom + SWAP_LIFT_UNITS..bottom + ROW_UNITS - 1).collect::<Vec<_>>());
+        assert_eq!(units, (bottom + swap_lift_units()..bottom + row_units() - 1).collect::<Vec<_>>());
         // The block going left keeps the lower part of the row.
         frame.blocks[0].state = BlockState::SWAPPING.bits();
         frame.blocks[0].grid_x = 2;
         let canvas = paint(&frame);
         let units = painted(&canvas, left, color);
-        assert_eq!(units, (bottom..bottom + ROW_UNITS - 1 - SWAP_LIFT_UNITS).collect::<Vec<_>>());
+        assert_eq!(units, (bottom..bottom + row_units() - 1 - swap_lift_units()).collect::<Vec<_>>());
         // Swap over: back in place, whole.
         frame.swapper.swap_factor = 0.0;
         let canvas = paint(&frame);
-        assert_eq!(painted(&canvas, 2 * CELL_COLUMNS + 1, color).len(), (ROW_UNITS - 1) as usize);
+        assert_eq!(painted(&canvas, 2 * cell_columns() + 1, color).len(), (row_units() - 1) as usize);
     }
 
     #[test]
@@ -393,13 +429,13 @@ mod tests {
         let mut frame = lone_block_frame(BlockState::AWAKING.bits());
         let color = COLORS[frame.blocks[0].flavor as usize];
         frame.blocks[0].pop_color = 0;
-        let col = CELL_COLUMNS + 2;
+        let col = cell_columns() + 2;
         let mut look = |remaining: i32| {
             frame.blocks[0].pop_countdown = frame.time_step + remaining;
             let canvas = paint(&frame);
             (painted(&canvas, col, GARBAGE_COLOR).len(), painted(&canvas, col, color).len())
         };
-        let full = (ROW_UNITS - 1) as usize;
+        let full = (row_units() - 1) as usize;
         assert_eq!(look(POP_ROTATE_TIME + 5), (full, 0));
         let (garbage, own) = look(POP_ROTATE_TIME * 3 / 4);
         assert!(garbage > 0 && garbage < full && own == 0);
@@ -420,14 +456,14 @@ mod tests {
             state: 8, sections_popped: 0, pop_direction: 0, pop_color: 0,
             shatter_progress: 0.05, awaking_progress: 0.0, pop_progress: 0.0,
         }];
-        let col = CELL_COLUMNS + 2;
+        let col = cell_columns() + 2;
         assert_eq!(painted(&paint(&frame), col, GARBAGE_COLOR).len(), 0);
         assert!(!painted(&paint(&frame), col, GARBAGE_FLASH_COLOR).is_empty());
         // Halfway through its flip, the block is thin but there.
         frame.garbage.clear();
         frame.blocks[0].pop_countdown = frame.time_step + POP_ROTATE_TIME / 2;
         let canvas = paint(&frame);
-        let shown = (BOTTOM_UNIT..TOP_UNIT).filter(|&u| canvas.get(col, u).is_some()).count();
+        let shown = (lowest_unit()..top_unit()).filter(|&u| canvas.get(col, u).is_some()).count();
         assert!(shown >= 2, "flip shows {} units", shown);
     }
 
@@ -446,7 +482,7 @@ mod tests {
         frame.garbage = vec![garbage];
         let canvas = paint(&frame);
         let bottom = bottom_unit(11, 0, frame.play_offset_y);
-        assert_eq!(canvas.get(CELL_COLUMNS * 2, bottom + 2), Some(GARBAGE_COLOR));
+        assert_eq!(canvas.get(cell_columns() * 2, bottom + 2), Some(GARBAGE_COLOR));
     }
 
     #[test]
@@ -454,20 +490,20 @@ mod tests {
         let mut game = GameState::new(7);
         let frame = game.step(&InputSnapshot::new());
         let canvas = paint(&frame);
-        let col = frame.swapper.grid_x as usize * CELL_COLUMNS;
+        let col = frame.swapper.grid_x as usize * cell_columns();
         let bottom = bottom_unit(frame.swapper.grid_y, 0, frame.play_offset_y);
-        let painted: Vec<i32> = (BOTTOM_UNIT..TOP_UNIT)
+        let painted: Vec<i32> = (lowest_unit()..top_unit())
             .filter(|&u| canvas.get(col, u) == Some(CURSOR_COLOR))
             .collect();
         // The bars frame the row: they reach into the gaps above and below it.
-        assert_eq!(painted, (bottom - 1..bottom + ROW_UNITS).collect::<Vec<_>>());
+        assert_eq!(painted, (bottom - 1..bottom + row_units()).collect::<Vec<_>>());
         // The ticks of the brackets run over the first column of each block, top and bottom.
         let ticks: Vec<i32> = cursor_ticks(bottom).iter().flat_map(|&(l, h)| l..h).collect();
-        for tick in [col + 1, col + 2 * CELL_COLUMNS - 1] {
+        for tick in [col + 1, col + 2 * cell_columns() - 1] {
             for &u in &ticks {
                 assert_eq!(canvas.get(tick, u), Some(CURSOR_COLOR));
             }
-            assert_ne!(canvas.get(tick, bottom + ROW_UNITS / 2), Some(CURSOR_COLOR));
+            assert_ne!(canvas.get(tick, bottom + row_units() / 2), Some(CURSOR_COLOR));
         }
     }
 
@@ -477,17 +513,17 @@ mod tests {
         assert_eq!(bottom_unit(1, 0, 0.45), 0);
         assert_eq!(bottom_unit(1, 0, 0.5), LINE_UNITS);
         assert_eq!(bottom_unit(1, 0, 0.99), LINE_UNITS);
-        assert_eq!(bottom_unit(0, 0, 0.3), -ROW_UNITS);
-        assert_eq!(bottom_unit(2, STEPS_PER_GRID / 2, 0.0), ROW_UNITS * 3 / 2);
+        assert_eq!(bottom_unit(0, 0, 0.3), -row_units());
+        assert_eq!(bottom_unit(2, STEPS_PER_GRID / 2, 0.0), row_units() * 3 / 2);
     }
 
     #[test]
     fn the_stack_rises_by_sixteenths_of_a_row_with_smooth() {
         SMOOTH_RISE.with(|smooth| smooth.set(true));
         assert_eq!(bottom_unit(1, 0, 0.0), 0);
-        assert_eq!(bottom_unit(1, 0, 0.5), ROW_UNITS / 2);
-        assert_eq!(bottom_unit(0, 0, 0.25), -ROW_UNITS * 3 / 4);
+        assert_eq!(bottom_unit(1, 0, 0.5), row_units() / 2);
+        assert_eq!(bottom_unit(0, 0, 0.25), -row_units() * 3 / 4);
         // A block halfway through its fall to row 2.
-        assert_eq!(bottom_unit(2, STEPS_PER_GRID / 2, 0.0), ROW_UNITS * 3 / 2);
+        assert_eq!(bottom_unit(2, STEPS_PER_GRID / 2, 0.0), row_units() * 3 / 2);
     }
 }

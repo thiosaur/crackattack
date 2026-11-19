@@ -6,8 +6,8 @@
 
 use crate::renderer::scene::game_renderer::GRID_ELEMENT_LENGTH;
 
-/// Play field width in cells.
-pub const GC_PLAY_WIDTH: i32 = 6;
+/// Play field width in cells, from the engine.
+pub const GC_PLAY_WIDTH: i32 = crackattack_core::constants::PLAY_WIDTH as i32;
 
 /// UV coordinate converter: maps a mesh position to the UV attribute.
 pub const GARBAGE_LIGHTMAP_COORD_CONVERTER: f32 = -1.0 / (GRID_ELEMENT_LENGTH * GC_PLAY_WIDTH as f32);

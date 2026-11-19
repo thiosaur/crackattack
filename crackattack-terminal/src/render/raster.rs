@@ -3,7 +3,7 @@
 
 use std::fmt::Write;
 
-use super::board::{BOTTOM_UNIT, FIELD_COLUMNS, SPAN_UNITS, TOP_UNIT};
+use super::board::{field_columns, lowest_unit, top_unit};
 use super::palette::CURSOR_COLOR;
 
 /// Eighth blocks, from 1/8 to 7/8 of the height, drawn from the bottom.
@@ -11,11 +11,17 @@ pub(super) const LOWER_EIGHTHS: [char; 7] = ['▁', '▂', '▃', '▄', '▅', 
 /// Weight of a cursor unit when a character picks its two colors (a whole line's worth).
 const CURSOR_WEIGHT: usize = 8;
 
-/// Fine paint buffer: a color (or nothing) per terminal column and vertical unit.
+/// Fine paint buffer: a color (or nothing) per terminal column and vertical unit, over
+/// the board's geometry when it was made.
 pub(super) struct Canvas {
     cells: Vec<Option<u8>>,
-    /// Glyphs drawn over the board at (column, line): dying blocks.
-    pub(super) marks: Vec<(usize, i32, char)>,
+    /// Columns, and the units painted: `[lowest, top)`.
+    width: usize,
+    lowest: i32,
+    top: i32,
+    /// Glyphs drawn over the board at (column, line), in a color: dying blocks, and the
+    /// cursor brackets when compact.
+    pub(super) marks: Vec<(usize, i32, char, u8)>,
     /// Dot places (column, line) to leave blank: the cells of a swap, which a sliding
     /// block crosses.
     pub(super) no_dots: Vec<(usize, i32)>,
@@ -23,29 +29,34 @@ pub(super) struct Canvas {
 
 impl Canvas {
     pub(super) fn new() -> Self {
-        Self { cells: vec![None; FIELD_COLUMNS * SPAN_UNITS], marks: Vec::new(), no_dots: Vec::new() }
+        let (width, lowest, top) = (field_columns(), lowest_unit(), top_unit());
+        Self {
+            cells: vec![None; width * (top - lowest) as usize],
+            width,
+            lowest,
+            top,
+            marks: Vec::new(),
+            no_dots: Vec::new(),
+        }
     }
 
-    pub(super) fn mark(&self, col: usize, line: i32) -> Option<char> {
-        self.marks.iter().find(|m| m.0 == col && m.1 == line).map(|m| m.2)
+    pub(super) fn mark(&self, col: usize, line: i32) -> Option<(char, u8)> {
+        self.marks.iter().find(|m| m.0 == col && m.1 == line).map(|m| (m.2, m.3))
     }
 
     pub(super) fn get(&self, col: usize, unit: i32) -> Option<u8> {
-        let u = unit - BOTTOM_UNIT;
-        if col >= FIELD_COLUMNS || u < 0 || u as usize >= SPAN_UNITS {
+        if col >= self.width || unit < self.lowest || unit >= self.top {
             return None;
         }
-        self.cells[u as usize * FIELD_COLUMNS + col]
+        self.cells[(unit - self.lowest) as usize * self.width + col]
     }
 
     /// Paints columns `cols` over units `[bottom, top)`, clipped to the canvas.
     pub(super) fn fill(&mut self, cols: std::ops::RangeInclusive<usize>, bottom: i32, top: i32, color: u8) {
-        for unit in bottom.max(BOTTOM_UNIT)..top.min(TOP_UNIT) {
-            let u = (unit - BOTTOM_UNIT) as usize;
-            for col in cols.clone() {
-                if col < FIELD_COLUMNS {
-                    self.cells[u * FIELD_COLUMNS + col] = Some(color);
-                }
+        for unit in bottom.max(self.lowest)..top.min(self.top) {
+            let row = (unit - self.lowest) as usize * self.width;
+            for col in cols.clone().filter(|&col| col < self.width) {
+                self.cells[row + col] = Some(color);
             }
         }
     }
@@ -55,6 +66,12 @@ impl Canvas {
 /// (lower color, upper color, height of the lower part in eighths) that matches the most
 /// units.
 pub(super) fn split_line(units: &[Option<u8>; 8]) -> (Option<u8>, Option<u8>, usize) {
+    // Most characters are one color, or two (a block under its gap): the split is exact,
+    // without the search below, which only three colors in one character need.
+    let k = units.iter().position(|u| *u != units[0]).unwrap_or(8);
+    if units[k..].iter().all(|u| *u == units[k.min(7)]) {
+        return if k == 8 { (units[0], units[0], 8) } else { (units[0], units[k], k) };
+    }
     // The cursor counts more than anything else: its thin bracket ticks must never be
     // dropped when a character spans three colors (block, tick, gap).
     let weight = |u: &Option<u8>| if *u == Some(CURSOR_COLOR) { CURSOR_WEIGHT } else { 1 };

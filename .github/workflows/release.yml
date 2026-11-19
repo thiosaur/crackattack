@@ -5,9 +5,11 @@
 # 2. Linux, Windows and macOS packages are built with CRACKATTACK_DISTRIBUTION=direct
 #    (the stamp that enables the daily update check) and checked: `--version` must report
 #    "(direct)" and the game data must be in the package.
-# 3. A DRAFT release is created with the three packages. Drafts are invisible to players
+# 3. A DRAFT release is created with the three packages and the three terminal archives
+#    (the text version: one executable, no game data).
+#    The draft holds both. Drafts are invisible to players
 #    and to the "latest release" API: publishing the draft by hand, after trying the
-#    packages, is the last step and the one that makes the version visible.
+#    files, is the last step and the one that makes the version visible.
 #
 # A platform that fails blocks the whole release (no partial release).
 #
@@ -74,12 +76,15 @@ jobs:
           - os: ubuntu-22.04
             platform: linux-x86_64
             exe: crackattack
+            terminal_exe: crackattack-terminal
           - os: windows-latest
             platform: windows-x86_64
             exe: crackattack.exe
+            terminal_exe: crackattack-terminal.exe
           - os: macos-latest
             platform: macos-arm64
             exe: crackattack
+            terminal_exe: crackattack-terminal
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     env:
@@ -214,6 +219,31 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit 1 }
           Get-ChildItem dist
 
+      - name: Terminal version
+        # The text version: one executable and the licences, no game data and no
+        # distribution stamp (it has no update check). Its dependencies are not the game's,
+        # so it has its own third-party notices.
+        shell: bash
+        run: |
+          cargo build --release --locked -p crackattack-terminal
+          cargo about generate --locked --fail -m crackattack-terminal/Cargo.toml about.hbs -o THIRD-PARTY-LICENSES-terminal.html
+          out=$(target/release/${{ matrix.terminal_exe }} --version)
+          echo "$out"
+          [ "$out" = "crackattack-terminal $VERSION" ] || { echo "::error::unexpected terminal --version: $out"; exit 1; }
+          name="crackattack-terminal-$VERSION-${{ matrix.platform }}"
+          mkdir -p "dist/$name"
+          cp "target/release/${{ matrix.terminal_exe }}" "dist/$name/"
+          cp LICENSE AUTHORS "dist/$name/"
+          cp THIRD-PARTY-LICENSES-terminal.html "dist/$name/THIRD-PARTY-LICENSES.html"
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            (cd dist && ditto -c -k --keepParent "$name" "$name.zip")
+          elif [ "$RUNNER_OS" = "Windows" ]; then
+            (cd dist && 7z a -tzip "$name.zip" "$name" > /dev/null)
+          else
+            tar -C dist -czf "dist/$name.tar.gz" "$name"
+          fi
+          ls -l dist
+
       - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.platform }}
@@ -254,6 +284,15 @@ jobs:
           The Windows installer needs no administrator rights; the macOS disk image holds the
           app, to drag into Applications; the AppImage runs as is (make it executable first).
           Archives: unpack anywhere and run. Your settings and scores are kept in your user folder.
+
+          **Terminal version** (text game, solo only; one executable, run it in a terminal that
+          supports 256 colors and UTF-8, `--help` lists the options):
+
+          | System | Archive |
+          |---|---|
+          | Windows (x86_64) | `crackattack-terminal-VERSION-windows-x86_64.zip` |
+          | macOS (Apple Silicon) | `crackattack-terminal-VERSION-macos-arm64.zip` |
+          | Linux (x86_64) | `crackattack-terminal-VERSION-linux-x86_64.tar.gz` |
 
           **macOS:** the application is not signed by Apple, so macOS blocks it the first time:
           - macOS 15 or later: open *Crack Attack.app* once, then go to *System Settings →

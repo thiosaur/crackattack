@@ -25,7 +25,7 @@ pub(super) fn lone_block_frame(state: u8) -> FrameData {
 /// colors: what the terminal displays.
 fn shown_white(canvas: &Canvas, col: usize) -> Vec<i32> {
     let mut units = Vec::new();
-    for line in BOTTOM_UNIT.div_euclid(LINE_UNITS)..TOP_UNIT / LINE_UNITS {
+    for line in lowest_unit().div_euclid(LINE_UNITS)..top_unit() / LINE_UNITS {
         let cells: [Option<u8>; 8] = std::array::from_fn(|i| canvas.get(col, line * LINE_UNITS + i as i32));
         let (lower, upper, k) = split_line(&cells);
         for i in 0..8 {
@@ -43,10 +43,10 @@ fn the_brackets_are_square_their_ticks_flush_with_the_bars() {
     let mut frame = game.step(&InputSnapshot::new());
     frame.swapper.grid_x = 1;
     frame.swapper.grid_y = 3;
-    for step in 0..ROW_UNITS {
-        frame.play_offset_y = step as f32 / ROW_UNITS as f32;
+    for step in 0..row_units() {
+        frame.play_offset_y = step as f32 / row_units() as f32;
         let canvas = paint(&frame);
-        for (bar, tick) in [(CELL_COLUMNS, CELL_COLUMNS + 1), (3 * CELL_COLUMNS, 3 * CELL_COLUMNS - 1)] {
+        for (bar, tick) in [(cell_columns(), cell_columns() + 1), (3 * cell_columns(), 3 * cell_columns() - 1)] {
             let (bar, tick) = (shown_white(&canvas, bar), shown_white(&canvas, tick));
             assert!(!tick.is_empty(), "rise {}/16: no tick", step);
             assert_eq!(
@@ -65,14 +65,14 @@ fn the_cursor_ticks_show_and_never_spill_whatever_the_rise() {
     let mut frame = game.step(&InputSnapshot::new());
     frame.swapper.grid_x = 1;
     frame.swapper.grid_y = 3;
-    for step in 0..ROW_UNITS {
-        frame.play_offset_y = step as f32 / ROW_UNITS as f32;
+    for step in 0..row_units() {
+        frame.play_offset_y = step as f32 / row_units() as f32;
         let canvas = paint(&frame);
         let bottom = bottom_unit(3, 0, frame.play_offset_y);
-        let top = bottom + ROW_UNITS - 1;
-        for col in [CELL_COLUMNS + 1, 3 * CELL_COLUMNS - 1] {
+        let top = bottom + row_units() - 1;
+        for col in [cell_columns() + 1, 3 * cell_columns() - 1] {
             let mut white = 0;
-            for line in BOTTOM_UNIT.div_euclid(LINE_UNITS)..TOP_UNIT / LINE_UNITS {
+            for line in lowest_unit().div_euclid(LINE_UNITS)..top_unit() / LINE_UNITS {
                 let units: [Option<u8>; 8] =
                     std::array::from_fn(|i| canvas.get(col, line * LINE_UNITS + i as i32));
                 let (lower, upper, k) = split_line(&units);
@@ -88,7 +88,7 @@ fn the_cursor_ticks_show_and_never_spill_whatever_the_rise() {
                     }
                 }
             }
-            assert!(white >= 2 * CURSOR_TICK_UNITS as usize, "rise {}/16: tick lost", step);
+            assert!(white >= 2 * cursor_tick_units() as usize, "rise {}/16: tick lost", step);
         }
     }
 }
@@ -98,16 +98,16 @@ fn by_default_the_gap_between_stacked_blocks_always_shows() {
     let mut game = GameState::new(7);
     let mut frame = game.step(&InputSnapshot::new());
     frame.swapper.grid_y = 12;
-    for step in 0..ROW_UNITS {
-        frame.play_offset_y = step as f32 / ROW_UNITS as f32;
+    for step in 0..row_units() {
+        frame.play_offset_y = step as f32 / row_units() as f32;
         let canvas = paint(&frame);
         for block in frame.blocks.iter().filter(|b| b.grid_y >= 1) {
             let above = frame.blocks.iter().any(|b| b.grid_x == block.grid_x && b.grid_y == block.grid_y + 1);
             if !above {
                 continue;
             }
-            let col = block.grid_x as usize * CELL_COLUMNS + 2;
-            let gap = bottom_unit(block.grid_y, 0, frame.play_offset_y) + ROW_UNITS - 1;
+            let col = block.grid_x as usize * cell_columns() + 2;
+            let gap = bottom_unit(block.grid_y, 0, frame.play_offset_y) + row_units() - 1;
             let line = gap.div_euclid(LINE_UNITS);
             let units: [Option<u8>; 8] = std::array::from_fn(|i| canvas.get(col, line * LINE_UNITS + i as i32));
             let (lower, upper, k) = split_line(&units);
@@ -126,7 +126,7 @@ fn danger_bars_frame_the_board_on_both_sides() {
     let text = compose(&frame, false, &Hud { danger: half, chain: None, ..Hud::default() });
     let purple = format!("\x1b[38;5;{}m█", DANGER_PURPLE[0]);
     // Half the board lines on each side.
-    assert_eq!(text.matches(&purple).count(), 2 * (TOP_UNIT / LINE_UNITS / 2) as usize);
+    assert_eq!(text.matches(&purple).count(), 2 * (top_unit() / LINE_UNITS / 2) as usize);
     let red = DangerBars { red: true, ..half };
     assert!(compose(&frame, false, &Hud { danger: red, chain: None, ..Hud::default() }).contains(&format!("\x1b[38;5;{}m█", DANGER_RED[0])));
     assert!(!compose(&frame, true, &Hud { danger: half, chain: None, ..Hud::default() }).contains(&purple));
@@ -143,10 +143,10 @@ fn no_dots_in_the_cells_of_a_swap() {
     let lines = screen.text();
     // What the row shows at the center column of `cell`, over its two lines.
     let centers = |cell: usize| -> Vec<char> {
-        (bottom.div_euclid(LINE_UNITS)..=(bottom + ROW_UNITS - 1).div_euclid(LINE_UNITS))
+        (bottom.div_euclid(LINE_UNITS)..=(bottom + row_units() - 1).div_euclid(LINE_UNITS))
             .filter_map(|line| {
-                let row = (TOP_UNIT / LINE_UNITS - 1 - line) as usize;
-                lines[row].chars().nth(DANGER_GAP.len() + 1 + cell * CELL_COLUMNS + CELL_COLUMNS / 2)
+                let row = (top_unit() / LINE_UNITS - 1 - line) as usize;
+                lines[row].chars().nth(DANGER_GAP.len() + 1 + cell * cell_columns() + cell_columns() / 2)
             })
             .collect()
     };
@@ -181,7 +181,7 @@ fn the_logo_shows_block_for_block_right_of_the_board() {
     let mut screen = crate::screen::Screen::new();
     screen.feed(&compose(&frame, false, &Hud::default()));
     // The panel starts after the board, the right danger bar and its gap.
-    let panel = PANEL_COLUMN;
+    let panel = panel_column();
     let mut word = 0;
     for (y, row) in LOGO.lines().enumerate() {
         if row.trim().is_empty() {
@@ -197,7 +197,7 @@ fn the_logo_shows_block_for_block_right_of_the_board() {
         }
     }
     // Between the chain popup (line 6) and the key hints.
-    let lines = (TOP_UNIT / LINE_UNITS + LINES_BELOW_GROUND) as usize;
+    let lines = (top_unit() / LINE_UNITS + lines_below_ground()) as usize;
     assert!(LOGO_FIRST_LINE > 6 && LOGO_FIRST_LINE + LOGO.lines().count() <= lines - KEYS.len());
 }
 
@@ -211,7 +211,7 @@ fn the_pause_hides_the_board() {
     // No block left on the board (the logo in the side panel stays).
     let mut screen = crate::screen::Screen::new();
     screen.feed(&text);
-    let board = 1 + DANGER_GAP.len()..1 + DANGER_GAP.len() + FIELD_COLUMNS;
+    let board = 1 + DANGER_GAP.len()..1 + DANGER_GAP.len() + field_columns();
     for line in screen.text() {
         let field: String = line.chars().skip(board.start).take(board.len()).collect();
         assert!(!field.contains(['█', '▇', '▅', '▂']), "{:?}", line);
@@ -225,8 +225,10 @@ fn a_frame_has_one_line_per_two_row_halves_and_a_ground() {
     let frame = game.step(&InputSnapshot::new());
     let text = compose(&frame, false, &Hud::default());
     // Playfield lines only (no debug line by default).
-    assert_eq!(screen_lines(&frame, false, &Hud::default()).len(), (TOP_UNIT / LINE_UNITS + LINES_BELOW_GROUND) as usize);
+    assert_eq!(screen_lines(&frame, false, &Hud::default()).len(), (top_unit() / LINE_UNITS + lines_below_ground()) as usize);
     assert!(!text.contains("Swap cells"));
+    // What a terminal needs to show it, below which the screen goes compact.
+    assert_eq!(tall_lines(), screen_lines(&frame, false, &Hud::default()).len());
     assert_eq!(text.matches(GROUND).count(), 1);
 }
 
@@ -244,7 +246,7 @@ fn at_game_over_the_logo_turns_into_game_over_then_asks_for_a_key() {
         let rows = screen.text();
         let art: Vec<String> = rows[LOGO_FIRST_LINE..LOGO_FIRST_LINE + LOGO.lines().count()]
             .iter()
-            .map(|line| line.chars().skip(PANEL_COLUMN).collect::<String>().trim_end().to_string())
+            .map(|line| line.chars().skip(panel_column()).collect::<String>().trim_end().to_string())
             .collect();
         (art, rows.join("\n"))
     };
@@ -261,4 +263,27 @@ fn at_game_over_the_logo_turns_into_game_over_then_asks_for_a_key() {
     let (end, text) = panel(Some(game_over_ticks()));
     assert_eq!(end, as_blocks(GAME_OVER));
     assert!(text.contains("Press any key") && !text.contains("quit"));
+}
+
+#[test]
+fn compact_fits_the_shellcade_canvas_with_a_line_per_row() {
+    COMPACT.with(|compact| compact.set(true));
+    let mut game = GameState::new(7);
+    let frame = game.step(&InputSnapshot::new());
+    let mut screen = crate::screen::Screen::new();
+    screen.feed(&compose(&frame, false, &Hud::default()));
+    let lines = screen.text();
+    assert_eq!(lines.len(), COMPACT_LINES);
+    assert!(lines.iter().all(|l| l.chars().count() <= 80), "{:#?}", lines);
+    // Every block is a ▇: the eighth above it is the gap to the next row.
+    for block in frame.blocks.iter().filter(|b| b.grid_y >= 1) {
+        let line = bottom_unit(block.grid_y, 0, frame.play_offset_y) / LINE_UNITS;
+        let row = (COMPACT_LINES - (top_unit() / LINE_UNITS + lines_below_ground()) as usize) / 2
+            + (top_unit() / LINE_UNITS - 1 - line) as usize;
+        let col = DANGER_GAP.len() + 1 + block.grid_x as usize * cell_columns() + 1;
+        let shown: String = lines[row].chars().skip(col).take(block_columns()).collect();
+        assert!(shown == "▇▇" || shown.contains(['[', ']']), "block ({}, {}): {:?}", block.grid_x, block.grid_y, shown);
+    }
+    // The cursor brackets are glyphs, on the line of its row.
+    assert!(lines.iter().any(|l| l.contains('[') && l.contains(']')));
 }

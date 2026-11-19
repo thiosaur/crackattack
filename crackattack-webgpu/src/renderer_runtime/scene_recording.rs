@@ -182,7 +182,7 @@ impl RendererRuntime {
 
     /// Process gameplay events: update animators, track block impacts.
     fn process_frame_events(&mut self, plan: &FramePlan, frame: &FrameData, render_dt: f32, debug: &mut DebugState) {
-        self.scene.danger_bar_animator.time_step(frame.ui.creep_freeze, frame.ui.loss_countdown);
+        self.scene.danger_bar_animator.time_step(&frame.ui);
         let opponent_board = plan.snapshot.as_ref()
             .and_then(|snap| snap.vs_display.as_ref())
             .and_then(|vs| vs.opponent_board.as_ref());

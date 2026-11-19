@@ -39,30 +39,52 @@ pub(crate) const KEYS: [KeyHelp; 5] = [
     KeyHelp { keys: "Q / Escape", action: "Quit", hint_key: "Q", hint_action: "quit" },
 ];
 
+/// Where the side panel puts things (lines from the top), and on how many lines the keys
+/// go at the bottom.
+struct Layout {
+    time: usize,
+    best: usize,
+    chain: usize,
+    logo: usize,
+    key_lines: usize,
+}
+
+/// One line per row of the board: room to spare.
+const TALL: Layout = Layout { time: 2, best: 3, chain: 6, logo: LOGO_FIRST_LINE, key_lines: KEYS.len() };
+/// `--compact`, on 24 lines: closer together, the keys on two lines.
+const COMPACT: Layout = Layout { time: 1, best: 2, chain: 4, logo: 6, key_lines: 2 };
+
 /// Side panel text for line `i` (0 = top) of `lines`: game info at the top, the chain
-/// just reached below it, the keys at the bottom (once the game is lost and GAME OVER
-/// shown, a prompt instead).
+/// just reached below it, the logo, the keys at the bottom (once the game is lost and
+/// GAME OVER shown, a prompt instead).
 pub(super) fn panel_line(i: usize, lines: usize, frame: &FrameData, hud: &Hud) -> Option<String> {
+    let layout = if super::board::compact() { &COMPACT } else { &TALL };
     let seconds = frame.ui.clock_time / crate::TICKS_PER_SECOND;
-    let first_hint = lines.checked_sub(KEYS.len())?;
-    match i {
-        0 => Some(format!("\x1b[1mScore  {}\x1b[22m", frame.score)),
-        2 => Some(format!("Time   {}:{:02}", seconds / 60, seconds % 60)),
-        3 => Some(match frame.stats.max_chain_level {
+    let first_key_line = lines.checked_sub(layout.key_lines)?;
+    if i == 0 {
+        Some(format!("\x1b[1mScore  {}\x1b[22m", frame.score))
+    } else if i == layout.time {
+        Some(format!("Time   {}:{:02}", seconds / 60, seconds % 60))
+    } else if i == layout.best {
+        Some(match frame.stats.max_chain_level {
             n if n >= 2 => format!("Best   x{}", n),
             _ => "Best   -".to_string(),
-        }),
-        6 => hud.chain.map(|n| format!("\x1b[1;38;5;{}mChain x{}!\x1b[22;39m", CHAIN_COLOR, n)),
-        _ if (LOGO_FIRST_LINE..LOGO_FIRST_LINE + art().colors.len()).contains(&i) => {
-            Some(logo_line(i - LOGO_FIRST_LINE, hud.game_over))
-        }
-        _ if hud.game_over.is_some_and(|t| t >= game_over_ticks()) => {
-            (i == first_hint).then(|| "\x1b[1mPress any key\x1b[22m".to_string())
-        }
-        _ => {
-            let key = KEYS.get(i.checked_sub(first_hint)?)?;
-            Some(format!("\x1b[38;5;{}m{:<7}{}\x1b[39m", HINT_COLOR, key.hint_key, key.hint_action))
-        }
+        })
+    } else if i == layout.chain {
+        hud.chain.map(|n| format!("\x1b[1;38;5;{}mChain x{}!\x1b[22;39m", CHAIN_COLOR, n))
+    } else if (layout.logo..layout.logo + art().colors.len()).contains(&i) {
+        Some(logo_line(i - layout.logo, hud.game_over))
+    } else if hud.game_over.is_some_and(|t| t >= game_over_ticks()) {
+        (i == first_key_line).then(|| "\x1b[1mPress any key\x1b[22m".to_string())
+    } else {
+        // The keys, shared out evenly over the key lines.
+        let per_line = KEYS.len().div_ceil(layout.key_lines);
+        let keys = KEYS.chunks(per_line).nth(i.checked_sub(first_key_line)?)?;
+        let text = match keys {
+            [key] => format!("{:<7}{}", key.hint_key, key.hint_action),
+            _ => keys.iter().map(|k| format!("{} {}", k.hint_key, k.hint_action)).collect::<Vec<_>>().join("  "),
+        };
+        Some(format!("\x1b[38;5;{}m{}\x1b[39m", HINT_COLOR, text))
     }
 }
 

@@ -23,7 +23,7 @@ pub struct CliArgs {
     pub autoplay: bool,
     /// `--autoplay-rounds N`.
     pub autoplay_rounds: Option<u32>,
-    /// `--autoplay-ai classic|easy|medium|hard`: which brain plays under `--autoplay`.
+    /// `--autoplay-ai easy|medium|hard`: which brain plays under `--autoplay`.
     pub autoplay_ai: Option<String>,
     /// `--script-dry-run`.
     pub script_dry_run: bool,
@@ -139,16 +139,16 @@ pub fn parse_from(args: &[String]) -> Result<CliArgs, String> {
             "--autoplay-ai" => {
                 if i + 1 < args.len() {
                     match args[i + 1].as_str() {
-                        "classic" | "easy" | "medium" | "hard" => {
+                        "easy" | "medium" | "hard" => {
                             cli.autoplay_ai = Some(args[i + 1].clone());
                         }
                         other => {
-                            return Err(format!("--autoplay-ai: '{other}' is not classic, easy, medium or hard"));
+                            return Err(format!("--autoplay-ai: '{other}' is not easy, medium or hard"));
                         }
                     }
                     i += 2;
                 } else {
-                    return Err("--autoplay-ai requires classic, easy, medium or hard".into());
+                    return Err("--autoplay-ai requires easy, medium or hard".into());
                 }
             }
             "--vs-computer" => {
@@ -434,8 +434,8 @@ pub fn print_help() {
     println!("Test & QA (developer tooling):");
     println!("  --autoplay                    The AI plays the game (soak/perf; Solo by default)");
     println!("  --autoplay-rounds N           Autoplay exits at the prompt after N rounds");
-    println!("  --autoplay-ai <BRAIN>         Brain of the autoplay: hard (default), medium, easy or classic");
-    println!("                                (all but classic are the grid AI of the VS Computer opponent)");
+    println!("  --autoplay-ai <BRAIN>         Brain of the autoplay: hard (default), medium or easy");
+    println!("                                (the grid AI of the VS Computer opponent)");
     println!("  -n, --name <NAME>             Force the player name (several instances, separate HOMEs)");
     println!("  -s, --seed <N>                Fixed random seed");
     println!("  -f, --max-frames <N>          Quit after N frames (with --autoplay/--render-dump)");

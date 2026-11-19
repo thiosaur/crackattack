@@ -4,7 +4,7 @@
 // purple while the loss countdown runs from 7 s down to 1 s, then red during the last
 // second. It fades out when the stack is freed.
 
-use crackattack_core::constants::{LOSS_DELAY, LOSS_DELAY_ELIMINATION};
+use crackattack_core::frame_data::UIState;
 
 /// Fade-out duration (ticks), as in the graphical version.
 const FADE_TIME: i32 = 20;
@@ -41,7 +41,9 @@ impl DangerAnimator {
     }
 
     /// One game tick.
-    pub(crate) fn step(&mut self, creep_freeze: bool, loss_countdown: i32) {
+    pub(crate) fn step(&mut self, ui: &UIState) {
+        let (creep_freeze, loss_countdown) = (ui.creep_freeze, ui.loss_countdown);
+        let (loss_delay, floor) = (ui.loss_delay, ui.loss_delay_floor);
         match self.state {
             State::Inactive | State::FadeLow | State::FadeHigh => {
                 if self.state != State::Inactive {
@@ -59,7 +61,7 @@ impl DangerAnimator {
                 if !creep_freeze {
                     self.fade = FADE_TIME;
                     self.state = State::FadeLow;
-                } else if loss_countdown <= LOSS_DELAY_ELIMINATION {
+                } else if loss_countdown <= floor {
                     self.state = State::HighAlert;
                 }
             }
@@ -73,10 +75,10 @@ impl DangerAnimator {
         // The bar fills once over the purple phase, then again over the red one.
         let fill = match self.state {
             State::LowAlert => Some(
-                (LOSS_DELAY - loss_countdown) as f32 / (LOSS_DELAY - LOSS_DELAY_ELIMINATION) as f32,
+                (loss_delay - loss_countdown) as f32 / (loss_delay - floor).max(1) as f32,
             ),
             State::HighAlert => Some(
-                (LOSS_DELAY_ELIMINATION - loss_countdown) as f32 / LOSS_DELAY_ELIMINATION as f32,
+                (floor - loss_countdown) as f32 / floor.max(1) as f32,
             ),
             _ => None,
         };
@@ -102,6 +104,17 @@ impl DangerAnimator {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crackattack_core::constants::{LOSS_DELAY, LOSS_DELAY_ELIMINATION};
+
+    fn ui(creep_freeze: bool, loss_countdown: i32) -> UIState {
+        UIState {
+            creep_freeze,
+            loss_countdown,
+            loss_delay: LOSS_DELAY,
+            loss_delay_floor: LOSS_DELAY_ELIMINATION,
+            ..UIState::default()
+        }
+    }
 
     #[test]
     fn purple_then_red_as_the_countdown_runs_out() {
@@ -110,7 +123,7 @@ mod tests {
         let mut countdown = LOSS_DELAY;
         let mut seen_purple = false;
         while countdown > 0 {
-            danger.step(true, countdown);
+            danger.step(&ui(true, countdown));
             let bars = danger.bars();
             if countdown > LOSS_DELAY_ELIMINATION {
                 assert!(!bars.red);
@@ -128,14 +141,14 @@ mod tests {
     fn the_bars_fade_out_when_the_stack_is_freed() {
         let mut danger = DangerAnimator::new();
         for countdown in (LOSS_DELAY - 100..LOSS_DELAY).rev() {
-            danger.step(true, countdown);
+            danger.step(&ui(true, countdown));
         }
-        danger.step(false, LOSS_DELAY);
-        danger.step(false, LOSS_DELAY);
+        danger.step(&ui(false, LOSS_DELAY));
+        danger.step(&ui(false, LOSS_DELAY));
         let fading = danger.bars();
         assert!(fading.alpha < 1.0 && fading.alpha > 0.0);
         for _ in 0..FADE_TIME - 1 {
-            danger.step(false, LOSS_DELAY);
+            danger.step(&ui(false, LOSS_DELAY));
         }
         assert_eq!(danger.bars(), DangerBars::default());
     }

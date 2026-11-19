@@ -63,11 +63,11 @@ pub const OPPONENT_BOARD_FRAME_COLOR: u32 = 0x292e38;
 pub const OPPONENT_BOARD_GARBAGE: u32 = 0x825155;
 pub const OPPONENT_BOARD_GARBAGE_FLASH: u32 = 0xe8343f;
 
-/// Safe height (13 rows)
-pub const GC_SAFE_HEIGHT: i32 = 13;
+/// Safe height (rows), from the engine.
+pub const GC_SAFE_HEIGHT: i32 = crackattack_core::constants::SAFE_HEIGHT as i32;
 
-/// Steps per second (game tick rate)
-pub const GC_STEPS_PER_SECOND: i32 = 50;
+/// Steps per second (game tick rate), from the engine.
+pub const GC_STEPS_PER_SECOND: i32 = crackattack_core::constants::STEPS_PER_SECOND;
 
 /// Number of level lights (GC_SAFE_HEIGHT - 1)
 pub const LEVEL_LIGHT_COUNT: i32 = GC_SAFE_HEIGHT - 1;

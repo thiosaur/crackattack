@@ -13,6 +13,7 @@ impl Random {
 
 
     /// Get current RNG state (for fingerprinting)
+    #[cfg(test)]
     pub(crate) fn state(&self) -> u32 {
         self.state
     }
