@@ -182,6 +182,11 @@ by itself. A static Linux build (`-linux-x86_64-static.tar.gz`) runs on any dist
 in a minimal container, and each release carries a `SHA256SUMS` file. `--help` lists the options. The terminal is
 restored when the game ends or quits.
 
+It can also be served over ssh, for example on a homelab, so that friends play with a plain
+`ssh` and nothing to install: see
+[crackattack-terminal-ssh](https://github.com/thiosaur/crackattack-terminal-ssh), a Docker image
+that starts the game at login.
+
 ## Feedback
 
 Found a bug? Open an [issue](../../issues). Feedback, questions, ideas or memories of the
