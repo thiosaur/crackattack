@@ -258,9 +258,14 @@ jobs:
           out=$($exe --version)
           echo "$out"
           [ "$out" = "crackattack-terminal $VERSION" ] || { echo "::error::unexpected static --version: $out"; exit 1; }
-          if ldd "$exe" > /dev/null 2>&1; then
-            echo "::error::the static terminal is dynamically linked"; ldd "$exe"; exit 1
-          fi
+          # ldd says "statically linked" (recent glibc) or "not a dynamic executable", and its exit
+          # status is not a reliable answer: read what it prints.
+          linked=$(ldd "$exe" 2>&1 || true)
+          echo "$linked"
+          case "$linked" in
+            *"statically linked"*|*"not a dynamic executable"*) ;;
+            *) echo "::error::the static terminal is dynamically linked"; exit 1 ;;
+          esac
           name="crackattack-terminal-$VERSION-linux-x86_64-static"
           mkdir -p "dist/$name"
           cp "$exe" "dist/$name/crackattack-terminal"
