@@ -175,7 +175,11 @@ Each game deals a new board; a summary with the seed is printed when the game en
 `--seed N` replays the same one. Other options: `--frames N` stops after N frames, `--debug`
 shows the state of the cells under the cursor, and `--autoplay [easy|medium|hard]` lets the
 computer play (with `--headless`, `--capture` and `--capture-file` it writes text captures of
-the screen, handy for tests). `--help` lists them all. The terminal is
+the screen, handy for tests). To serve the game to someone else, for example behind an ssh
+login, `--replay` starts a new game after a lost one and `--idle-timeout SECS` and
+`--max-time SECS` end a session that is idle or too long; a dropped connection ends the game
+by itself. A static Linux build (`-linux-x86_64-static.tar.gz`) runs on any distribution and
+in a minimal container, and each release carries a `SHA256SUMS` file. `--help` lists the options. The terminal is
 restored when the game ends or quits.
 
 ## Feedback

@@ -41,24 +41,43 @@ fn main() {
     render::SMOOTH_RISE.with(|smooth| smooth.set(options.smooth));
     render::COMPACT.with(|compact| compact.set(options.compact));
 
-    let seed = options.seed.unwrap_or_else(random_seed);
-    let mut state = GameState::new(seed);
-    let autoplay = options.autoplay.map(|level| GridAutoplay::new(level, seed));
-    let mut driver = Driver::new(autoplay, options.captures);
-    driver.compact_forced = options.compact;
-
-    let (frame, ending) = if options.headless {
-        run_headless(&mut state, &mut driver, options.max_frames)
-    } else {
-        play(&mut state, &mut driver, options.max_frames)
+    let limits = Limits {
+        idle: options.idle_timeout.map(Duration::from_secs),
+        deadline: options.max_time.map(|seconds| Instant::now() + Duration::from_secs(seconds)),
     };
-    // The terminal is restored by now: the summary stays in the shell after the game.
-    println!("{}", summary(&frame, ending, seed));
-    if let Some(written) = driver.finish(&frame) {
-        match written {
-            Ok((count, path)) => println!("  {} capture(s) written to {}", count, path),
-            Err(e) => eprintln!("  Captures not written: {}", e),
+    let mut captures = Some(options.captures);
+    let mut seed = options.seed.unwrap_or_else(random_seed);
+    loop {
+        let mut state = GameState::new(seed);
+        let autoplay = options.autoplay.map(|level| GridAutoplay::new(level, seed));
+        let mut driver = Driver::new(autoplay, captures.take().unwrap_or_default());
+        driver.compact_forced = options.compact;
+
+        let (frame, ending) = if options.headless {
+            run_headless(&mut state, &mut driver, options.max_frames)
+        } else {
+            play(&mut state, &mut driver, options.max_frames, &limits)
+        };
+        // With --replay, a lost game is followed by a new one with a new seed.
+        if options.replay && ending == Ending::Lost {
+            seed = random_seed();
+            continue;
         }
+        // The connection is gone: nobody to tell, and writing to it would only fail.
+        if ending == Ending::Hangup {
+            return;
+        }
+        // The terminal is restored by now: the summary stays in the shell after the game.
+        // Written without `println!`, which panics when the output is gone.
+        let mut out = io::stdout();
+        let _ = writeln!(out, "{}", summary(&frame, ending, seed));
+        if let Some(written) = driver.finish(&frame) {
+            match written {
+                Ok((count, path)) => { let _ = writeln!(out, "  {} capture(s) written to {}", count, path); }
+                Err(e) => eprintln!("  Captures not written: {}", e),
+            }
+        }
+        return;
     }
 }
 
@@ -73,6 +92,12 @@ struct Options {
     autoplay: Option<AIDifficulty>,
     headless: bool,
     captures: Captures,
+    /// Seconds without a key press before the game stops (for a game served to someone else).
+    idle_timeout: Option<u64>,
+    /// Seconds of play, all games together, before the game stops.
+    max_time: Option<u64>,
+    /// After a lost game, start a new one instead of ending.
+    replay: bool,
 }
 
 /// The options, `None` for `--help`, or what is wrong with them.
@@ -105,6 +130,21 @@ fn parse_args(args: &[String]) -> Result<Option<Options>, String> {
                 options.autoplay = Some(level.unwrap_or(AIDifficulty::Hard));
             }
             "--headless" => options.headless = true,
+            "--replay" => options.replay = true,
+            "--idle-timeout" => {
+                let n = value("a number of seconds")?;
+                options.idle_timeout = Some(
+                    n.parse().ok().filter(|&n: &u64| n > 0)
+                        .ok_or_else(|| format!("--idle-timeout: '{}' is not a positive number of seconds", n))?,
+                );
+            }
+            "--max-time" => {
+                let n = value("a number of seconds")?;
+                options.max_time = Some(
+                    n.parse().ok().filter(|&n: &u64| n > 0)
+                        .ok_or_else(|| format!("--max-time: '{}' is not a positive number of seconds", n))?,
+                );
+            }
             "--capture" => {
                 let list = value("ticks such as 100,250,end")?;
                 let (ticks, at_end) = parse_capture_ticks(list)
@@ -116,6 +156,9 @@ fn parse_args(args: &[String]) -> Result<Option<Options>, String> {
             "--help" | "-h" => return Ok(None),
             _ => return Err(format!("unknown option '{}'", arg)),
         }
+    }
+    if options.headless && (options.replay || options.idle_timeout.is_some() || options.max_time.is_some()) {
+        return Err("--replay, --idle-timeout and --max-time need a display (not --headless)".to_string());
     }
     Ok(Some(options))
 }
@@ -134,6 +177,10 @@ fn print_help() {
     println!("  --compact     One line per row: the screen fits 80x24, the shellcade canvas");
     println!("                (chosen by itself when the terminal is too short)");
     println!("  --autoplay [LEVEL]  The AI plays (easy, medium or hard; default hard)");
+    println!("  --replay      After a lost game, start a new one (quit with Q)");
+    println!("  --idle-timeout SECS  Stop when no key was pressed for SECS seconds");
+    println!("  --max-time SECS      Stop after SECS seconds of play, all games together");
+    println!("                (these three are for a game served over ssh)");
     println!("  --headless    No display: the game runs at full speed, for tests");
     println!("                (with --autoplay; stops at game over, --frames or the");
     println!("                last capture)");
@@ -375,48 +422,90 @@ enum Ending {
     Lost,
     Quit,
     FrameLimit,
+    /// No key pressed for `--idle-timeout`.
+    Idle,
+    /// `--max-time` reached.
+    TimeLimit,
+    /// The terminal is gone (connection dropped).
+    Hangup,
+}
+
+/// Writes a screen to the terminal; `false` when it cannot (the connection is gone).
+fn present(screen: &str) -> bool {
+    let mut out = io::stdout().lock();
+    out.write_all(screen.as_bytes()).and_then(|()| out.flush()).is_ok()
+}
+
+/// Wall-clock limits for a game served to someone else; both are off by default.
+struct Limits {
+    idle: Option<Duration>,
+    deadline: Option<Instant>,
+}
+
+impl Limits {
+    /// The ending to apply now, if a limit is reached.
+    fn reached(&self, last_activity: Instant, now: Instant) -> Option<Ending> {
+        if self.deadline.is_some_and(|deadline| now >= deadline) {
+            Some(Ending::TimeLimit)
+        } else if self.idle.is_some_and(|idle| now.duration_since(last_activity) >= idle) {
+            Some(Ending::Idle)
+        } else {
+            None
+        }
+    }
 }
 
 /// Runs the game until it ends; returns the last frame and why it stopped.
-fn play(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>) -> (FrameData, Ending) {
+fn play(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>, limits: &Limits) -> (FrameData, Ending) {
     let _guard = TerminalGuard::new();
     render::initialize();
     let _ = io::stdout().flush();
     driver.fit_terminal();
 
     let frame_duration = Duration::from_millis(1000 / TICKS_PER_SECOND as u64);
-    let mut quit = false;
     let mut last = FrameData::default();
     let mut paused = false;
+    let mut last_activity = Instant::now();
 
     let ending = loop {
         let frame_start = Instant::now();
 
-        let (mut pause_pressed, mut resized) = (false, false);
-        let keys = read_input(&mut quit, &mut pause_pressed, &mut resized);
-        if resized {
+        let input = read_input();
+        let keys = input.keys;
+        if input.hangup {
+            break Ending::Hangup;
+        }
+        if input.resized {
             driver.fit_terminal();
         }
-        if pause_pressed && !last.game_over {
+        if input.activity {
+            last_activity = frame_start;
+        }
+        if input.pause && !last.game_over {
             paused = !paused;
         }
 
-        if quit {
+        if input.quit {
             break Ending::Quit;
+        }
+        if let Some(ending) = limits.reached(last_activity, frame_start) {
+            break ending;
         }
 
         // Paused: the game does not step, the board is hidden.
         if paused {
-            print!("{}", driver.draw(&last, true));
-            let _ = io::stdout().flush();
+            if !present(&driver.draw(&last, true)) {
+                break Ending::Hangup;
+            }
             driver.release_keys();
             std::thread::sleep(frame_duration);
             continue;
         }
 
         let frame = driver.step(state, keys);
-        print!("{}", driver.draw(&frame, false));
-        let _ = io::stdout().flush();
+        if !present(&driver.draw(&frame, false)) {
+            break Ending::Hangup;
+        }
 
         let game_over = frame.game_over;
         last = frame;
@@ -426,8 +515,7 @@ fn play(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>) -> 
         }
 
         if game_over {
-            show_game_over(driver, &last);
-            break Ending::Lost;
+            break show_game_over(driver, &last, limits).unwrap_or(Ending::Lost);
         }
 
         let elapsed = frame_start.elapsed();
@@ -441,26 +529,42 @@ fn play(state: &mut GameState, driver: &mut Driver, max_frames: Option<i32>) -> 
 }
 
 /// Game over: the logo turns into GAME OVER, then the final board stays until a key is
-/// pressed.
-fn show_game_over(driver: &mut Driver, last: &FrameData) {
+/// pressed. `Some(ending)` when something else than the game ended the session meanwhile
+/// (a limit, or the connection).
+fn show_game_over(driver: &mut Driver, last: &FrameData, limits: &Limits) -> Option<Ending> {
     let frame_duration = Duration::from_millis(1000 / TICKS_PER_SECOND as u64);
     while !driver.game_over_shown() {
         driver.step_game_over();
-        print!("{}", driver.draw(last, false));
-        let _ = io::stdout().flush();
+        if !present(&driver.draw(last, false)) {
+            return Some(Ending::Hangup);
+        }
         std::thread::sleep(frame_duration);
     }
     // Keys pressed in the rush before the loss, or during the animation, do not count.
     while event::poll(Duration::ZERO).unwrap_or(false) {
         let _ = event::read();
     }
+    let waiting_since = Instant::now();
     loop {
+        // Woken up now and then to look at the limits.
+        match event::poll(Duration::from_millis(250)) {
+            Err(_) => return Some(Ending::Hangup),
+            Ok(false) => {
+                if let Some(ending) = limits.reached(waiting_since, Instant::now()) {
+                    return Some(ending);
+                }
+                continue;
+            }
+            Ok(true) => {}
+        }
         match event::read() {
-            Ok(Event::Key(KeyEvent { kind: KeyEventKind::Press, .. })) | Err(_) => break,
+            Ok(Event::Key(KeyEvent { kind: KeyEventKind::Press, .. })) => return None,
+            Err(_) => return Some(Ending::Hangup),
             Ok(Event::Resize(..)) => {
                 driver.fit_terminal();
-                print!("{}", driver.draw(last, false));
-                let _ = io::stdout().flush();
+                if !present(&driver.draw(last, false)) {
+                    return Some(Ending::Hangup);
+                }
             }
             Ok(_) => {}
         }
@@ -475,6 +579,9 @@ fn summary(frame: &crackattack_core::FrameData, ending: Ending, seed: u32) -> St
         Ending::Lost => "Game over: the stack reached the top.",
         Ending::Quit => "Game stopped.",
         Ending::FrameLimit => "Frame limit reached.",
+        Ending::Idle => "Game stopped: no key was pressed for a while.",
+        Ending::TimeLimit => "Game stopped: time limit reached.",
+        Ending::Hangup => "Game stopped: the terminal is gone.",
     };
     let seconds = frame.ui.clock_time / TICKS_PER_SECOND;
     let mut text = format!(
@@ -514,28 +621,52 @@ fn is_pause_key(code: KeyCode) -> bool {
     matches!(code, KeyCode::Char('p') | KeyCode::Char('P'))
 }
 
-/// Keys pressed since the last tick, as `INPUT_*` bits. Also tells whether the terminal
-/// was resized (the screen must then be redrawn whole).
-fn read_input(quit: &mut bool, pause_pressed: &mut bool, resized: &mut bool) -> u8 {
-    let mut keys = 0;
+/// What the terminal gave since the last tick.
+#[derive(Default)]
+struct Input {
+    /// Keys pressed, as `INPUT_*` bits.
+    keys: u8,
+    quit: bool,
+    pause: bool,
+    /// The terminal was resized: the screen must be redrawn whole.
+    resized: bool,
+    /// Any key was pressed, mapped or not (resets the idle timer).
+    activity: bool,
+    /// Reading the terminal failed: the connection is gone.
+    hangup: bool,
+}
 
-    while event::poll(Duration::ZERO).unwrap_or(false) {
-        let event = event::read();
-        if let Ok(Event::Resize(..)) = event {
-            *resized = true;
+fn read_input() -> Input {
+    let mut input = Input::default();
+    loop {
+        match event::poll(Duration::ZERO) {
+            Ok(true) => {}
+            Ok(false) => break,
+            Err(_) => {
+                input.hangup = true;
+                break;
+            }
         }
-        if let Ok(Event::Key(KeyEvent { code, kind: KeyEventKind::Press, .. })) = event {
-            if is_quit_key(code) {
-                *quit = true;
+        match event::read() {
+            Ok(Event::Resize(..)) => input.resized = true,
+            Ok(Event::Key(KeyEvent { code, kind: KeyEventKind::Press, .. })) => {
+                input.activity = true;
+                if is_quit_key(code) {
+                    input.quit = true;
+                }
+                if is_pause_key(code) {
+                    input.pause = true;
+                }
+                input.keys |= map_key(code);
             }
-            if is_pause_key(code) {
-                *pause_pressed = true;
+            Ok(_) => {}
+            Err(_) => {
+                input.hangup = true;
+                break;
             }
-            keys |= map_key(code);
         }
     }
-
-    keys
+    input
 }
 
 /// RAII guard: enables raw mode on construction and restores the FULL terminal state on drop:
@@ -597,6 +728,36 @@ mod tests {
         let line = version_line();
         assert!(line.starts_with("crackattack-terminal "), "{}", line);
         assert!(line.len() > "crackattack-terminal ".len());
+    }
+
+    #[test]
+    fn serving_options_are_parsed() {
+        let options = parse_args(&args("--replay --idle-timeout 120 --max-time 1800")).unwrap().unwrap();
+        assert!(options.replay);
+        assert_eq!((options.idle_timeout, options.max_time), (Some(120), Some(1800)));
+        let options = parse_args(&args("")).unwrap().unwrap();
+        assert!(!options.replay && options.idle_timeout.is_none() && options.max_time.is_none());
+        for line in ["--idle-timeout 0", "--idle-timeout x", "--idle-timeout", "--max-time -5",
+                     "--headless --replay", "--headless --idle-timeout 5", "--headless --max-time 5"] {
+            assert!(parse_args(&args(line)).is_err(), "{}", line);
+        }
+    }
+
+    #[test]
+    fn limits_stop_an_idle_or_overlong_session() {
+        let start = Instant::now();
+        let later = |seconds| start + Duration::from_secs(seconds);
+        let none = Limits { idle: None, deadline: None };
+        assert_eq!(none.reached(start, later(100_000)), None);
+        let idle = Limits { idle: Some(Duration::from_secs(60)), deadline: None };
+        assert_eq!(idle.reached(start, later(59)), None);
+        assert_eq!(idle.reached(start, later(60)), Some(Ending::Idle));
+        // A key press moves the idle reference.
+        assert_eq!(idle.reached(later(50), later(100)), None);
+        let both = Limits { idle: Some(Duration::from_secs(60)), deadline: Some(later(300)) };
+        assert_eq!(both.reached(later(290), later(299)), None);
+        // The time limit wins even when keys keep coming.
+        assert_eq!(both.reached(later(299), later(300)), Some(Ending::TimeLimit));
     }
 
     #[test]
@@ -662,6 +823,8 @@ mod tests {
         assert!(text.contains("--seed 42"));
         assert!(!text.contains("Best chain"));
         assert!(summary(&frame, Ending::Quit, 42).starts_with("Game stopped"));
+        assert!(summary(&frame, Ending::Idle, 42).contains("no key"));
+        assert!(summary(&frame, Ending::TimeLimit, 42).contains("time limit"));
     }
 
     #[test]

@@ -80,12 +80,16 @@ pub(crate) fn panel_column() -> usize {
     2 * (1 + DANGER_GAP.len()) + field_columns() + PANEL_GAP.len()
 }
 
+// Written with `write!`, not `print!`: a terminal that is gone (dropped ssh connection)
+// must not make the game panic on its way out.
 pub(crate) fn initialize() {
-    print!("{}{}{}{}", ALT_SCREEN_ON, WRAP_OFF, HIDE_CURSOR, CLEAR);
+    use std::io::Write;
+    let _ = write!(std::io::stdout(), "{}{}{}{}", ALT_SCREEN_ON, WRAP_OFF, HIDE_CURSOR, CLEAR);
 }
 
 pub(crate) fn cleanup() {
-    print!("{}{}{}", SHOW_CURSOR, WRAP_ON, ALT_SCREEN_OFF);
+    use std::io::Write;
+    let _ = write!(std::io::stdout(), "{}{}{}", SHOW_CURSOR, WRAP_ON, ALT_SCREEN_OFF);
 }
 
 /// What is drawn around the board besides the game itself.

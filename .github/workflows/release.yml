@@ -244,6 +244,31 @@ jobs:
           fi
           ls -l dist
 
+      - name: Terminal version, static (Linux)
+        # The same executable built against musl: it needs no system library, so it runs on
+        # any distribution and in a minimal container image. The default Linux archive
+        # needs a glibc at least as recent as the build runner's.
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get install -y musl-tools
+          rustup target add x86_64-unknown-linux-musl
+          cargo build --release --locked -p crackattack-terminal --target x86_64-unknown-linux-musl
+          exe=target/x86_64-unknown-linux-musl/release/crackattack-terminal
+          out=$($exe --version)
+          echo "$out"
+          [ "$out" = "crackattack-terminal $VERSION" ] || { echo "::error::unexpected static --version: $out"; exit 1; }
+          if ldd "$exe" > /dev/null 2>&1; then
+            echo "::error::the static terminal is dynamically linked"; ldd "$exe"; exit 1
+          fi
+          name="crackattack-terminal-$VERSION-linux-x86_64-static"
+          mkdir -p "dist/$name"
+          cp "$exe" "dist/$name/crackattack-terminal"
+          cp LICENSE AUTHORS "dist/$name/"
+          cp THIRD-PARTY-LICENSES-terminal.html "dist/$name/THIRD-PARTY-LICENSES.html"
+          tar -C dist -czf "dist/$name.tar.gz" "$name"
+          ls -l dist
+
       - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.platform }}
@@ -293,6 +318,9 @@ jobs:
           | Windows (x86_64) | `crackattack-terminal-VERSION-windows-x86_64.zip` |
           | macOS (Apple Silicon) | `crackattack-terminal-VERSION-macos-arm64.zip` |
           | Linux (x86_64) | `crackattack-terminal-VERSION-linux-x86_64.tar.gz` |
+          | Linux (x86_64), static | `crackattack-terminal-VERSION-linux-x86_64-static.tar.gz` (any distribution, minimal containers) |
+
+          `SHA256SUMS` lists the checksum of every file of this release.
 
           **macOS:** the application is not signed by Apple, so macOS blocks it the first time:
           - macOS 15 or later: open *Crack Attack.app* once, then go to *System Settings →
@@ -312,6 +340,9 @@ jobs:
           else
             echo "(to be written before publishing)" >> notes.md
           fi
+          # SHA256SUMS: lets whoever repackages a download (a container image, a package)
+          # check it without trusting the connection alone.
+          (cd dist && sha256sum -- * > SHA256SUMS)
           # Betas are published as normal releases, not GitHub pre-releases: the update check
           # reads the "latest release" API, which ignores pre-releases. A beta (2.1.0-beta.1)
           # still sorts before the matching stable version.
