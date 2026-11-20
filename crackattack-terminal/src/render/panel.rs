@@ -46,13 +46,15 @@ struct Layout {
     best: usize,
     chain: usize,
     logo: usize,
+    /// First line of the opponent's preview in a duel (its title is the line above).
+    preview: usize,
     key_lines: usize,
 }
 
 /// One line per row of the board: room to spare.
-const TALL: Layout = Layout { time: 2, best: 3, chain: 6, logo: LOGO_FIRST_LINE, key_lines: KEYS.len() };
+const TALL: Layout = Layout { time: 2, best: 3, chain: 6, logo: LOGO_FIRST_LINE, preview: 8, key_lines: KEYS.len() };
 /// `--compact`, on 24 lines: closer together, the keys on two lines.
-const COMPACT: Layout = Layout { time: 1, best: 2, chain: 4, logo: 6, key_lines: 2 };
+const COMPACT: Layout = Layout { time: 1, best: 2, chain: 4, logo: 6, preview: 6, key_lines: 2 };
 
 /// Side panel text for line `i` (0 = top) of `lines`: game info at the top, the chain
 /// just reached below it, the logo, the keys at the bottom (once the game is lost and
@@ -72,7 +74,17 @@ pub(super) fn panel_line(i: usize, lines: usize, frame: &FrameData, hud: &Hud) -
         })
     } else if i == layout.chain {
         hud.chain.map(|n| format!("\x1b[1;38;5;{}mChain x{}!\x1b[22;39m", CHAIN_COLOR, n))
-    } else if (layout.logo..layout.logo + art().colors.len()).contains(&i) {
+    } else if let (Some(versus), true) = (&hud.versus, i + 1 >= layout.preview && i < layout.preview + super::versus::PREVIEW_LINES) {
+        // A duel: the opponent's stack takes the logo's place.
+        Some(if i + 1 == layout.preview { versus.title() } else { versus.preview_line(i - layout.preview) })
+    } else if let (Some(lobby), None, None, true) = (&hud.lobby, &hud.versus, hud.game_over, (layout.logo..layout.logo + art().colors.len()).contains(&i)) {
+        // The lobby takes the logo's place while the game is on (the logo comes back to turn
+        // into GAME OVER).
+        lobby.lines(art().colors.len()).get(i - layout.logo).cloned()
+    } else if let (Some(notice), true) = (hud.lobby.as_ref().and_then(|l| l.notice.as_ref().map(|n| (l, n))), hud.versus.is_some() && i == layout.preview + super::versus::PREVIEW_LINES) {
+        // In a duel the preview has the logo's place: only the notice, under it.
+        Some(notice.0.notice_line(notice.1))
+    } else if hud.versus.is_none() && (layout.logo..layout.logo + art().colors.len()).contains(&i) {
         Some(logo_line(i - layout.logo, hud.game_over))
     } else if hud.game_over.is_some_and(|t| t >= game_over_ticks()) {
         (i == first_key_line).then(|| "\x1b[1mPress any key\x1b[22m".to_string())

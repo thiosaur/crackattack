@@ -28,11 +28,18 @@ pub(crate) struct Screen {
     fg: Option<u8>,
     bg: Option<u8>,
     reverse: bool,
+    /// Where the drawing area starts on the terminal, (column, row): captures show the
+    /// area, whatever the terminal it was run in.
+    origin: (usize, usize),
 }
 
 impl Screen {
     pub(crate) fn new() -> Self {
-        Self { rows: Vec::new(), row: 0, col: 0, fg: None, bg: None, reverse: false }
+        Self { rows: Vec::new(), row: 0, col: 0, fg: None, bg: None, reverse: false, origin: (0, 0) }
+    }
+
+    pub(crate) fn set_origin(&mut self, origin: (usize, usize)) {
+        self.origin = origin;
     }
 
     /// Decodes `text` onto the screen. Only what the renderer emits is understood; other
@@ -62,7 +69,8 @@ impl Screen {
                         // Cursor position "row;col", from 1; home without parameters.
                         'H' => {
                             let mut at = params.split(';').map(|n| n.parse::<usize>().unwrap_or(1).max(1) - 1);
-                            (self.row, self.col) = (at.next().unwrap_or(0), at.next().unwrap_or(0));
+                            let (row, col) = (at.next().unwrap_or(0), at.next().unwrap_or(0));
+                            (self.row, self.col) = (row.saturating_sub(self.origin.1), col.saturating_sub(self.origin.0));
                         }
                         'J' if params == "2" => self.rows.clear(),
                         // Erase to the end of the line.
@@ -171,6 +179,9 @@ const BOARD_LETTERS: &[(u8, char, &str)] = &[
     (DOT_COLOR, 'd', "dots"),
     (DANGER_PURPLE[0], 'V', "danger, purple"), (DANGER_PURPLE[1], 'v', "danger, purple fading"),
     (DANGER_RED[0], 'X', "danger, red"), (DANGER_RED[1], 'x', "danger, red fading"),
+    // The countdown digits reuse the danger red (3) and the orange block (2).
+    (COUNTDOWN_OUTLINE_COLOR, 'Z', "countdown, outline"), (COUNTDOWN_ONE_COLOR, 'U', "countdown, 1"),
+    (COUNTDOWN_GO_COLOR, 'T', "countdown, GO"),
 ];
 /// Same for the side panel, which reuses some board colors (the logo is red and purple
 /// like garbage and purple blocks, the key hints gray like gray blocks): its own letters,
@@ -178,7 +189,10 @@ const BOARD_LETTERS: &[(u8, char, &str)] = &[
 const PANEL_LETTERS: &[(u8, char, &str)] = &[
     (CHAIN_COLOR, 'C', "chain popup"),
     (LOGO_COLORS[0], 'L', "logo, CRACK"), (LOGO_COLORS[1], 'M', "logo, ATTACK!"),
-    (HINT_COLOR, 'H', "key hints"),
+    (HINT_COLOR, 'H', "key hints, and the dots of the opponent's preview"),
+    (GARBAGE_COLOR, 'R', "opponent's garbage (duel)"),
+    (OPPONENT_BLOCK_COLOR, 'N', "opponent's blocks, stack low (duel)"),
+    (OPPONENT_DANGER_COLOR, 'D', "opponent's blocks, stack at the top (duel)"),
 ];
 
 /// Letter of a color at column `col` in captures (the board and the side panel have their

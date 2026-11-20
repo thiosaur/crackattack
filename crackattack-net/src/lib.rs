@@ -11,4 +11,5 @@ pub mod communicator;
 pub mod error;
 pub mod opponent;
 pub mod session;
+#[cfg(feature = "mdns")]
 pub mod discovery;

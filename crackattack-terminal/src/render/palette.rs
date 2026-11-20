@@ -27,5 +27,15 @@ pub(crate) const CHAIN_COLOR: u8 = 220;
 /// Colors of the two words of the logo, as in `logo-terminal-compact.ansi`: red CRACK,
 /// purple ATTACK!.
 pub(crate) const LOGO_COLORS: [u8; 2] = [124, 127];
+/// The opponent's preview in a duel: all its blocks are gray-green while the stack is low and
+/// gray-red once it reaches the top (garbage keeps the garbage color of the board, a
+/// stronger red, so the two are not mistaken for each other).
+pub(crate) const OPPONENT_BLOCK_COLOR: u8 = 108;
+pub(crate) const OPPONENT_DANGER_COLOR: u8 = 138;
 /// Key reminder at the bottom of the side panel.
 pub(crate) const HINT_COLOR: u8 = 244;
+/// Countdown digits (3 and 2 reuse the danger red and the orange block), and the dark outline
+/// that makes them readable over the board.
+pub(crate) const COUNTDOWN_ONE_COLOR: u8 = 220;
+pub(crate) const COUNTDOWN_GO_COLOR: u8 = 46;
+pub(crate) const COUNTDOWN_OUTLINE_COLOR: u8 = 16;

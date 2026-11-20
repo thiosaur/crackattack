@@ -13,4 +13,10 @@ log = "0.4"
 bytemuck = { version = "1.21", features = ["derive"] }
 socket2 = { version = "0.5", features = ["all"] }
 # LAN discovery via mDNS / DNS-SD (pure Rust, dual-stack v4/v6, multiple interfaces).
-mdns-sd = "0.20"
+mdns-sd = { version = "0.20", optional = true }
+
+[features]
+# `mdns`: the discovery of games on the local network (`discovery`). On by default, for the
+# graphical game and the terminal alike.
+default = ["mdns"]
+mdns = ["dep:mdns-sd"]

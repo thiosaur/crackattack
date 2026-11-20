@@ -16,14 +16,17 @@ pub(super) struct Output {
     shown: Vec<String>,
     /// Clear the screen before the next frame (first frame, or the terminal changed).
     clear: bool,
-    /// Terminal width (columns), if known: longer lines are cut, so the side panel on
-    /// the right gives way first.
+    /// Width (columns) of the area the lines are drawn in, if known: longer lines are cut,
+    /// so the side panel on the right gives way first.
     width: Option<usize>,
+    /// Where the area starts on the terminal, as (column, row) from 0: lines are written
+    /// there by positioning the cursor, not by padding them with spaces.
+    origin: (usize, usize),
 }
 
 impl Output {
     pub(super) fn new() -> Self {
-        Self { shown: Vec::new(), clear: true, width: None }
+        Self { shown: Vec::new(), clear: true, width: None, origin: (0, 0) }
     }
 
     /// Forgets what the terminal shows (resized, or written to by something else): the
@@ -33,10 +36,11 @@ impl Output {
         self.clear = true;
     }
 
-    /// A new terminal width: the next frame is drawn whole.
-    pub(super) fn set_width(&mut self, width: Option<usize>) {
-        if self.width != width {
+    /// A new area (where it starts, how wide): the next frame is drawn whole.
+    pub(super) fn set_area(&mut self, origin: (usize, usize), width: Option<usize>) {
+        if self.width != width || self.origin != origin {
             self.width = width;
+            self.origin = origin;
             self.invalidate();
         }
     }
@@ -56,11 +60,11 @@ impl Output {
         }
         for (i, line) in lines.iter().enumerate() {
             if self.shown.get(i) != Some(line) {
-                let _ = write!(out, "\x1b[{};1H{}\x1b[K", i + 1, line);
+                let _ = write!(out, "\x1b[{};{}H{}\x1b[K", i + 1 + self.origin.1, 1 + self.origin.0, line);
             }
         }
         for i in lines.len()..self.shown.len() {
-            let _ = write!(out, "\x1b[{};1H\x1b[K", i + 1);
+            let _ = write!(out, "\x1b[{};{}H\x1b[K", i + 1 + self.origin.1, 1 + self.origin.0);
         }
         self.shown = lines;
         if out.is_empty() {
@@ -110,8 +114,19 @@ mod tests {
         assert_eq!(clip("abc\x1b[38;5;1mdef\x1b[39mgh".to_string(), 5), "abc\x1b[38;5;1md\x1b[39m");
         assert_eq!(clip("ab".to_string(), 80), "ab");
         let mut output = Output::new();
-        output.set_width(Some(4));
+        output.set_area((0, 0), Some(4));
         assert!(output.update(lines(&["abcdef"])).contains("\x1b[1;1Habc\x1b[K"));
+    }
+
+    #[test]
+    fn lines_are_written_where_the_area_starts_without_padding() {
+        let mut output = Output::new();
+        output.set_area((5, 2), Some(80));
+        let text = output.update(lines(&["a", "b"]));
+        assert!(text.contains("\x1b[3;6Ha\x1b[K") && text.contains("\x1b[4;6Hb\x1b[K"));
+        // Moving the area redraws everything.
+        output.set_area((6, 2), Some(80));
+        assert!(output.update(lines(&["a", "b"])).contains("\x1b[3;7Ha"));
     }
 
     #[test]

@@ -13,4 +13,11 @@ path = "src/main.rs"
 
 [dependencies]
 crackattack-core = { path = "../crackattack-core" }
+# With the LAN discovery (mDNS): the games of a network meet over it, those of a server
+# (--lobby) over 127.0.0.1.
+crackattack-net = { path = "../crackattack-net" }
 crossterm = "0.28"
+
+# The lobby (--lobby) holds one locked file per connected player: file locks are Unix.
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

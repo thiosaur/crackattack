@@ -72,6 +72,9 @@ pub struct Peer {
 pub enum DiscoveryCommand {
     /// Update our announced status (re-registers the mDNS service).
     UpdateStatus(PeerStatus),
+    /// Update our announced status and the port of our listener in one announcement (a game
+    /// that listens only while it waits for a duel: the port changes with the status).
+    UpdateAnnounce(PeerStatus, u16),
     /// Update our announced rating (re-registers). `None` means unplaced: no TXT `rt`.
     UpdateRating(Option<i32>),
     /// Shutdown the discovery service.
@@ -175,10 +178,11 @@ fn discovery_thread_main(
 
     let daemon = ServiceDaemon::new().map_err(to_io)?;
     let current_name = initial_name.to_string();
+    let mut current_port = tcp_port;
     let mut current_status = PeerStatus::Available;
     let mut current_rating = initial_rating;
 
-    register_service(&daemon, session_id, tcp_port, &current_name, current_status, current_rating, player_uuid_hex);
+    register_service(&daemon, session_id, current_port, &current_name, current_status, current_rating, player_uuid_hex);
     let browse_rx = daemon.browse(SERVICE_TYPE).map_err(to_io)?;
     log::info!("mDNS discovery running (service {})", SERVICE_TYPE);
 
@@ -188,19 +192,26 @@ fn discovery_thread_main(
             match cmd_rx.try_recv() {
                 Ok(DiscoveryCommand::UpdateStatus(status)) => {
                     current_status = status;
-                    register_service(&daemon, session_id, tcp_port, &current_name, current_status, current_rating, player_uuid_hex);
+                    register_service(&daemon, session_id, current_port, &current_name, current_status, current_rating, player_uuid_hex);
+                }
+                Ok(DiscoveryCommand::UpdateAnnounce(status, port)) => {
+                    current_status = status;
+                    current_port = port;
+                    register_service(&daemon, session_id, current_port, &current_name, current_status, current_rating, player_uuid_hex);
                 }
                 Ok(DiscoveryCommand::UpdateRating(rating)) => {
                     current_rating = rating;
-                    register_service(&daemon, session_id, tcp_port, &current_name, current_status, current_rating, player_uuid_hex);
+                    register_service(&daemon, session_id, current_port, &current_name, current_status, current_rating, player_uuid_hex);
                 }
                 Ok(DiscoveryCommand::Shutdown) => {
                     log::info!("Discovery thread shutting down");
+                    goodbye(&daemon, session_id);
                     let _ = daemon.shutdown();
                     return Ok(());
                 }
                 Err(mpsc::TryRecvError::Empty) => break,
                 Err(mpsc::TryRecvError::Disconnected) => {
+                    goodbye(&daemon, session_id);
                     let _ = daemon.shutdown();
                     return Ok(());
                 }
@@ -227,6 +238,14 @@ fn discovery_thread_main(
         }
 
         thread::sleep(POLL_INTERVAL);
+    }
+}
+
+/// Tells the network we are gone (a goodbye record), so that the others drop us from their
+/// lists at once instead of when our announcement expires.
+fn goodbye(daemon: &mdns_sd::ServiceDaemon, session_id: &str) {
+    if let Ok(done) = daemon.unregister(&format!("{}.{}", session_id, SERVICE_TYPE)) {
+        let _ = done.recv_timeout(Duration::from_millis(500));
     }
 }
 

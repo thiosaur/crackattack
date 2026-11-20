@@ -159,9 +159,11 @@ cargo run --release -p crackattack-terminal
 It runs the same game engine as the graphical version (same rules, same 50 Hz tick). The
 board is drawn with 256 colors and Unicode block characters: the stack rises by half a
 row at a time (`--smooth` moves it by sixteenths, smoother but the gaps between blocks may
-flicker), and the danger bars of the final countdown are there too. It is
-a solo game only: no menus, no sound, no computer opponent and no network play. Use a
-terminal that supports 256 colors and UTF-8, and large enough to show the whole board.
+flicker), and the danger bars of the final countdown are there too. A menu offers a solo
+game or a duel against the computer at its three levels (Logic, Sigma, Cortex); `--solo` and
+`--vs [logic|sigma|cortex]` skip it. There is no sound and no network play. The screen is
+drawn in the middle of the terminal, which must support 256 colors and UTF-8 and be at least
+80 columns by 24 lines (80x28 or more for the full-size screen).
 
 | Key | Action |
 |---|---|
@@ -172,13 +174,16 @@ terminal that supports 256 colors and UTF-8, and large enough to show the whole 
 | **Q** or **Escape** | Quit |
 
 Each game deals a new board; a summary with the seed is printed when the game ends, and
-`--seed N` replays the same one. Other options: `--frames N` stops after N frames, `--debug`
-shows the state of the cells under the cursor, and `--autoplay [easy|medium|hard]` lets the
-computer play (with `--headless`, `--capture` and `--capture-file` it writes text captures of
+`--seed N` (or `-s N`) replays the same one. Other options: `--max-frames N` (or `-f N`) stops after N frames, `--debug`
+shows the state of the cells under the cursor, and `--autoplay` lets the
+computer play (`--autoplay-ai easy|medium|hard` sets its level, and `--vs` with `--difficulty` plays against it) (with `--headless`, `--capture` and `--capture-file` it writes text captures of
 the screen, handy for tests). To serve the game to someone else, for example behind an ssh
-login, `--replay` starts a new game after a lost one and `--idle-timeout SECS` and
-`--max-time SECS` end a session that is idle or too long; a dropped connection ends the game
-by itself. A static Linux build (`-linux-x86_64-static.tar.gz`) runs on any distribution and
+login, `--idle-timeout SECS` and `--max-time SECS` end a session that is idle or too long; a
+dropped connection ends the game by itself. `--lobby DIR` (Linux and macOS) gives each game of
+a server a pseudo and shows how many players are connected in the menu, and who they are and
+what they are doing beside the board: DIR is a folder shared by all the games of the server. The menu then offers `Vs player`: you wait there, visible to the other players on the page, and see the
+ones who wait too (the list scrolls when it is longer than the screen); pick one and the duel starts (the
+two games talk over 127.0.0.1, with the network code of the graphical game). Without `--lobby`, the game looks for the players of the local network by itself (mDNS, as the graphical game does) and offers the same `Vs player`; a game listens only while it waits on that page. `--no-lan` turns this off. A duel can also be started from the command line, as in the graphical game, which it plays against: `--vs network-create [PORT]` listens (port 45678 by default) and waits to be invited, `--vs network-join IP [PORT]` invites the game at that address (a host name works too; `--preset net-host` and `--preset net-join` are the graphical game's shorthand for the same two; `--vs-computer`, `--open flow:…` and `--set ID=VALUE` also work for the few screens and settings that exist in a terminal), and `--name PSEUDO` chooses your pseudo (letters, digits, `.`, `_`, `-`, up to 16). A static Linux build (`-linux-x86_64-static.tar.gz`) runs on any distribution and
 in a minimal container, and each release carries a `SHA256SUMS` file. `--help` lists the options. The terminal is
 restored when the game ends or quits.
 
