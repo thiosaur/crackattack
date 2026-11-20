@@ -160,8 +160,9 @@ It runs the same game engine as the graphical version (same rules, same 50 Hz ti
 board is drawn with 256 colors and Unicode block characters: the stack rises by half a
 row at a time (`--smooth` moves it by sixteenths, smoother but the gaps between blocks may
 flicker), and the danger bars of the final countdown are there too. A menu offers a solo
-game or a duel against the computer at its three levels (Logic, Sigma, Cortex); `--solo` and
-`--vs [logic|sigma|cortex]` skip it. There is no sound and no network play. The screen is
+game, a duel against the computer at its three levels (Logic, Sigma, Cortex), or a duel
+against another player (see below); `--solo` and `--vs [--difficulty easy|medium|hard]` skip
+it. In a duel, the opponent's board is shown beside yours. There is no sound. The screen is
 drawn in the middle of the terminal, which must support 256 colors and UTF-8 and be at least
 80 columns by 24 lines (80x28 or more for the full-size screen).
 

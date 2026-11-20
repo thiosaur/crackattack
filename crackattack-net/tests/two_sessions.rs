@@ -4,6 +4,8 @@
 // round seen from both sides, and the forfeit when one side leaves.
 
 use std::net::TcpListener;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -40,12 +42,20 @@ fn build(mut conn: NetConnection, role: Role, name: &str, uuid: u8, seed: u32) -
 
 /// Plays like the terminal's autoplay until `rounds` rounds ended, or the other side left, or
 /// the time is up. `leave_after_round`: abandon as soon as the first round has ended.
-fn play(mut session: VsNetworkGameSession, rounds: usize, leave_after_round: bool, limit: Duration) -> Seen {
+/// `together`: the sides that must all have seen their rounds end before any of them stops
+/// (a side that stops closes the connection, and the other would see a departure instead of
+/// the end of its round: the round does not end on both sides at the same instant).
+fn play(mut session: VsNetworkGameSession, rounds: usize, leave_after_round: bool, limit: Duration, together: Option<(Arc<AtomicUsize>, usize)>) -> Seen {
+    let mut counted = false;
     let mut ai = GridAutoplay::new(AIDifficulty::Hard, 99);
     let mut seen = Seen::default();
     let mut prev_state = 0u8;
     let start = Instant::now();
-    while start.elapsed() < limit && seen.rounds.len() < rounds {
+    let others_pending = |counted: bool| match &together {
+        Some((done, sides)) => done.load(Ordering::SeqCst) < *sides || !counted,
+        None => false,
+    };
+    while start.elapsed() < limit && (seen.rounds.len() < rounds || others_pending(counted)) {
         let before = session.snapshot();
         let mut input = InputSnapshot::new();
         let ready = matches!(before.interruption, SessionInterruption::ReadyPrompt { opponent_present: true, .. });
@@ -62,7 +72,15 @@ fn play(mut session: VsNetworkGameSession, rounds: usize, leave_after_round: boo
         session.tick(&input);
         for event in session.drain_events() {
             if let SessionEvent::RoundEnded { won } = event {
-                seen.rounds.push(won);
+                if seen.rounds.len() < rounds {
+                    seen.rounds.push(won);
+                }
+            }
+        }
+        if seen.rounds.len() >= rounds && !counted {
+            counted = true;
+            if let Some((done, _)) = &together {
+                done.fetch_add(1, Ordering::SeqCst);
             }
         }
         let after = session.snapshot();
@@ -102,13 +120,15 @@ fn pair() -> Option<(NetConnection, NetConnection)> {
 #[test]
 fn two_sessions_play_a_round_and_see_the_same_result() {
     let Some((server_conn, client_conn)) = pair() else { return };
+    let done = Arc::new(AtomicUsize::new(0));
+    let together = done.clone();
     let server = thread::spawn(move || {
         let (session, seed) = build(server_conn, Role::Server, "Alpha", 1, 4242);
-        (play(session, 1, false, Duration::from_secs(90)), seed)
+        (play(session, 1, false, Duration::from_secs(90), Some((together, 2))), seed)
     });
     let client = thread::spawn(move || {
         let (session, seed) = build(client_conn, Role::Client, "Bravo", 2, 0);
-        (play(session, 1, false, Duration::from_secs(90)), seed)
+        (play(session, 1, false, Duration::from_secs(90), Some((done, 2))), seed)
     });
     let ((a, seed_a), (b, seed_b)) = (server.join().unwrap(), client.join().unwrap());
     eprintln!("server saw {:?}\nclient saw {:?}", a, b);
@@ -126,11 +146,11 @@ fn leaving_after_a_round_tells_the_other_side() {
     let Some((server_conn, client_conn)) = pair() else { return };
     let server = thread::spawn(move || {
         let (session, _) = build(server_conn, Role::Server, "Alpha", 1, 7);
-        play(session, 5, false, Duration::from_secs(90))
+        play(session, 5, false, Duration::from_secs(90), None)
     });
     let client = thread::spawn(move || {
         let (session, _) = build(client_conn, Role::Client, "Bravo", 2, 0);
-        play(session, 5, true, Duration::from_secs(90))
+        play(session, 5, true, Duration::from_secs(90), None)
     });
     let (a, b) = (server.join().unwrap(), client.join().unwrap());
     eprintln!("stayer saw {:?}\nleaver saw {:?}", a, b);
